@@ -4,7 +4,6 @@ from patient_link import render_pending_invitations, render_patient_invitations,
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import  render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
-from utils.goals_utils import add_goal_to_patient
 
 
 # 🖥️ Função para renderizar a sidebar.
@@ -73,9 +72,6 @@ def render_professional_dashboard(user):
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    # Renderiza a sidebar corretamente
-    render_sidebar(user)
-
     # Obtém perfil completo do profissional
     profile = get_user_info(user["id"], full_profile=True)
 
@@ -88,18 +84,18 @@ def render_professional_dashboard(user):
 
     st.subheader(f"{saudacao}, {professional_title}! 🎉")
 
-    # --- Melhorando a caixa de seleção ---
-    st.markdown("### 🔽 Selecione uma ação:")
-    opcao_selecionada = st.radio(
-        "",  
-        ["📩 Convidar Paciente", "📜 Visualizar Convites Pendentes", "🎯 Adicionar Meta para Paciente"],
-        horizontal=True
+    # --- Seletor de funcionalidades ---
+    opcao_selecionada = st.selectbox(
+        "📌 Escolha uma ação:", 
+        ["Convidar Paciente", "Visualizar Convites Pendentes"],
+        index=0
     )
 
     # --- Opção 1: Convidar Paciente ---
-    if opcao_selecionada == "📩 Convidar Paciente":
+    if opcao_selecionada == "Convidar Paciente":
         st.markdown("### 📩 Convidar Paciente")
-        patient_email = st.text_input("Digite o email do paciente:", key="patient_email_input")
+
+        patient_email = st.text_input("Digite o email do paciente para enviar um convite:", key="patient_email_input")
         
         if st.button("Enviar Convite", key="patientlink", use_container_width=True):
             if patient_email:
@@ -112,24 +108,6 @@ def render_professional_dashboard(user):
                 st.warning("⚠️ Por favor, insira o email do paciente.")
 
     # --- Opção 2: Visualizar Convites Pendentes ---
-    elif opcao_selecionada == "📜 Visualizar Convites Pendentes":
+    elif opcao_selecionada == "Visualizar Convites Pendentes":
         st.markdown("### 📜 Convites Pendentes")
-        render_pending_invitations(user["id"]) 
-
-    # --- Opção 3: Adicionar Meta para Paciente ---
-    elif opcao_selecionada == "🎯 Adicionar Meta para Paciente":
-        st.markdown("### 🎯 Adicionar Meta para Paciente")
-        
-        patient_email = st.text_input("Email do paciente:", key="goal_patient_email")
-        goal_text = st.text_area("Descrição da meta:", key="goal_text")
-        timeframe = st.text_input("Prazo ou período:", key="goal_timeframe")
-
-        if st.button("Salvar Meta", key="save_goal", use_container_width=True):
-            if patient_email and goal_text and timeframe:
-                success, msg = add_goal_to_patient(user["id"], patient_email, goal_text, timeframe)
-                if success:
-                    st.success("✅ Meta adicionada com sucesso!")
-                else:
-                    st.error(f"Erro: {msg}")
-            else:
-                st.warning("⚠️ Preencha todos os campos antes de salvar.")
+        render_pending_invitations(user["id"])  # Renderiza os convites pendentes
