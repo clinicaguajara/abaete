@@ -68,6 +68,7 @@ def render_professional_enable_section(user):
         st.info("Processando... Aguarde um momento.")
         st.session_state["processing"] = False  # Libera o fluxo para o próximo run.
         st.session_state["refresh"] = True # Força a reinicialização da interface.
+        st.rerun()
         return
 
     if st.button("🔐 Habilitar área do profissional", key="professional"):
