@@ -43,15 +43,16 @@ def add_goal_to_patient(professional_id, patient_email, goal, timeframe):
         return False, f"Erro inesperado: {str(e)}"
     
     
-@st.cache_data(ttl=60)
-@st.cache_data(ttl=10)  # Mantemos o cache curto para evitar dados desatualizados
+
+@st.cache_data(ttl=10)
 def get_linked_patients(professional_id):
     """Retorna uma lista de pacientes vinculados a um profissional."""
     try:
-        # 🔍 Buscar vínculos ativos entre o profissional e pacientes
+        # Buscar os vínculos aceitos entre o profissional e pacientes
         response = supabase_client.from_("professional_patient_link") \
             .select("patient_id, status") \
             .eq("professional_id", professional_id) \
+            .eq("status", "accepted")  # Corrigido para "accepted"
             .execute()
 
         if hasattr(response, "error") and response.error:
@@ -60,26 +61,25 @@ def get_linked_patients(professional_id):
         if not response.data:
             return [], "Nenhum vínculo encontrado."
 
-        # Filtrar apenas vínculos com status accepted
-        valid_links = [item for item in response.data if item["status"].lower() == "accepted"]
+        # Obter IDs de pacientes vinculados
+        patient_ids = [item["patient_id"] for item in response.data]
 
-        if not valid_links:
-            return [], "Nenhum paciente vinculado com status 'accepted'."
-
-        # 🔍 Obter os nomes e emails dos pacientes vinculados
+        # Buscar os dados dos pacientes vinculados
         patients = []
-        for item in valid_links:
-            patient_id = item["patient_id"]
-            patient_info = get_user_info(patient_id, full_profile=False)  # Obtém apenas nome e email
-            if patient_info:
+        for patient_id in patient_ids:
+            patient_info = get_user_info(patient_id, by_email=False, full_profile=False)  # 🔹 Forçando busca por ID
+            if patient_info and patient_info.get("auth_user_id"):
                 patients.append({
                     "id": patient_id,
                     "name": f"{patient_info['display_name']} ({patient_info['email']})"
                 })
+            else:
+                st.warning(f"⚠️ Paciente com ID {patient_id} não encontrado no banco!")  # Log para debug
 
         return patients, None
 
     except Exception as e:
         return [], f"Erro inesperado: {str(e)}"
+
 
 
