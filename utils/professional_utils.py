@@ -34,39 +34,44 @@ def is_professional_enabled(auth_user_id):
 
 # ⚒️ Função para habilitar área do profissional.
 def enable_professional_area(auth_user_id, email, display_name):
+    try:
+        # Verifica se o usuário já tem um registro
+        professional_data = get_professional_data(auth_user_id)
 
-    # Verifica, sem gastar requisições ao banco de dados, se a área está ativa ou não.
-    professional_data = get_professional_data(auth_user_id) 
+        if professional_data:
+            # Se já existe, apenas atualiza a área_habilitada
+            update_response = supabase_client.from_("professional") \
+                .update({"area_habilitada": True}) \
+                .eq("auth_user_id", auth_user_id) \
+                .execute()
 
-    # Se houver algum registro...
-    if professional_data:
-        # Basta atualizar.
-        update_response = supabase_client.from_("professional") \
-            .update({"area_habilitada": True}) \
-            .eq("auth_user_id", auth_user_id) \
+            if hasattr(update_response, "error") and update_response.error:
+                st.error(f"Erro ao atualizar: {update_response.error.message}")
+                print("Erro ao atualizar:", update_response.error)
+                return False, f"Erro ao atualizar: {update_response.error.message}"
+
+            return True, None  # Atualização bem-sucedida
+
+        # Se não existir, então insere um novo registro
+        data = {
+            "auth_user_id": auth_user_id,
+            "email": email,
+            "display_name": display_name,
+            "area_habilitada": True
+        }
+
+        insert_response = supabase_client.from_("professional") \
+            .insert(data) \
             .execute()
 
-        # Se der erro...
-        if hasattr(update_response, "error") and update_response.error:
-            return False, f"Erro ao atualizar: {update_response.error.message}"  # Vamos avisar.
-        
-        return True, None  # Caso constrário, já pode comemorar.
+        if hasattr(insert_response, "error") and insert_response.error:
+            st.error(f"Erro ao criar registro: {insert_response.error.message}")
+            print("Erro ao criar registro:", insert_response.error)
+            return False, f"Erro ao criar registro: {insert_response.error.message}"
 
-    # Quando não houver registro, um dicionário será criado.
-    data = {
-        "auth_user_id": auth_user_id,  # O UUID é o identificador principal
-        "email": email,
-        "display_name": display_name,
-        "area_habilitada": True
-    }
-    
-    # Insere o dicionário no banco de dados <professional>
-    insert_response = supabase_client.from_("professional") \
-        .insert(data) \
-        .execute()
+        return True, None  # Inserção bem-sucedida
 
-    # Se der erro...
-    if hasattr(insert_response, "error") and insert_response.error:
-        return False, f"Erro ao criar registro: {insert_response.error.message}"  # Vamos avisar.
-    
-    return True, None # Caso constrário, já pode comemorar.
+    except Exception as e:
+        st.error(f"Erro inesperado: {str(e)}")
+        print("Erro inesperado:", e)
+        return False, f"Erro inesperado: {str(e)}"

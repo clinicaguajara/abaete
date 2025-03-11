@@ -262,7 +262,6 @@ def render_patient_invitations(user):
     if not invitations:
         return
 
-    st.markdown("##### 📩 Convites Pendentes")
 
     for inv in invitations:
         if inv["status"] == "pending":
