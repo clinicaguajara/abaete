@@ -57,8 +57,6 @@ def render_dashboard():
 
     render_patient_invitations(user)
 
-    st.markdown("---")
-
     st.subheader("🎯 Minhas Metas")
 
     st.markdown("---")
