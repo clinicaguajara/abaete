@@ -66,9 +66,10 @@ def render_professional_enable_section(user):
     # Se já estiver processando, exibe uma mensagem e não permite nova ação.
     if st.session_state.get("processing", False):
         st.info("Processando... Aguarde um momento.")
-        st.session_state["processing"] = False  # Libera o fluxo para o próximo run.
-        st.session_state["refresh"] = True # Força a reinicialização da interface.
-        return
+        st.session_state["processing"] = False
+        st.session_state["refresh"] = True
+        st.rerun()  # Força a atualização imediata.
+
 
     if st.button("🔐 Habilitar área do profissional", key="professional"):
         st.session_state["show_prof_input"] = True  # Ativa o campo de senha.

@@ -18,7 +18,7 @@ def render_sidebar(user):
         saudacao_base = "Bem-vindo"
         saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
-        st.markdown(f"**👤 {saudacao}, {user['display_name']}**")
+        st.markdown(f"**👤 {user['display_name']}**")
         st.markdown(f"✉️ {user['email']}")
 
         # Botão de logout
@@ -53,6 +53,7 @@ def render_dashboard():
     render_sidebar(user)
 
     st.subheader(f"{saudacao}, {user['display_name']}! 🎉")
+    
     st.markdown("---")
 
     render_patient_invitations(user)
