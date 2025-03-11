@@ -22,15 +22,15 @@ def get_professional_data(auth_user_id):
 
 
 # 🩺 Função para verificar se a área do profissional está habilitada.
+@st.cache_data
 def is_professional_enabled(auth_user_id):
-
-    # Verifica, sem gastar requisições ao banco de dados, se a área está ativa ou não.
+    """
+    Verifica se a área profissional está habilitada no banco de dados.
+    """
     professional_data = get_professional_data(auth_user_id)
-
-    # Se houver algum registro...
     if professional_data:
         return professional_data.get("area_habilitada", False)  # Retorna um booleano.
-    return False  # Se não, retorna uma resposta negativa.
+    return False  # Se não houver registro, retorna False.
 
 
 # ⚒️ Função para habilitar a área do profissional.
@@ -68,8 +68,7 @@ def enable_professional_area(auth_user_id, email, display_name):
                 return False, f"Erro ao criar registro: {insert_response['error']['message']}"
 
         # 🧹 **LIMPA O CACHE PARA FORÇAR A ATUALIZAÇÃO**
-        get_professional_data.clear()
-        is_professional_enabled.clear()
+        st.cache_data.clear()  # Agora limpa o cache corretamente
 
         # ✅ Atualização bem-sucedida -> Força o refresh da UI
         st.session_state["refresh"] = True
@@ -80,5 +79,6 @@ def enable_professional_area(auth_user_id, email, display_name):
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
+
 
 
