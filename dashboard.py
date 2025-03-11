@@ -35,7 +35,6 @@ def render_sidebar(user):
         else:
             render_professional_enable_section(user)  # Renderiza o bloqueio da área profissional.
 
-        st.session_state["processing"] = False  # Reseta flag
 
 # 🖥️ Função para renderizar a dashboard.
 def render_dashboard():
