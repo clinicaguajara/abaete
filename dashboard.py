@@ -1,5 +1,4 @@
 import streamlit as st
-import pathlib
 from auth import get_user, sign_out
 from patient_link import render_pending_invitations, render_patient_invitations, create_patient_invitation
 from utils.gender_utils import adjust_gender_ending, get_professional_title
@@ -7,9 +6,9 @@ from utils.professional_utils import is_professional_enabled, enable_professiona
 from utils.user_utils import get_user_info
 
 
-
 # 🖥️ Função para renderizar a sidebar.
 def render_sidebar(user):
+    
     with st.sidebar:
         if not user or "id" not in user:
             st.warning("⚠️ Erro: Usuário não autenticado.")
@@ -28,32 +27,48 @@ def render_sidebar(user):
 
         st.markdown("---")
 
-        # Opção para habilitar a área do profissional
-        if not is_professional_enabled(user["id"]):
-            if st.button("🔐 Habilitar área do profissional", key="professional"):
-                st.session_state["show_prof_input"] = True
+        # Se a área do profissional já estiver habilitada...
+        if is_professional_enabled(user["id"]):
+            st.success("✅ Área do profissional habilitada!") # Exibe mensagem de sucesso.
+            st.session_state["processing"] = False  # Reseta flag.
+            return  # Impede execução do código abaixo.
 
-            if st.session_state.get("show_prof_input", False):
-                prof_key = st.text_input("Digite 'AUTOMATIZEJA' para confirmar:", key="prof_key_input")
-                if prof_key:
-                    if prof_key == "AUTOMATIZEJA":
-                        success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
-                        if success:
-                            get_professional_data.clear() # Limpa o cache dos dados profissionais para atualizar imediatamente
-                            st.session_state["refresh"] = True
-                            st.rerun()
-                        else:
-                            st.error(msg)
+        # Se ainda não estiver habilitada...
+        if st.button("🔐 Habilitar área do profissional", key="professional"):
+            st.session_state["show_prof_input"] = True  # Ativa o campo de preenchimento da chave.
+
+        # Se o campo de chave estiver ativado...
+        if st.session_state.get("show_prof_input", False):
+            prof_key = st.text_input("Digite 'AUTOMATIZEJA' para confirmar:", key="prof_key_input")
+
+            if prof_key:
+                if prof_key == "AUTOMATIZEJA":
+                    
+                    if st.session_state.get("processing", False):
+                        st.warning("⏳ Já estamos processando sua solicitação...")
+                        return  # Impede outra requisição.
+
+                    st.session_state["processing"] = True  # Ativa flag de processamento.
+
+                    success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
+                    
+                    if success:
+                        get_professional_data.clear()  # Limpa o cache dos dados profissionais.
+                        st.session_state["refresh"] = True  # Atualiza a interface
+                        st.rerun()
                     else:
-                        st.error("❌ Chave incorreta!")
-        else:
-            st.success("✅ Área do profissional habilitada!")
+                        st.session_state["processing"] = False  # Libera o botão
+                        st.error(msg)
+                
+                else:
+                    st.error("❌ Chave incorreta!")
 
 
 # 🖥️ Função para renderizar a dashboard.
 def render_dashboard():
-    """Renderiza o dashboard para usuários autenticados."""
+    
     user = get_user()
+
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return

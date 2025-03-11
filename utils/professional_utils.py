@@ -34,25 +34,28 @@ def is_professional_enabled(auth_user_id):
 
 # ⚒️ Função para habilitar área do profissional.
 def enable_professional_area(auth_user_id, email, display_name):
+    
     try:
         # Verifica se o usuário já tem um registro
         professional_data = get_professional_data(auth_user_id)
 
+        # Se houver registro...
         if professional_data:
-            # Se já existe, apenas atualiza a área_habilitada
+            # Apenas atualiza a área_habilitada
             update_response = supabase_client.from_("professional") \
                 .update({"area_habilitada": True}) \
                 .eq("auth_user_id", auth_user_id) \
                 .execute()
 
+            # Se houver falha...
             if hasattr(update_response, "error") and update_response.error:
                 st.error(f"Erro ao atualizar: {update_response.error.message}")
-                print("Erro ao atualizar:", update_response.error)
-                return False, f"Erro ao atualizar: {update_response.error.message}"
+                print("Erro ao atualizar:", update_response.error) 
+                return False, f"Erro ao atualizar: {update_response.error.message}" # Avisamos.
 
-            return True, None  # Atualização bem-sucedida
+            return True, None  # Se não, retorna uma atualização bem-sucedida
 
-        # Se não existir, então insere um novo registro
+        # Quando não houver registro, insere novos dados.
         data = {
             "auth_user_id": auth_user_id,
             "email": email,
