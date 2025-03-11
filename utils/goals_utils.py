@@ -60,11 +60,11 @@ def get_linked_patients(professional_id):
         if not response.data:
             return [], "Nenhum vínculo encontrado."
 
-        # Filtrar apenas vínculos com status aceito
-        valid_links = [item for item in response.data if item["status"].lower() == "aceito"]
+        # Filtrar apenas vínculos com status accepted
+        valid_links = [item for item in response.data if item["status"].lower() == "accepted"]
 
         if not valid_links:
-            return [], "Nenhum paciente vinculado com status 'aceito'."
+            return [], "Nenhum paciente vinculado com status 'accepted'."
 
         # 🔍 Obter os nomes e emails dos pacientes vinculados
         patients = []
