@@ -65,12 +65,40 @@ def render_dashboard():
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
+def render_sidebar(user):
+    """Renderiza a barra lateral da dashboard profissional."""
+    with st.sidebar:
+        if not user or "id" not in user:
+            st.warning("⚠️ Erro: Usuário não autenticado.")
+            return
+
+        profile = get_user_info(user["id"], full_profile=True) or {}
+        saudacao_base = "Bem-vindo"
+        saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
+
+        st.markdown(f"**👤 {user['display_name']}**")
+        st.markdown(f"✉️ {user['email']}")
+
+        # Botão de logout
+        if st.button("Logout 🚪", key="logout"):
+            sign_out()
+
+        st.markdown("---")
+
+        # Indica se a área do profissional está habilitada
+        st.success("✅ Área do profissional habilitada!")
+
+
+# 🔹 Função para renderizar a dashboard profissional
 def render_professional_dashboard(user):
     """Renderiza a dashboard para profissionais habilitados."""
     
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
+
+    # Renderiza a sidebar corretamente
+    render_sidebar(user)
 
     # Obtém perfil completo do profissional
     profile = get_user_info(user["id"], full_profile=True)
@@ -84,15 +112,16 @@ def render_professional_dashboard(user):
 
     st.subheader(f"{saudacao}, {professional_title}! 🎉")
 
-    # --- Seletor de funcionalidades ---
-    opcao_selecionada = st.selectbox(
-        "📌 Escolha uma ação:", 
-        ["Convidar Paciente", "Visualizar Convites Pendentes"],
-        index=0
+    # --- Melhorando a caixa de seleção ---
+    st.markdown("### 🔽 Selecione uma ação:")
+    opcao_selecionada = st.radio(
+        "",  # Sem título extra para evitar duplicação
+        ["📩 Convidar Paciente", "📜 Visualizar Convites Pendentes"],
+        horizontal=True
     )
 
     # --- Opção 1: Convidar Paciente ---
-    if opcao_selecionada == "Convidar Paciente":
+    if opcao_selecionada == "📩 Convidar Paciente":
         st.markdown("### 📩 Convidar Paciente")
 
         patient_email = st.text_input("Digite o email do paciente para enviar um convite:", key="patient_email_input")
@@ -108,6 +137,6 @@ def render_professional_dashboard(user):
                 st.warning("⚠️ Por favor, insira o email do paciente.")
 
     # --- Opção 2: Visualizar Convites Pendentes ---
-    elif opcao_selecionada == "Visualizar Convites Pendentes":
+    elif opcao_selecionada == "📜 Visualizar Convites Pendentes":
         st.markdown("### 📜 Convites Pendentes")
         render_pending_invitations(user["id"])  # Renderiza os convites pendentes
