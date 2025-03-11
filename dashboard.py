@@ -144,8 +144,18 @@ def render_professional_dashboard(user):
         goal_text = st.text_area("Descrição da meta:", key="goal_text")
 
         # ✅ Lista de prazos válidos com base na restrição do banco de dados
-        valid_timeframes = ["1 semana", "15 dias", "1 mês", "3 meses", "6 meses", "1 ano"]
-        timeframe = st.selectbox("Selecione o prazo para a meta:", valid_timeframes, key="goal_timeframe")
+        # ✅ Lista de prazos válidos com nomes amigáveis para o profissional
+        valid_timeframes = {
+            "Curto prazo (até 1 mês)": "curto",
+            "Médio prazo (1 a 6 meses)": "medio",
+            "Longo prazo (acima de 6 meses)": "longo"
+        }
+
+        # Selectbox com os nomes amigáveis
+        selected_timeframe = st.selectbox("Selecione o prazo para a meta:", list(valid_timeframes.keys()), key="goal_timeframe")
+
+        # Converte para o formato aceito pelo banco de dados
+        timeframe = valid_timeframes[selected_timeframe]
 
         if st.button("Salvar Meta", key="save_goal", use_container_width=True):
             if selected_patient_id and goal_text and timeframe:
@@ -156,3 +166,4 @@ def render_professional_dashboard(user):
                     st.error(f"Erro: {msg}")
             else:
                 st.warning("⚠️ Preencha todos os campos antes de salvar.")
+
