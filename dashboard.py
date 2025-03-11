@@ -38,6 +38,7 @@ def render_sidebar(user):
                     if prof_key == "AUTOMATIZEJA":
                         success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
                         if success:
+                            get_professional_data.clear() # Limpa o cache dos dados profissionais para atualizar imediatamente
                             st.session_state["refresh"] = True
                             st.rerun()
                         else:
