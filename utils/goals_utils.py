@@ -18,7 +18,7 @@ def add_goal_to_patient(professional_id, patient_email, goal, timeframe):
             .select("id") \
             .eq("professional_id", professional_id) \
             .eq("patient_id", patient_id) \
-            .eq("status", "aceito") \
+            .eq("status", "accepted") \
             .execute()
 
         if not link_response.data:
@@ -51,7 +51,7 @@ def get_linked_patients(professional_id):
         response = supabase_client.from_("professional_patient_link") \
             .select("patient_id") \
             .eq("professional_id", professional_id) \
-            .eq("status", "aceito") \
+            .eq("status", "accepted") \
             .execute()
 
         if hasattr(response, "error") and response.error:
