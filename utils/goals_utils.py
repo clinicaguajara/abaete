@@ -47,24 +47,33 @@ def add_goal_to_patient(professional_id, patient_email, goal, timeframe):
 def get_linked_patients(professional_id):
     """Retorna uma lista de pacientes vinculados a um profissional."""
     try:
+        st.write(f"🔍 Buscando pacientes vinculados para o profissional: {professional_id}")  # Log para debug
+
         # 🔍 Buscar vínculos ativos entre o profissional e pacientes
         response = supabase_client.from_("professional_patient_link") \
-            .select("patient_id") \
+            .select("patient_id, status") \
             .eq("professional_id", professional_id) \
-            .eq("status", "accepted") \
             .execute()
+
+        st.write("📊 Resposta do Supabase:", response)  # Log para debug
 
         if hasattr(response, "error") and response.error:
             return [], f"Erro ao buscar pacientes vinculados: {response.error.message}"
 
         if not response.data:
-            return [], "Nenhum paciente vinculado encontrado."
+            return [], "Nenhum vínculo encontrado."
 
-        # 🔍 Obter os nomes e emails dos pacientes a partir dos IDs
-        patient_ids = [item["patient_id"] for item in response.data]
+        # Verificar os status reais retornados
+        valid_links = [item for item in response.data if item["status"].lower() == "accepted"]  # <-- pode precisar ajustar esse filtro
+        st.write("✅ Vínculos filtrados:", valid_links)  # Log para ver se o filtro está correto
+
+        if not valid_links:
+            return [], "Nenhum paciente vinculado com status 'aceito'."
+
+        # 🔍 Obter os nomes e emails dos pacientes vinculados
         patients = []
-
-        for patient_id in patient_ids:
+        for item in valid_links:
+            patient_id = item["patient_id"]
             patient_info = get_user_info(patient_id, full_profile=False)  # Obtém apenas nome e email
             if patient_info:
                 patients.append({
@@ -72,8 +81,11 @@ def get_linked_patients(professional_id):
                     "name": f"{patient_info['display_name']} ({patient_info['email']})"
                 })
 
+        st.write("📋 Pacientes vinculados formatados:", patients)  # Ver se pacientes foram carregados corretamente
+
         return patients, None
 
     except Exception as e:
+        st.write("❌ Erro inesperado:", str(e))  # Log para debug
         return [], f"Erro inesperado: {str(e)}"
 
