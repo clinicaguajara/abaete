@@ -3,7 +3,7 @@ import pathlib
 from auth import get_user, sign_out
 from patient_link import render_pending_invitations, render_patient_invitations, create_patient_invitation
 from utils.gender_utils import adjust_gender_ending, get_professional_title
-from utils.professional_utils import is_professional_enabled, enable_professional_area, get_professional_data, get_patient_link_id
+from utils.professional_utils import is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
 
 
