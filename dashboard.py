@@ -8,6 +8,7 @@ from utils.user_utils import get_user_info
 
 
 
+
 # 🖥️ Função para renderizar a sidebar.
 def render_sidebar(user):
     with st.sidebar:
@@ -69,15 +70,19 @@ def render_dashboard():
 
     render_patient_invitations(user)
 
-    st.markdown("---")
 
     st.subheader("🎯 Minhas Metas")
 
-    link_id = st.session_state.get("linked_professional_id")  # Pegamos o vínculo com o profissional
+    if "linked_professional_id" not in st.session_state:
+        st.session_state["linked_professional_id"], error = get_patient_link_id(user["id"])
+
+    link_id = st.session_state.get("linked_professional_id")
 
     if not link_id:
         st.error("Nenhum profissional vinculado encontrado.")
         return
+
+    st.success("✅ Profissional vinculado encontrado!")
 
     # 🔹 Formulário para adicionar metas
     with st.form("add_goal_form"):

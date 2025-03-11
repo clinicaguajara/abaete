@@ -76,3 +76,20 @@ def enable_professional_area(auth_user_id, email, display_name):
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
 
+
+@st.cache_data(ttl=10)
+def get_patient_link_id(patient_id):
+    """Recupera o vínculo do paciente com um profissional."""
+    response = supabase_client.from_("professional_patient_link") \
+        .select("id") \
+        .eq("patient_id", patient_id) \
+        .eq("status", "aceito") \
+        .execute()
+
+    if hasattr(response, "error") and response.error:
+        return None, f"Erro ao buscar vínculo: {response.error.message}"
+
+    if response.data:
+        return response.data[0]["id"], None  # Retorna o link_id do vínculo aceito
+
+    return None, None  # Nenhum vínculo encontrado

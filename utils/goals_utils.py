@@ -19,15 +19,19 @@ def add_goal(link_id, goal, timeframe):
         return False, f"Erro inesperado: {str(e)}"
 
 @st.cache_data(ttl=10)
-def get_goals(link_id):
-    """Recupera todas as metas de um paciente vinculadas a um profissional."""
-    response = supabase_client.from_("goals") \
-        .select("*") \
-        .eq("link_id", link_id) \
-        .order("created_at", desc=True) \
+def get_patient_link_id(patient_id):
+    """Recupera o vínculo do paciente com um profissional."""
+    response = supabase_client.from_("professional_patient_link") \
+        .select("id") \
+        .eq("patient_id", patient_id) \
+        .eq("status", "aceito") \
         .execute()
 
     if hasattr(response, "error") and response.error:
-        return [], f"Erro ao buscar metas: {response.error.message}"
+        return None, f"Erro ao buscar vínculo: {response.error.message}"
 
-    return response.data, None
+    if response.data:
+        return response.data[0]["id"], None  # Retorna o link_id
+
+    return None, None  # Nenhum vínculo encontrado
+
