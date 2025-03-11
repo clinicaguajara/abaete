@@ -41,3 +41,39 @@ def add_goal_to_patient(professional_id, patient_email, goal, timeframe):
     
     except Exception as e:
         return False, f"Erro inesperado: {str(e)}"
+    
+    
+@st.cache_data(ttl=60)
+def get_linked_patients(professional_id):
+    """Retorna uma lista de pacientes vinculados a um profissional."""
+    try:
+        # 🔍 Buscar vínculos ativos entre o profissional e pacientes
+        response = supabase_client.from_("professional_patient_link") \
+            .select("patient_id") \
+            .eq("professional_id", professional_id) \
+            .eq("status", "aceito") \
+            .execute()
+
+        if hasattr(response, "error") and response.error:
+            return [], f"Erro ao buscar pacientes vinculados: {response.error.message}"
+
+        if not response.data:
+            return [], "Nenhum paciente vinculado encontrado."
+
+        # 🔍 Obter os nomes e emails dos pacientes a partir dos IDs
+        patient_ids = [item["patient_id"] for item in response.data]
+        patients = []
+
+        for patient_id in patient_ids:
+            patient_info = get_user_info(patient_id, full_profile=False)  # Obtém apenas nome e email
+            if patient_info:
+                patients.append({
+                    "id": patient_id,
+                    "name": f"{patient_info['display_name']} ({patient_info['email']})"
+                })
+
+        return patients, None
+
+    except Exception as e:
+        return [], f"Erro inesperado: {str(e)}"
+

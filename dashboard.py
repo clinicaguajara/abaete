@@ -4,7 +4,7 @@ from patient_link import render_pending_invitations, render_patient_invitations,
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import  render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
-from utils.goals_utils import add_goal_to_patient
+from utils.goals_utils import add_goal_to_patient, get_linked_patients
 
 
 # 🖥️ Função para renderizar a sidebar.
@@ -88,7 +88,7 @@ def render_professional_dashboard(user):
 
     st.subheader(f"{saudacao}, {professional_title}! 🎉")
 
-    # --- Melhorando a caixa de seleção ---
+    # --- Seletor de funcionalidades ---
     st.markdown("### 🔽 Selecione uma ação:")
     opcao_selecionada = st.radio(
         "",  
@@ -119,14 +119,34 @@ def render_professional_dashboard(user):
     # --- Opção 3: Adicionar Meta para Paciente ---
     elif opcao_selecionada == "🎯 Adicionar Meta para Paciente":
         st.markdown("### 🎯 Adicionar Meta para Paciente")
+
+        # 🔍 Buscar pacientes vinculados ao profissional
+        patients, error_msg = get_linked_patients(user["id"])
+
+        if error_msg:
+            st.error(error_msg)
+            return
+
+        if not patients:
+            st.warning("⚠️ Nenhum paciente vinculado encontrado.")
+            return
+
+        # Criar lista de nomes para exibição no selectbox
+        patient_options = {p["name"]: p["id"] for p in patients}
         
-        patient_email = st.text_input("Email do paciente:", key="goal_patient_email")
+        # Seleção do paciente vinculado
+        selected_patient_name = st.selectbox("Selecione o paciente:", list(patient_options.keys()), key="select_patient")
+
+        # Obtém o `patient_id` correspondente ao nome selecionado
+        selected_patient_id = patient_options[selected_patient_name]
+
+        # Campo para a meta e prazo
         goal_text = st.text_area("Descrição da meta:", key="goal_text")
         timeframe = st.text_input("Prazo ou período:", key="goal_timeframe")
 
         if st.button("Salvar Meta", key="save_goal", use_container_width=True):
-            if patient_email and goal_text and timeframe:
-                success, msg = add_goal_to_patient(user["id"], patient_email, goal_text, timeframe)
+            if selected_patient_id and goal_text and timeframe:
+                success, msg = add_goal_to_patient(user["id"], selected_patient_id, goal_text, timeframe)
                 if success:
                     st.success("✅ Meta adicionada com sucesso!")
                 else:
