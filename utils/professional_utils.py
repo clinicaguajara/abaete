@@ -1,7 +1,7 @@
 import streamlit as st
 from auth import supabase_client, sign_out
 from patient_link import create_patient_invitation 
-from .utils.date_utils import format_date
+from utils.date_utils import format_date
 
 
 # 💾 Função para cachear o estado da área profissional.
