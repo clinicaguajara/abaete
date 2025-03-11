@@ -60,35 +60,42 @@ def enable_professional_area(auth_user_id, email, display_name):
 
     
 # 🔑 Função para renderizar o bloqueio da área profissional.
+import streamlit as st
+from utils.professional_utils import enable_professional_area, get_professional_data
+
 def render_professional_enable_section(user):
-    """Renderiza a seção de ativação da área profissional."""
-    
-    # Se já estiver processando, exibe uma mensagem e não permite nova ação.
-    if st.session_state.get("processing", False):
-        st.info("Processando... Aguarde um momento.")
-        st.session_state["processing"] = False  # Libera o fluxo para o próximo run.
-        st.session_state["refresh"] = True # Força a reinicialização da interface.
-        return
+    """Renderiza a seção de ativação da área profissional usando st.form()."""
 
-    if st.button("🔐 Habilitar área do profissional", key="professional"):
-        st.session_state["show_prof_input"] = True  # Ativa o campo de senha.
+    st.subheader("Ativar Área Profissional")
 
-    # Se o campo de senha foi ativado...
-    if st.session_state.get("show_prof_input", False):
-        prof_key = st.text_input("Digite a senha do profissional:", key="prof_key_input")
+    # 1. Criamos o formulário com um nome/identificador único ("professional_form").
+    with st.form("professional_form"):
+        # 2. Colocamos dentro do form os campos que queremos coletar.
+        prof_key = st.text_input("Digite a senha do profissional:", type="password")
+        
+        # 3. Criamos um botão de submissão do formulário.
+        submit_button = st.form_submit_button("Habilitar área do profissional")
 
-        if prof_key:  # Se o usuário digitou algo...
-            if prof_key == "AUTOMATIZEJA":  # Se a chave estiver correta...
-                st.session_state["processing"] = True  # Bloqueia novas submissões.
-                success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
-                
-                if success:
-                    get_professional_data.clear()  # Limpa o cache.
-                    st.session_state["refresh"] = True  # Força atualização.
-                    st.rerun()
-                else:
-                    st.session_state["processing"] = False  # Libera o bloqueio em caso de erro.
-                    st.error(msg)
+    # 4. Se o usuário clicou no botão "Habilitar área do profissional"...
+    if submit_button:
+        # 4.1 Verificamos a senha digitada.
+        if prof_key == "AUTOMATIZEJA":
+            # 4.2 Sinalizamos que está processando para evitar cliques duplos.
+            st.session_state["processing"] = True
+            
+            # 4.3 Chamamos a função que habilita a área profissional no banco.
+            success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
+            
+            if success:
+                # 4.4 Limpamos o cache e forçamos a atualização.
+                get_professional_data.clear()
+                st.session_state["refresh"] = True
+                st.success("Área do profissional habilitada com sucesso!")
+                st.rerun()
             else:
-                st.error("❌ Chave incorreta!")  # Senha errada.
+                st.session_state["processing"] = False
+                st.error(msg)
+        else:
+            st.error("❌ Chave incorreta!")
+
 
