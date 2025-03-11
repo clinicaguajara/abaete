@@ -77,12 +77,21 @@ def enable_professional_area(auth_user_id, email, display_name):
         return False, f"Erro inesperado: {str(e)}"
 
 
+import uuid
+
 @st.cache_data(ttl=10)
 def get_patient_link_id(patient_id):
     """Recupera o vínculo do paciente com um profissional."""
+    
+    # 🚨 Verifica se o ID do paciente é um UUID válido
+    try:
+        patient_uuid = uuid.UUID(patient_id, version=4)
+    except ValueError:
+        return None, "Erro: ID do paciente não é um UUID válido."
+
     response = supabase_client.from_("professional_patient_link") \
         .select("id") \
-        .eq("patient_id", patient_id) \
+        .eq("patient_id", str(patient_uuid)) \
         .eq("status", "accepted") \
         .execute()
 
@@ -93,3 +102,4 @@ def get_patient_link_id(patient_id):
         return response.data[0]["id"], None  # Retorna o link_id do vínculo aceito
 
     return None, None  # Nenhum vínculo encontrado
+
