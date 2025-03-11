@@ -1,0 +1,130 @@
+/* Botão "Aceitar" (Verde Esmeralda Místico) */
+.st-key-accept button {
+    background-color: #008F7A !important; /* Verde profundo e tecnológico */
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    border: 2px solid #007366 !important;
+    border-radius: 8px !important;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+    padding: 10px 20px !important;
+    width: 100% !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    box-shadow: 0px 0px 10px rgba(0, 143, 122, 0.6) !important;
+}
+
+/* Hover "Aceitar" */
+.st-key-accept button:hover {
+    background-color: #007366 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0px 0px 15px rgba(0, 115, 102, 0.8) !important;
+}
+
+/* Efeito ao clicar "Aceitar" */
+.st-key-accept button:active {
+    background-color: #005E52 !important;
+    border-color: #008F7A !important;
+    box-shadow: 0px 0px 20px rgba(0, 143, 122, 0.9) !important;
+    transform: scale(0.8) !important;
+    color: white !important;
+}
+
+/* Efeito pós-clique "Aceitar" */
+.st-key-accept button:focus {
+    animation: postClickGlow 1s ease-in-out;
+}
+
+/* Botão "Recusar" (Vermelho Rubi Encantado) */
+.st-key-reject button {
+    background-color: #C70039 !important; /* Vermelho intenso e místico */
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    border: 2px solid #9B002F !important;
+    border-radius: 8px !important;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+    padding: 10px 20px !important;
+    width: 100% !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    box-shadow: 0px 0px 10px rgba(199, 0, 57, 0.6) !important;
+}
+
+/* Hover "Recusar" */
+.st-key-reject button:hover {
+    background-color: #9B002F !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0px 0px 15px rgba(155, 0, 47, 0.8) !important;
+}
+
+/* Efeito ao clicar "Recusar" */
+.st-key-reject button:active {
+    background-color: #750021 !important;
+    border-color: #C70039 !important;
+    box-shadow: 0px 0px 20px rgba(199, 0, 57, 0.9) !important;
+    transform: scale(0.8) !important;
+    color: white !important;
+}
+
+/* Efeito pós-clique "Recusar" */
+.st-key-reject button:focus {
+    animation: postClickGlow 1s ease-in-out;
+}
+
+/* Botões Roxos (Login, Criar Conta, Logout, Habilitar Profissional, Recuperar Senha) */
+.st-key-logout button,
+.st-key-professional button,
+.st-key-authaction button,
+.st-key-resetpassword button,
+.st-key-profile-save button,
+.st-key-patientlink button {
+    background-color: #7159c1 !important;
+    color: white !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    border: 2px solid #836fff !important;
+    border-radius: 8px !important;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
+    padding: 10px 20px !important;
+    width: 100% !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    box-shadow: 0px 0px 10px rgba(113, 89, 193, 0.5) !important;
+    outline: none !important;
+}
+
+/* Hover Roxo */
+.st-key-logout button:hover,
+.st-key-professional button:hover,
+.st-key-authaction button:hover,
+.st-key-resetpassword button:hover,
+.st-key-profile-save button:hover,
+.st-key-patientlink button:hover {
+    background-color: #5e47b0 !important;
+    transform: scale(1.1) !important;
+}
+
+/* Efeito ao clicar */
+.st-key-logout button:active,
+.st-key-professional button:active,
+.st-key-authaction button:active,
+.st-key-resetpassword button:active,
+.st-key-profile-save button:active,
+.st-key-patientlink button:active{
+    background-color: #5e47b0 !important;
+    border-color: #7159c1 !important;
+    box-shadow: 0px 0px 15px rgba(130, 94, 255, 0.7) !important;
+    transform: scale(0.8) !important;
+    color: white !important;
+}
+
+/* Efeito pós-clique */
+.st-key-logout button:focus,
+.st-key-professional button:focus,
+.st-key-authaction button:focus,
+.st-key-resetpassword button:focus,
+.st-key-profile-save button:focus,
+.st-key-patientlink button:focus{
+    animation: postClickGlow 1s ease-in-out;
+}
