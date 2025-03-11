@@ -87,4 +87,3 @@ def sign_out():
     st.cache_data.clear() 
     st.rerun() # Desconecta o usuário sem gerar confusão.
 
-
