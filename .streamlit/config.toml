@@ -1,0 +1,13 @@
+[theme]
+base="dark"  # Força o modo escuro
+backgroundColor="#0e1117"  # Fundo escuro
+secondaryBackgroundColor="#161a1f"  # Fundo da sidebar
+textColor="#FFFFFF"  # Texto branco
+
+[ui]
+layout = "wide"  # Expande para ocupar a largura total
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
