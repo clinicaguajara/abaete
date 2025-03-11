@@ -1,4 +1,5 @@
 import streamlit as st
+import uuid
 from auth import supabase_client, sign_out
 from patient_link import create_patient_invitation 
 from utils.date_utils import format_date
@@ -32,42 +33,40 @@ def is_professional_enabled(auth_user_id):
     return False  # Se não, retorna uma resposta negativa.
 
 
-# ⚒️ Função para habilitar área do profissional.
+# ⚒️ Função para habilitar a área do profissional.
 def enable_professional_area(auth_user_id, email, display_name):
     try:
-        # Verifica se o usuário já tem um registro
+        # Verifica se o usuário já tem um registro na tabela "professional"
         professional_data = get_professional_data(auth_user_id)
 
         if professional_data:
-            # Se já existe, apenas atualiza a área_habilitada
+            # Atualiza a área_habilitada se o usuário já existe
             update_response = supabase_client.from_("professional") \
                 .update({"area_habilitada": True}) \
                 .eq("auth_user_id", auth_user_id) \
                 .execute()
 
-            if hasattr(update_response, "error") and update_response.error:
-                st.error(f"Erro ao atualizar: {update_response.error.message}")
-                print("Erro ao atualizar:", update_response.error)
-                return False, f"Erro ao atualizar: {update_response.error.message}"
+            if update_response and "error" in update_response and update_response["error"]:
+                st.error(f"Erro ao atualizar: {update_response['error']['message']}")
+                print("Erro ao atualizar:", update_response["error"])
+                return False, f"Erro ao atualizar: {update_response['error']['message']}"
 
             return True, None  # Atualização bem-sucedida
 
-        # Se não existir, então insere um novo registro
-        data = {
-            "auth_user_id": auth_user_id,
-            "email": email,
-            "display_name": display_name,
-            "area_habilitada": True
-        }
-
+        # Se o usuário não existir, cria um novo registro
         insert_response = supabase_client.from_("professional") \
-            .insert(data) \
+            .insert({
+                "auth_user_id": auth_user_id,
+                "email": email,
+                "display_name": display_name,
+                "area_habilitada": True
+            }) \
             .execute()
 
-        if hasattr(insert_response, "error") and insert_response.error:
-            st.error(f"Erro ao criar registro: {insert_response.error.message}")
-            print("Erro ao criar registro:", insert_response.error)
-            return False, f"Erro ao criar registro: {insert_response.error.message}"
+        if insert_response and "error" in insert_response and insert_response["error"]:
+            st.error(f"Erro ao criar registro: {insert_response['error']['message']}")
+            print("Erro ao criar registro:", insert_response["error"])
+            return False, f"Erro ao criar registro: {insert_response['error']['message']}"
 
         return True, None  # Inserção bem-sucedida
 
@@ -75,31 +74,4 @@ def enable_professional_area(auth_user_id, email, display_name):
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
-
-
-import uuid
-
-@st.cache_data(ttl=10)
-def get_patient_link_id(patient_id):
-    """Recupera o vínculo do paciente com um profissional."""
-    
-    # 🚨 Verifica se o ID do paciente é um UUID válido
-    try:
-        patient_uuid = uuid.UUID(patient_id, version=4)
-    except ValueError:
-        return None, "Erro: ID do paciente não é um UUID válido."
-
-    response = supabase_client.from_("professional_patient_link") \
-        .select("id") \
-        .eq("patient_id", str(patient_uuid)) \
-        .eq("status", "accepted") \
-        .execute()
-
-    if hasattr(response, "error") and response.error:
-        return None, f"Erro ao buscar vínculo: {response.error.message}"
-
-    if response.data:
-        return response.data[0]["id"], None  # Retorna o link_id do vínculo aceito
-
-    return None, None  # Nenhum vínculo encontrado
 
