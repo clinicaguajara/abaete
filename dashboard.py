@@ -140,9 +140,12 @@ def render_professional_dashboard(user):
         # Obtém o `patient_id` correspondente ao nome selecionado
         selected_patient_id = patient_options[selected_patient_name]
 
-        # Campo para a meta e prazo
+        # Campo para a meta
         goal_text = st.text_area("Descrição da meta:", key="goal_text")
-        timeframe = st.text_input("Prazo ou período:", key="goal_timeframe")
+
+        # ✅ Lista de prazos válidos com base na restrição do banco de dados
+        valid_timeframes = ["1 semana", "15 dias", "1 mês", "3 meses", "6 meses", "1 ano"]
+        timeframe = st.selectbox("Selecione o prazo para a meta:", valid_timeframes, key="goal_timeframe")
 
         if st.button("Salvar Meta", key="save_goal", use_container_width=True):
             if selected_patient_id and goal_text and timeframe:
