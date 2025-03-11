@@ -8,17 +8,17 @@ from utils.date_utils import format_date
 # 💾 Função para cachear o estado da área profissional.
 @st.cache_data
 def get_professional_data(auth_user_id):
-    
-    # Busca os dados do usuário no banco de dados <professional>
+    """
+    Busca os dados do usuário na tabela "professional".
+    """
     response = supabase_client.from_("professional") \
         .select("auth_user_id, area_habilitada") \
         .eq("auth_user_id", auth_user_id) \
         .execute()
 
-    # Se houver algum registro...
     if response and hasattr(response, "data") and response.data:
-        return response.data[0]  # Retorna um booleano.
-    return None  # Se não, retorna o conjunto vazio.
+        return response.data[0]  # Retorna os dados do usuário
+    return None  # Se não houver registro, retorna None
 
 
 # 🩺 Função para verificar se a área do profissional está habilitada.
@@ -79,6 +79,5 @@ def enable_professional_area(auth_user_id, email, display_name):
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
-
 
 
