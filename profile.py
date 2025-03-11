@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date
 from auth import supabase_client
 from utils.user_utils import get_user_info
 from utils.date_utils import format_date
@@ -46,8 +47,9 @@ def render_onboarding_questionnaire(user_id, user_email):
 
     genero = st.selectbox("Qual seu gênero?", ["Masculino", "Feminino", "Não-binário"])
 
-    max_date = datetime.date.today()
-    min_date = datetime.date(1900, 1, 1)
+    max_date = date.today()
+    min_date = date(1900, 1, 1)
+
 
     data_nascimento = st.date_input(
         "Quando você nasceu?",
