@@ -1,3 +1,5 @@
+import datetime
+
 def format_date(iso_date):
     """
     Converte uma data ISO 8601 (YYYY-MM-DDTHH:MM:SS.ssssss) em dia, mês e ano.
