@@ -52,8 +52,8 @@ def get_linked_patients(professional_id):
         response = supabase_client.from_("professional_patient_link") \
             .select("patient_id, status") \
             .eq("professional_id", professional_id) \
-            .eq("status", "accepted")  # Corrigido para "accepted"
-            .execute()
+            .eq("status", "accepted") \
+            .execute()  # 🔹 Agora está corretamente alinhado
 
         if hasattr(response, "error") and response.error:
             return [], f"Erro ao buscar pacientes vinculados: {response.error.message}"
@@ -78,8 +78,10 @@ def get_linked_patients(professional_id):
 
         return patients, None
 
-    except Exception as e:
+    except Exception as e:  # 🔹 Certifique-se de que está na mesma indentação do `try`
         return [], f"Erro inesperado: {str(e)}"
+
+
 
 
 
