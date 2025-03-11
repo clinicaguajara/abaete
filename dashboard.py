@@ -30,8 +30,10 @@ def render_sidebar(user):
         # Se a área do profissional já estiver habilitada...
         if is_professional_enabled(user["id"]):
             st.success("✅ Área do profissional habilitada!")  # Confirma a entrada.
+        
+        # Caso contrário...
         else:
-            render_professional_enable_section(user)  # Chama a nova função
+            render_professional_enable_section(user)  # Renderiza o bloqueio da área profissional.
 
         st.session_state["processing"] = False  # Reseta flag
 

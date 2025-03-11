@@ -34,28 +34,7 @@ def is_professional_enabled(auth_user_id):
 
 # ⚒️ Função para habilitar área do profissional.
 def enable_professional_area(auth_user_id, email, display_name):
-    
     try:
-        # Verifica se o usuário já tem um registro
-        professional_data = get_professional_data(auth_user_id)
-
-        # Se houver registro...
-        if professional_data:
-            # Apenas atualiza a área_habilitada
-            update_response = supabase_client.from_("professional") \
-                .update({"area_habilitada": True}) \
-                .eq("auth_user_id", auth_user_id) \
-                .execute()
-
-            # Se houver falha...
-            if hasattr(update_response, "error") and update_response.error:
-                st.error(f"Erro ao atualizar: {update_response.error.message}")
-                print("Erro ao atualizar:", update_response.error) 
-                return False, f"Erro ao atualizar: {update_response.error.message}" # Avisamos.
-
-            return True, None  # Se não, retorna uma atualização bem-sucedida
-
-        # Quando não houver registro, insere novos dados.
         data = {
             "auth_user_id": auth_user_id,
             "email": email,
@@ -63,21 +42,22 @@ def enable_professional_area(auth_user_id, email, display_name):
             "area_habilitada": True
         }
 
-        insert_response = supabase_client.from_("professional") \
-            .insert(data) \
+        response = supabase_client.from_("professional") \
+            .upsert(data) \
             .execute()
 
-        if hasattr(insert_response, "error") and insert_response.error:
-            st.error(f"Erro ao criar registro: {insert_response.error.message}")
-            print("Erro ao criar registro:", insert_response.error)
-            return False, f"Erro ao criar registro: {insert_response.error.message}"
+        if hasattr(response, "error") and response.error:
+            st.error(f"Erro ao criar/atualizar registro: {response.error.message}")
+            print("Erro:", response.error)
+            return False, f"Erro ao criar/atualizar registro: {response.error.message}"
 
-        return True, None  # Inserção bem-sucedida
+        return True, None  # Operação bem-sucedida
 
     except Exception as e:
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
+
     
 # 🔑 Função para renderizar o bloqueio da área profissional.
 def render_professional_enable_section(user):
