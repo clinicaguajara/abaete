@@ -51,27 +51,27 @@ def enable_professional_area(auth_user_id, email, display_name):
                 print("Erro ao atualizar:", update_response["error"])
                 return False, f"Erro ao atualizar: {update_response['error']['message']}"
 
-            # ✅ Atualização bem-sucedida -> Força o refresh da UI
-            st.session_state["refresh"] = True
-            st.rerun()
-            return True, None  
+        else:
+            # 🆕 Se o usuário NÃO existir, cria um novo registro
+            insert_response = supabase_client.from_("professional") \
+                .insert({
+                    "auth_user_id": auth_user_id,
+                    "email": email,
+                    "display_name": display_name,
+                    "area_habilitada": True
+                }) \
+                .execute()
 
-        # 🆕 Se o usuário NÃO existir, cria um novo registro
-        insert_response = supabase_client.from_("professional") \
-            .insert({
-                "auth_user_id": auth_user_id,
-                "email": email,
-                "display_name": display_name,
-                "area_habilitada": True
-            }) \
-            .execute()
+            if "error" in insert_response and insert_response["error"]:
+                st.error(f"Erro ao criar registro: {insert_response['error']['message']}")
+                print("Erro ao criar registro:", insert_response["error"])
+                return False, f"Erro ao criar registro: {insert_response['error']['message']}"
 
-        if "error" in insert_response and insert_response["error"]:
-            st.error(f"Erro ao criar registro: {insert_response['error']['message']}")
-            print("Erro ao criar registro:", insert_response["error"])
-            return False, f"Erro ao criar registro: {insert_response['error']['message']}"
+        # 🧹 **LIMPA O CACHE PARA FORÇAR A ATUALIZAÇÃO**
+        get_professional_data.clear()
+        is_professional_enabled.clear()
 
-        # ✅ Inserção bem-sucedida -> Força o refresh da UI
+        # ✅ Atualização bem-sucedida -> Força o refresh da UI
         st.session_state["refresh"] = True
         st.rerun()
         return True, None  
@@ -80,4 +80,5 @@ def enable_professional_area(auth_user_id, email, display_name):
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
+
 
