@@ -30,8 +30,6 @@ def initialize_session_state():
     # E se o processamento das páginas ainda não foi iniciado...
     if "processing" not in st.session_state:
         st.session_state["processing"] = False # É porque ainda não há nada para ser processado.
-    if "refresh" not in st.session_state:
-        st.session_state["refresh"] = False
 
 
 # 🧭 Função principal que tudo controla.
