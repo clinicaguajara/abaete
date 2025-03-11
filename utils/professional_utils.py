@@ -83,7 +83,7 @@ def get_patient_link_id(patient_id):
     response = supabase_client.from_("professional_patient_link") \
         .select("id") \
         .eq("patient_id", patient_id) \
-        .eq("status", "aceito") \
+        .eq("status", "accepted") \
         .execute()
 
     if hasattr(response, "error") and response.error:

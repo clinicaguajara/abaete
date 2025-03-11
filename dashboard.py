@@ -8,7 +8,6 @@ from utils.user_utils import get_user_info
 
 
 
-
 # 🖥️ Função para renderizar a sidebar.
 def render_sidebar(user):
     with st.sidebar:
