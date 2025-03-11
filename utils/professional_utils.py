@@ -36,24 +36,27 @@ def is_professional_enabled(auth_user_id):
 # ⚒️ Função para habilitar a área do profissional.
 def enable_professional_area(auth_user_id, email, display_name):
     try:
-        # Verifica se o usuário já tem um registro na tabela "professional"
+        # 🔍 Verifica se o usuário já existe na tabela "professional"
         professional_data = get_professional_data(auth_user_id)
 
-        if professional_data:
-            # Atualiza a área_habilitada se o usuário já existe
+        if professional_data is not None:
+            # Se o usuário já existe, apenas atualiza "area_habilitada"
             update_response = supabase_client.from_("professional") \
                 .update({"area_habilitada": True}) \
                 .eq("auth_user_id", auth_user_id) \
                 .execute()
 
-            if update_response and "error" in update_response and update_response["error"]:
+            if "error" in update_response and update_response["error"]:
                 st.error(f"Erro ao atualizar: {update_response['error']['message']}")
                 print("Erro ao atualizar:", update_response["error"])
                 return False, f"Erro ao atualizar: {update_response['error']['message']}"
 
-            return True, None  # Atualização bem-sucedida
+            # ✅ Atualização bem-sucedida -> Força o refresh da UI
+            st.session_state["refresh"] = True
+            st.rerun()
+            return True, None  
 
-        # Se o usuário não existir, cria um novo registro
+        # 🆕 Se o usuário NÃO existir, cria um novo registro
         insert_response = supabase_client.from_("professional") \
             .insert({
                 "auth_user_id": auth_user_id,
@@ -63,12 +66,15 @@ def enable_professional_area(auth_user_id, email, display_name):
             }) \
             .execute()
 
-        if insert_response and "error" in insert_response and insert_response["error"]:
+        if "error" in insert_response and insert_response["error"]:
             st.error(f"Erro ao criar registro: {insert_response['error']['message']}")
             print("Erro ao criar registro:", insert_response["error"])
             return False, f"Erro ao criar registro: {insert_response['error']['message']}"
 
-        return True, None  # Inserção bem-sucedida
+        # ✅ Inserção bem-sucedida -> Força o refresh da UI
+        st.session_state["refresh"] = True
+        st.rerun()
+        return True, None  
 
     except Exception as e:
         st.error(f"Erro inesperado: {str(e)}")
