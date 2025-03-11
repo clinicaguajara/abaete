@@ -10,7 +10,7 @@ from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
 from utils.user_utils import get_user_info
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Configuração inicial.
 # Definimos título, ícone e o layout central.
