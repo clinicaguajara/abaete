@@ -78,3 +78,30 @@ def enable_professional_area(auth_user_id, email, display_name):
         st.error(f"Erro inesperado: {str(e)}")
         print("Erro inesperado:", e)
         return False, f"Erro inesperado: {str(e)}"
+    
+# 🔑 Função para renderizar o bloqueio da área profissional.
+def render_professional_enable_section(user):
+    """Renderiza a seção de ativação da área profissional."""
+    
+    if st.button("🔐 Habilitar área do profissional", key="professional"):
+        st.session_state["show_prof_input"] = True  # Ativa o campo de senha.
+
+    # Se o campo de senha foi ativado...
+    if st.session_state.get("show_prof_input", False):
+        prof_key = st.text_input("Digite 'AUTOMATIZEJA' para confirmar:", key="prof_key_input")
+
+        if prof_key:  # Se o usuário digitou algo...
+
+            if prof_key == "AUTOMATIZEJA":  # Se a chave estiver correta...
+                st.session_state["processing"] = True
+                success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
+                
+                if success:
+                    get_professional_data.clear()  # Limpa o cache.
+                    st.session_state["refresh"] = True  # Força atualização.
+                    st.rerun()
+                else:
+                    st.session_state["processing"] = False
+                    st.error(msg)
+            else:
+                st.error("❌ Chave incorreta!")  # Senha errada.
