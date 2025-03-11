@@ -66,40 +66,48 @@ def render_dashboard():
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
 def render_professional_dashboard(user):
-
+    """Renderiza a dashboard para profissionais habilitados."""
+    
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
+    # Obtém perfil completo do profissional
     profile = get_user_info(user["id"], full_profile=True)
+
+    # Obtém título profissional correto
+    professional_title = get_professional_title(profile)
+
+    # Saudação personalizada ajustada pelo gênero
     saudacao_base = "Bem-vindo"
     saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
-    render_sidebar(user)
+    st.subheader(f"{saudacao}, {professional_title}! 🎉")
 
-    st.subheader(f"{saudacao}, {user['display_name']}! 🎉")
-    st.markdown("### 📊 Área do Profissional")
+    # --- Seletor de funcionalidades ---
+    opcao_selecionada = st.selectbox(
+        "📌 Escolha uma ação:", 
+        ["Convidar Paciente", "Visualizar Convites Pendentes"],
+        index=0
+    )
 
-    st.markdown("---")
+    # --- Opção 1: Convidar Paciente ---
+    if opcao_selecionada == "Convidar Paciente":
+        st.markdown("### 📩 Convidar Paciente")
 
-    st.markdown("##### Convidar Paciente")
-    patient_email = st.text_input("Digite o email do paciente para enviar um convite de vinculação:", key="patient_email_input")
-    
-    if st.button("Enviar Convite", key="patientlink", use_container_width=True):
-        if patient_email:
-            success, msg = create_patient_invitation(user["id"], patient_email)
-            if success:
-                st.success("✅ Convite enviado com sucesso!")
+        patient_email = st.text_input("Digite o email do paciente para enviar um convite:", key="patient_email_input")
+        
+        if st.button("Enviar Convite", key="patientlink", use_container_width=True):
+            if patient_email:
+                success, msg = create_patient_invitation(user["id"], patient_email)
+                if success:
+                    st.success("✅ Convite enviado com sucesso!")
+                else:
+                    st.error(f"Erro: {msg}")
             else:
-                st.error(f"Erro: {msg}")
-        else:
-            st.warning("Por favor, insira o email do paciente.")
+                st.warning("⚠️ Por favor, insira o email do paciente.")
 
-    # Verificação para evitar erro de `KeyError`
-    if user and "id" in user:
-        render_pending_invitations(user["id"])
-    else:
-        st.warning("⚠️ Usuário inválido. Não foi possível carregar os convites.")
-
-    st.markdown("---")
-    st.info("🔍 Novos recursos serão adicionados em breve!")
+    # --- Opção 2: Visualizar Convites Pendentes ---
+    elif opcao_selecionada == "Visualizar Convites Pendentes":
+        st.markdown("### 📜 Convites Pendentes")
+        render_pending_invitations(user["id"])  # Renderiza os convites pendentes

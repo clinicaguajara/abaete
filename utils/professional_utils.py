@@ -63,10 +63,10 @@ def render_professional_enable_section(user):
         st.rerun()
         return
 
-    # Campo de digitação sempre visível para a senha do profissional.
+    # Campo de digitação da senha do profissional sempre visível.
     prof_key = st.text_input("Digite a senha do profissional:", key="prof_key_input")
 
-    # Botão para habilitar a área do profissional.
+    # Botão para habilitar a área do profissional, abaixo do campo de senha.
     if st.button("🔐 Habilitar área do profissional", key="professional"):
         if prof_key:
             if prof_key == "AUTOMATIZEJA":
