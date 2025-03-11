@@ -70,6 +70,54 @@ def render_dashboard():
     render_patient_invitations(user)
 
     st.markdown("---")
+
+    st.subheader("🎯 Minhas Metas")
+
+    link_id = st.session_state.get("linked_professional_id")  # Pegamos o vínculo com o profissional
+
+    if not link_id:
+        st.error("Nenhum profissional vinculado encontrado.")
+        return
+
+    # 🔹 Formulário para adicionar metas
+    with st.form("add_goal_form"):
+        goal = st.text_area("📌 Descreva sua meta")
+        timeframe = st.selectbox("⏳ Prazo", ["curto", "medio", "longo"], format_func=lambda x: x.capitalize())
+
+        submitted = st.form_submit_button("Adicionar Meta ✅")
+        if submitted:
+            success, message = add_goal(link_id, goal, timeframe)
+            if success:
+                st.success(message)
+                st.rerun()  # Atualiza a interface
+            else:
+                st.error(message)
+
+    st.markdown("---")
+
+    # 🔹 Exibir metas cadastradas
+    goals, error = get_goals(link_id)
+
+    if error:
+        st.error(error)
+    elif not goals:
+        st.info("Ainda não há metas cadastradas.")
+    else:
+        st.markdown("### 📌 Minhas Metas")
+
+        # 🔹 Organizar as metas por prazo
+        grouped_goals = {"curto": [], "medio": [], "longo": []}
+        for goal in goals:
+            grouped_goals[goal["timeframe"]].append(goal["goal"])
+
+        for timeframe, metas in grouped_goals.items():
+            if metas:
+                with st.expander(f"⏳ Metas de {timeframe.capitalize()} prazo ({len(metas)})"):
+                    for meta in metas:
+                        st.markdown(f"- {meta}")
+
+    st.markdown("---")
+
     st.info("🔍 Novos recursos serão adicionados em breve!")
 
 
