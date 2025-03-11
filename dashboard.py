@@ -38,6 +38,34 @@ def render_sidebar(user):
 
 
 # 🖥️ Função para renderizar a dashboard.
+def render_dashboard():
+    
+    user = get_user()
+
+    if not user or "id" not in user:
+        st.warning("⚠️ Você precisa estar logado para acessar esta página.")
+        return
+
+    profile = get_user_info(user["id"], full_profile=True)
+    saudacao_base = "Bem-vindo"
+    saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
+
+    render_sidebar(user)
+
+    st.subheader(f"{saudacao}, {user['display_name']}! 🎉")
+    
+    st.markdown("---")
+
+    render_patient_invitations(user)
+
+    st.subheader("🎯 Minhas Metas")
+
+    st.markdown("---")
+
+    st.info("🔍 Novos recursos serão adicionados em breve!")
+
+
+# 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
 def render_professional_dashboard(user):
     """Renderiza a dashboard para profissionais habilitados."""
     
