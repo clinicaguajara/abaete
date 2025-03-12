@@ -440,9 +440,9 @@ def render_patient_goals(user_id):
     # 2. Agrupar as metas por prazo
     grouped_goals = group_goals_by_timeframe(goals)
     prazo_labels = {
-        "curto": "Metas de Curto Prazo (até 1 mês)",
-        "medio": "Metas de Médio Prazo (1 a 6 meses)",
-        "longo": "Metas de Longo Prazo (acima de 6 meses)"
+        "curto": "Metas de Curto Prazo",
+        "medio": "Metas de Médio Prazo",
+        "longo": "Metas de Longo Prazo"
     }
     
     # 3. Exibir cada grupo de metas com um subtítulo estilizado
