@@ -418,7 +418,7 @@ def render_patient_goals(user_id):
     """
     st.markdown(
         """
-        <h2 style='color: #7159c1; font-size: 38px; font-weight: bold;'>
+        <h2 style='color: #FFA500; font-size: 38px; font-weight: bold;'>
         🎯 Minhas Metas
         </h2>
         """,
