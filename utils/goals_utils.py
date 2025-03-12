@@ -1,4 +1,5 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from auth import supabase_client
 from utils.user_utils import get_user_info
