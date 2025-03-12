@@ -208,7 +208,7 @@ def render_patient_goals(user_id):
         1. Obtém as metas do paciente a partir do banco de dados.
         2. Agrupa as metas por prazo (curto, médio e longo).
         3. Para cada meta de curto prazo, exibe um checkbox dentro do expander para marcar se a meta foi cumprida no dia.
-           Se a meta for marcada, atualiza o banco de dados e bloqueia a interação, exibindo uma mensagem de sucesso.
+           Se o paciente marcar a meta, a ação é registrada, e a região é desabilitada para evitar alterações.
         4. Para metas de médio e longo prazo, exibe uma mensagem informativa dentro do expander.
     
     Args:
@@ -223,7 +223,6 @@ def render_patient_goals(user_id):
         date_utils.py → format_date()
         Supabase → Tabela 'goal_progress'
     """
-
     st.header("🎯 Minhas Metas")
 
     # 🔍 Buscar as metas do paciente
@@ -259,7 +258,6 @@ def render_patient_goals(user_id):
                 with st.expander(f"📝 {goal['goal']}"):
                     st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
                     
-                    # Se for meta de curto prazo, exibe o checkbox para registrar o progresso
                     if prazo == "curto":
                         today = date.today().isoformat()
                         progress_response = supabase_client.from_("goal_progress") \
@@ -270,23 +268,24 @@ def render_patient_goals(user_id):
                         completed_today = False
                         if progress_response.data:
                             completed_today = progress_response.data[0]["completed"]
-
-                        # Se a meta já foi concluída hoje, exibe um checkbox desabilitado
+                        
+                        # Utiliza uma chave de sessão para evitar que o paciente desmarque
+                        session_key = f"goal_{goal['id']}_completed"
+                        if session_key in st.session_state:
+                            completed_today = st.session_state[session_key]
+                        
                         if completed_today:
                             st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_final")
                         else:
-                            # Caso contrário, permite marcar a meta
                             checked = st.checkbox("Marcar como cumprida hoje", value=False, key=f"goal_{goal['id']}")
                             if checked:
                                 success, msg = update_goal_progress(goal["id"], goal["link_id"], True)
                                 if success:
                                     st.success(msg)
-                                    # Força a re-renderização para exibir o checkbox desabilitado
-                                    st.experimental_rerun()
+                                    st.session_state[session_key] = True
                                 else:
                                     st.error(msg)
                     else:
-                        # Para metas de médio e longo prazo, exibe uma mensagem informativa
                         st.info("Esta meta não pode ser marcada como cumprida a curto prazo.")
 
 
