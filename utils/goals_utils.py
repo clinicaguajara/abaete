@@ -1,5 +1,6 @@
 import streamlit as st
-import matplotlib.pyplot as plt
+import plotly.express as px
+import pandas as pd
 from datetime import date, datetime, timedelta
 from auth import supabase_client
 from utils.user_utils import get_user_info
@@ -445,20 +446,20 @@ def render_patient_goals(user_id):
 # 🖥️ Função para renderizar o gráfico de metas de curto prazo.
 def render_goal_progress_chart(goal):
     """
-    Renderiza um gráfico de linha de 30 dias que mostra o somatório cumulativo de True's (metas cumpridas)
-    ao longo do período, começando na data em que a meta foi criada.
+    Renderiza um gráfico de linha interativo de 30 dias, mostrando o somatório cumulativo de True's (metas cumpridas)
+    ao longo do período, começando na data em que a meta foi criada, utilizando a biblioteca Plotly para
+    tornar a visualização mais dinâmica e com zoom.
 
     Fluxo:
         1. Verifica se o campo 'created_at' existe no dicionário da meta. Se não, exibe um aviso e retorna.
         2. Converte 'created_at' em um objeto date (usando apenas YYYY-MM-DD).
         3. Define o intervalo de 30 dias (data de início até data_início + 29 dias).
-        4. Cria um dicionário (progress_dict) que mapeia cada dia do intervalo para 0 (a princípio).
+        4. Cria um dicionário (progress_dict) que mapeia cada dia do intervalo para 0 (inicialmente).
         5. Consulta a tabela "goal_progress" para obter todos os registros de progresso no intervalo.
         6. Para cada registro com completed=True, soma 1 no dia correspondente do progress_dict.
-        7. Converte progress_dict em listas (dates e counts) para plotar.
-        8. Cria uma lista (cumulative_counts) que é a soma cumulativa dos valores de counts até cada dia.
-        9. Plota um gráfico de linha (line chart) mostrando o valor cumulativo ao longo dos 30 dias.
-        10. Renderiza o gráfico na interface do Streamlit usando st.pyplot().
+        7. Constrói um DataFrame pandas com as datas (convertidas para datetime) e a soma cumulativa.
+        8. Cria um gráfico de linha interativo com Plotly, adicionando range selector e range slider para zoom.
+        9. Renderiza o gráfico na interface do Streamlit usando st.plotly_chart().
 
     Args:
         goal (dict): Dicionário com os dados da meta, devendo incluir:
@@ -470,8 +471,8 @@ def render_goal_progress_chart(goal):
 
     Calls:
         - supabase_client.from_("goal_progress") para buscar registros de progresso do banco de dados.
-        - matplotlib.pyplot para criar e exibir o gráfico de linha.
-        - st.pyplot(fig) para renderizar o gráfico na tela do Streamlit.
+        - plotly.express (px) para criar e exibir o gráfico de linha.
+        - st.plotly_chart(fig) para renderizar o gráfico na tela do Streamlit.
     """
     # 1. Verifica se 'created_at' existe
     if not goal.get("created_at"):
@@ -510,25 +511,50 @@ def render_goal_progress_chart(goal):
             if record_date in progress_dict and record["completed"]:
                 progress_dict[record_date] += 1
 
-    # 7. Extrai as datas e contagens (de 0 ou 1 por dia)
-    dates = sorted(progress_dict.keys())  # organiza as datas em ordem
-    counts = [progress_dict[d] for d in dates]
+    # 7. Ordena as datas e calcula a soma cumulativa
+    sorted_dates = sorted(progress_dict.keys())
+    daily_counts = [progress_dict[d] for d in sorted_dates]
 
-    # 8. Calcula a soma cumulativa ao longo dos 30 dias
     cumulative_counts = []
     running_sum = 0
-    for c in counts:
+    for c in daily_counts:
         running_sum += c
         cumulative_counts.append(running_sum)
 
-    # 9. Cria o gráfico de linha (line chart)
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.plot(dates, cumulative_counts, marker='o', linestyle='-')
-    ax.set_xlabel("Data")
-    ax.set_ylabel("Soma Cumulativa de Conclusões (True)")
-    ax.set_title("Progresso Cumulativo da Meta nos Últimos 30 Dias")
-    ax.tick_params(axis='x', rotation=45)
-    ax.set_ylim(bottom=0)  # o limite inferior do eixo Y em 0
+    # Constrói um DataFrame com as datas convertidas para datetime e a soma cumulativa
+    df = pd.DataFrame({
+        "Data": [datetime.strptime(d, "%Y-%m-%d") for d in sorted_dates],
+        "Soma Cumulativa": cumulative_counts
+    })
 
-    # 10. Renderiza o gráfico na interface do Streamlit
-    st.pyplot(fig)
+    # 8. Cria um gráfico de linha interativo com Plotly
+    fig = px.line(
+        df,
+        x="Data",
+        y="Soma Cumulativa",
+        markers=True,
+        title="Progresso Cumulativo da Meta nos Últimos 30 Dias"
+    )
+
+    # Adiciona zoom com range selector e range slider
+    fig.update_layout(
+        xaxis_title="Data",
+        yaxis_title="Dias Cumpridos até a Data",
+        xaxis=dict(
+            showgrid=True,
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=7, label="1 sem", step="day", stepmode="backward"),
+                    dict(count=14, label="2 sem", step="day", stepmode="backward"),
+                    dict(step="all", label="Tudo")
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date"
+        ),
+        yaxis=dict(showgrid=True, rangemode="tozero")
+    )
+    fig.update_xaxes(tickformat="%d/%m", tickangle=45)
+
+    # 9. Renderiza o gráfico na interface do Streamlit
+    st.plotly_chart(fig, use_container_width=True)
