@@ -531,22 +531,23 @@ def render_goal_progress_chart(goal):
     fig = px.line(
         df,
         x="Data",
-        y="Soma Cumulativa",
+        y="Metas Cumpridas",
         markers=True,
-        title="Progresso Cumulativo da Meta nos Últimos 30 Dias"
+        title="Progresso cumulativo da meta nos próximos 30 dias"
     )
 
     # Adiciona zoom com range selector e range slider
     fig.update_layout(
-        xaxis_title="Data",
-        yaxis_title="Dias Cumpridos até a Data",
+        xaxis_title="Barra de Progresso",
+        yaxis_title="Número de Sucessos",
         xaxis=dict(
-            showgrid=True,
+            showgrid=False,
             rangeselector=dict(
                 buttons=list([
-                    dict(count=7, label="1 sem", step="day", stepmode="backward"),
-                    dict(count=14, label="2 sem", step="day", stepmode="backward"),
-                    dict(step="all", label="Tudo")
+                    dict(count=7, label="1 semana", step="day", stepmode="todate"),
+                    dict(count=14, label="2 semanas", step="day", stepmode="todate"),
+                    dict(count=14, label="3 semanas", step="day", stepmode="todate"),
+                    dict(step="all", label="4 semanas")
                 ])
             ),
             rangeslider=dict(visible=True),
@@ -555,6 +556,8 @@ def render_goal_progress_chart(goal):
         yaxis=dict(showgrid=True, rangemode="tozero")
     )
     fig.update_xaxes(tickformat="%d/%m", tickangle=45)
+    fig.update_layout(template="plotly_white")
+    fig.add_hline(y=30, line_dash="dot", annotation_text="Meta 30 dias", annotation_position="top right")
 
     # 9. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, use_container_width=True)
