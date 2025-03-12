@@ -536,27 +536,19 @@ def render_goal_progress_chart(goal):
         title="Progresso cumulativo da meta nos próximos 30 dias"
     )
 
-    # Adiciona zoom com range selector e range slider
+    # Adiciona zoom apenas com o range slider, sem os botões de seleção de intervalo
     fig.update_layout(
         xaxis_title="Barra de Progresso",
         yaxis_title="Número de Sucessos",
         xaxis=dict(
             showgrid=False,
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=7, label="1 semana", step="day", stepmode="todate"),
-                    dict(count=14, label="2 semanas", step="day", stepmode="todate"),
-                    dict(count=14, label="3 semanas", step="day", stepmode="todate"),
-                    dict(step="all", label="4 semanas")
-                ])
-            ),
             rangeslider=dict(visible=True),
             type="date"
         ),
         yaxis=dict(showgrid=True, rangemode="tozero")
     )
-    
     fig.update_xaxes(tickformat="%d/%m", tickangle=45)
+    fig.update_layout(template="plotly_dark")
 
     # 9. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, use_container_width=True)
