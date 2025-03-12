@@ -224,7 +224,7 @@ def render_patient_goals(user_id):
         Supabase → Tabela 'goal_progress'
     """
 
-    st.subheader("🎯 Minhas Metas")
+    st.header("🎯 Minhas Metas")
 
     # 🔍 Buscar as metas do paciente
     goals, error_msg = get_patient_goals(user_id)
@@ -244,9 +244,9 @@ def render_patient_goals(user_id):
             grouped_goals[goal["timeframe"]].append(goal)
 
     prazo_labels = {
-        "curto": "⏳ Metas de Curto Prazo (até 1 mês)",
-        "medio": "📆 Metas de Médio Prazo (1 a 6 meses)",
-        "longo": "🗓️ Metas de Longo Prazo (acima de 6 meses)"
+        "curto": "Metas de Curto Prazo (até 1 mês)",
+        "medio": "Metas de Médio Prazo (1 a 6 meses)",
+        "longo": "Metas de Longo Prazo (acima de 6 meses)"
     }
 
     # Percorre cada grupo de metas
@@ -272,7 +272,7 @@ def render_patient_goals(user_id):
 
                     # Exibe o checkbox para metas de curto prazo
                     checked = st.checkbox(
-                        f"✅ Cumprida hoje",
+                        f"Cumprida hoje",
                         value=completed_today,
                         key=f"goal_{goal['id']}"
                     )
@@ -284,11 +284,11 @@ def render_patient_goals(user_id):
                         else:
                             st.error(msg)
                 else:
-                    # Para metas que não são de curto prazo, exibe uma mensagem informativa
-                    st.info("Esta meta não pode ser marcada como cumprida, pois não é de curto prazo.")
-
-                with st.expander(f"📝 {goal['goal']}"):
-                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
+                
+                    with st.expander(f"📝 {goal['goal']}"):
+                        st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
+                        if prazo != "curto":
+                            st.info("Esta meta não pode ser cumprida a curto prazo.")
 
 
 
