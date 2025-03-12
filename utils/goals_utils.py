@@ -553,8 +553,7 @@ def render_goal_progress_chart(goal):
     
     # 9. Atualiza o layout para aplicar o template e aumentar a fonte do título
     fig.update_layout(
-        template="seaborn",
-        title_font=dict(size=24, family="Arial", color="black")
+        title_font=dict(size=24, family="Arial", color="white")
     )
 
     # 10. Renderiza o gráfico na interface do Streamlit
