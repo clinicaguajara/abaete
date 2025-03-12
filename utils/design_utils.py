@@ -24,12 +24,19 @@ def load_css():
 def inject_expander_style():
     st.markdown("""
     <style>
-    /* Aumenta o tamanho da fonte do título do expander utilizando seletor mais específico */
+    /* Estiliza o título do expander */
     div[data-testid="stExpander"] > div > div > summary {
         font-size: 30px !important;
         font-weight: bold;
         color: #7159c1 !important;
     }
+    /* Estiliza a borda do expander */
+    div[data-testid="stExpander"] {
+        border: 2px solid #7159c1 !important;
+        border-radius: 5px;
+        padding: 5px;
+    }
     </style>
     """, unsafe_allow_html=True)
+
 
