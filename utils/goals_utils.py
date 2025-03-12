@@ -260,7 +260,7 @@ def render_patient_goals(user_id):
                 with st.expander(f"📝 {goal['goal']}"):
                     st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
                     
-                    # Se for meta de curto prazo, exibe o checkbox dentro do expander
+                    # Apenas metas de curto prazo terão a opção de marcar o progresso
                     if prazo == "curto":
                         today = date.today().isoformat()
                         progress_response = supabase_client.from_("goal_progress") \
@@ -272,20 +272,24 @@ def render_patient_goals(user_id):
                         if progress_response.data:
                             completed_today = progress_response.data[0]["completed"]
                         
-                        checked = st.checkbox(
-                            "Marcar como cumprida hoje",
-                            value=completed_today,
-                            key=f"goal_{goal['id']}"
-                        )
-                        if checked != completed_today:
-                            success, msg = update_goal_progress(goal["id"], goal["link_id"], checked)
-                            if success:
-                                st.success(msg)
-                            else:
-                                st.error(msg)
+                        # Se a meta já estiver marcada como concluída, exibe um checkbox desabilitado
+                        if completed_today:
+                            st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_final")
+                        else:
+                            # Se ainda não estiver concluída, permite marcar a meta
+                            checked = st.checkbox(
+                                "Marcar como cumprida hoje",
+                                value=completed_today,
+                                key=f"goal_{goal['id']}"
+                            )
+                            if checked != completed_today:
+                                success, msg = update_goal_progress(goal["id"], goal["link_id"], checked)
+                                if success:
+                                    st.success(msg)
+                                else:
+                                    st.error(msg)
                     else:
                         st.info("Esta meta não pode ser marcada como cumprida a curto prazo.")
-
 
 
 
