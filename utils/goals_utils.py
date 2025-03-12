@@ -555,9 +555,8 @@ def render_goal_progress_chart(goal):
         ),
         yaxis=dict(showgrid=True, rangemode="tozero")
     )
+    
     fig.update_xaxes(tickformat="%d/%m", tickangle=45)
-    fig.update_layout(template="plotly_white")
-    fig.add_hline(y=30, line_dash="dot", annotation_text="Meta 30 dias", annotation_position="top right")
 
     # 9. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, use_container_width=True)
