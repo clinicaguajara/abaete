@@ -4,19 +4,43 @@ from patient_link import render_pending_invitations, render_patient_invitations,
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import  render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
-from utils.goals_utils import add_goal_to_patient, get_linked_patients, get_patient_goals  
+from utils.goals_utils import get_patient_goals, render_add_goal_section 
 
 
 # 🖥️ Função para renderizar a sidebar.
 def render_sidebar(user):
+    """
+    Renderiza a barra lateral do usuário autenticado.
+
+    Fluxo:
+        1. Obtém os dados do usuário autenticado.
+        2. Exibe informações básicas como nome e e-mail.
+        3. Adiciona um botão de logout.
+        4. Se for um profissional, verifica se a área profissional está habilitada.
+        5. Se a área profissional não estiver habilitada, exibe a opção para ativação.
+
+    Args:
+        user (dict): Dicionário contendo os dados do usuário autenticado.
+
+    Returns:
+        None (apenas renderiza a interface).
+
+    Calls:
+        professional_utils.py → is_professional_enabled()
+        professional_utils.py → render_professional_enable_section()
+    """
     
     with st.sidebar:
+        
         if not user or "id" not in user:
             st.warning("⚠️ Erro: Usuário não autenticado.")
             return
 
-        profile = get_user_info(user["id"], full_profile=True) or {}
-        saudacao_base = "Bem-vindo"
+        # Obtém os dados completos do usuário.
+        profile = get_user_info(user["id"], full_profile=True) or {} 
+        
+        # Ajusta a saudação conforme o gênero do usuário.
+        saudacao_base = "Bem-vindo" 
         saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
         st.markdown(f"**👤 {user['display_name']}**")
@@ -40,15 +64,35 @@ def render_sidebar(user):
 
 # 🖥️ Função para renderizar a dashboard do paciente.
 def render_dashboard():
-    
-    user = get_user()
+    """
+    Renderiza a dashboard do paciente, mostrando convites pendentes e metas atribuídas.
+
+    Fluxo:
+        1. Obtém os dados do usuário autenticado.
+        2. Renderiza a sidebar com informações do usuário.
+        3. Exibe convites pendentes para vinculação com profissionais.
+        4. Exibe metas atribuídas pelo profissional ao paciente.
+
+    Args:
+        None (Obtém o usuário autenticado internamente).
+
+    Returns:
+        None (apenas renderiza a interface).
+
+    Calls:
+        render_sidebar()
+        patient_link.py → render_patient_invitations()
+    """
+
+    user = get_user() # Obtém os dados do usuário autenticado.
 
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    profile = get_user_info(user["id"], full_profile=True)
-    saudacao_base = "Bem-vindo"
+    profile = get_user_info(user["id"], full_profile=True) #  Obtém as informações completas do usuário.
+    
+    saudacao_base = "Bem-vindo" # Ajusta a saudação conforme o gênero do usuário.
     saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
     render_sidebar(user)
@@ -77,29 +121,50 @@ def render_dashboard():
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
 def render_professional_dashboard(user):
-    """Renderiza a dashboard para profissionais habilitados."""
+    """
+    Renderiza a dashboard para profissionais habilitados.
+
+    Fluxo:
+        1. Obtém os dados do usuário autenticado.
+        2. Renderiza a sidebar com informações do usuário.
+        3. Exibe um seletor de ações para o profissional (Convidar Paciente, Ver Convites, Adicionar Meta).
+        4. Executa a ação escolhida pelo profissional.
+
+    Args:
+        user (dict): Dicionário contendo os dados do usuário autenticado.
+
+    Returns:
+        None (apenas renderiza a interface).
+
+    Calls:
+        render_sidebar()
+        patient_link.py → create_patient_invitation()
+        patient_link.py → render_pending_invitations()
+        goals_utils.py → get_linked_patients()
+        dashboard.py → render_add_goal_section()
+    """
     
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    # Renderiza a sidebar corretamente
+    # Renderiza a sidebar.
     render_sidebar(user)
 
-    # Obtém perfil completo do profissional
+    #  Obtém as informações completas do profissional.
     profile = get_user_info(user["id"], full_profile=True)
 
-    # Obtém título profissional correto
+    # Obtém o título do profissional.
     professional_title = get_professional_title(profile)
 
-    # Saudação personalizada ajustada pelo gênero
-    saudacao_base = "Bem-vindo"
+    # Ajusta a saudação conforme o gênero do profissional.
+    saudacao_base = "Bem-vindo" 
     saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
     st.subheader(f"{saudacao}, {professional_title}! 🎉")
 
     # --- Seletor de funcionalidades ---
-    st.markdown("### 🔽 Selecione uma ação:")
+    st.markdown("##### 🔽 Selecione uma ação:")
     opcao_selecionada = st.radio(
         "",  
         ["📩 Convidar Paciente", "📜 Visualizar Convites Pendentes", "🎯 Adicionar Meta para Paciente"],
@@ -108,7 +173,7 @@ def render_professional_dashboard(user):
 
     # --- Opção 1: Convidar Paciente ---
     if opcao_selecionada == "📩 Convidar Paciente":
-        st.markdown("### 📩 Convidar Paciente")
+        st.markdown("##### 📩 Convidar Paciente")
         patient_email = st.text_input("Digite o email do paciente:", key="patient_email_input")
         
         if st.button("Enviar Convite", key="patientlink", use_container_width=True):
@@ -123,57 +188,11 @@ def render_professional_dashboard(user):
 
     # --- Opção 2: Visualizar Convites Pendentes ---
     elif opcao_selecionada == "📜 Visualizar Convites Pendentes":
-        st.markdown("### 📜 Convites Pendentes")
+        st.markdown("##### 📜 Convites Pendentes")
         render_pending_invitations(user["id"]) 
 
     # --- Opção 3: Adicionar Meta para Paciente ---
     elif opcao_selecionada == "🎯 Adicionar Meta para Paciente":
-        st.markdown("### 🎯 Adicionar Meta para Paciente")
+        render_add_goal_section(user)  # ✅ Chamada para a nova função encapsulada
 
-        # 🔍 Buscar pacientes vinculados ao profissional
-        patients, error_msg = get_linked_patients(user["id"])
-
-        if error_msg:
-            st.error(error_msg)
-            return
-
-        if not patients:
-            st.warning("⚠️ Nenhum paciente vinculado encontrado.")
-            return
-
-        # Criar lista de nomes para exibição no selectbox
-        patient_options = {p["name"]: p["id"] for p in patients}
-        
-        # Seleção do paciente vinculado
-        selected_patient_name = st.selectbox("Selecione o paciente:", list(patient_options.keys()), key="select_patient")
-
-        # Obtém o `patient_id` correspondente ao nome selecionado
-        selected_patient_id = patient_options[selected_patient_name]
-
-        # Campo para a meta
-        goal_text = st.text_area("Descrição da meta:", key="goal_text")
-
-        # ✅ Lista de prazos válidos com base na restrição do banco de dados
-        # ✅ Lista de prazos válidos com nomes amigáveis para o profissional
-        valid_timeframes = {
-            "Curto prazo (até 1 mês)": "curto",
-            "Médio prazo (1 a 6 meses)": "medio",
-            "Longo prazo (acima de 6 meses)": "longo"
-        }
-
-        # Selectbox com os nomes amigáveis
-        selected_timeframe = st.selectbox("Selecione o prazo para a meta:", list(valid_timeframes.keys()), key="goal_timeframe")
-
-        # Converte para o formato aceito pelo banco de dados
-        timeframe = valid_timeframes[selected_timeframe]
-
-        if st.button("Salvar Meta", key="save_goal", use_container_width=True):
-            if selected_patient_id and goal_text and timeframe:
-                success, msg = add_goal_to_patient(user["id"], selected_patient_id, goal_text, timeframe)
-                if success:
-                    st.success("✅ Meta adicionada com sucesso!")
-                else:
-                    st.error(f"Erro: {msg}")
-            else:
-                st.warning("⚠️ Preencha todos os campos antes de salvar.")
 

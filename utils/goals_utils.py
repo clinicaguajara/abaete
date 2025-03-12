@@ -121,6 +121,78 @@ def get_patient_goals(patient_id):
 
 
 
+# 📌 Nova função para encapsular a lógica de adicionar metas
+def render_add_goal_section(user):
+    """
+    Renderiza a seção de adição de metas para um paciente vinculado.
+
+    Fluxo:
+        1. Obtém a lista de pacientes vinculados ao profissional autenticado.
+        2. Se não houver pacientes vinculados, exibe uma mensagem e retorna.
+        3. Caso existam pacientes, exibe um selectbox para escolher um paciente.
+        4. Permite ao profissional inserir uma meta e selecionar um prazo válido.
+        5. Envia os dados para o banco de dados ao clicar no botão "Salvar Meta".
+
+    Args:
+        user (dict): Dicionário contendo os dados do usuário autenticado.
+
+    Returns:
+        None (apenas renderiza a interface).
+
+    Calls:
+        goals_utils.py → get_linked_patients()
+        goals_utils.py → add_goal_to_patient()
+    """
+
+    st.markdown("### 🎯 Adicionar Meta para Paciente")
+
+    # 🔍 Buscar pacientes vinculados ao profissional
+    patients, error_msg = get_linked_patients(user["id"])
+
+    if error_msg:
+        st.error(error_msg)
+        return
+
+    if not patients:
+        st.warning("⚠️ Nenhum paciente vinculado encontrado.")
+        return
+
+    # Criar lista de nomes para exibição no selectbox
+    patient_options = {p["name"]: p["id"] for p in patients}
+    
+    # Seleção do paciente vinculado
+    selected_patient_name = st.selectbox("Selecione o paciente:", list(patient_options.keys()), key="select_patient")
+
+    # Obtém o `patient_id` correspondente ao nome selecionado
+    selected_patient_id = patient_options[selected_patient_name]
+
+    # Campo para a meta
+    goal_text = st.text_area("Descrição da meta:", key="goal_text")
+
+    # ✅ Lista de prazos válidos com base na restrição do banco de dados
+    valid_timeframes = {
+        "Curto prazo (até 1 mês)": "curto",
+        "Médio prazo (1 a 6 meses)": "medio",
+        "Longo prazo (acima de 6 meses)": "longo"
+    }
+
+    # Selectbox com os nomes amigáveis
+    selected_timeframe = st.selectbox("Selecione o prazo para a meta:", list(valid_timeframes.keys()), key="goal_timeframe")
+
+    # Converte para o formato aceito pelo banco de dados
+    timeframe = valid_timeframes[selected_timeframe]
+
+    # 🔘 Botão para salvar a meta
+    if st.button("Salvar Meta", key="save_goal", use_container_width=True):
+        if selected_patient_id and goal_text and timeframe:
+            success, msg = add_goal_to_patient(user["id"], selected_patient_id, goal_text, timeframe)
+            if success:
+                st.success("✅ Meta adicionada com sucesso!")
+            else:
+                st.error(f"Erro: {msg}")
+        else:
+            st.warning("⚠️ Preencha todos os campos antes de salvar.")
+
 
 
 
