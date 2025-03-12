@@ -329,42 +329,47 @@ def render_goal_checkbox(goal):
 def render_goal_expander(goal, prazo):
     """
     Renderiza o expander para uma meta, exibindo seus detalhes e, se for de curto prazo, o checkbox acima do expander.
+    Além disso, se for meta de curto prazo, exibe dentro do expander o gráfico de progresso dos últimos 30 dias.
 
     Fluxo:
-        1. Formata a data de criação da meta utilizando a função format_date().
-        2. Se o prazo da meta for "curto", chama render_goal_checkbox() para renderizar o checkbox fora do expander,
-           permitindo que o usuário marque a meta como cumprida sem precisar expandir a seção.
-        3. Cria um expander com o título da meta (utilizando st.expander()) para agrupar informações adicionais.
-        4. Dentro do expander, exibe a data formatada de criação da meta.
-        5. Se o prazo não for "curto", exibe uma mensagem informativa indicando que a meta não pode ser marcada como cumprida a curto prazo.
-
+        1. Formata a data de criação da meta com a função format_date().
+        2. Se o prazo for "curto":
+            a. Chama render_goal_checkbox() para exibir o checkbox fora do expander.
+        3. Cria um expander com o título da meta.
+        4. Dentro do expander:
+            a. Exibe a data formatada.
+            b. Se a meta for de curto prazo, chama render_goal_progress_chart() para exibir o gráfico.
+            c. Se não for curto, exibe uma mensagem informativa.
+    
     Args:
-        goal (dict): Dicionário contendo os dados da meta, incluindo os campos 'goal' (descrição da meta)
-                     e 'created_at' (data de criação).
-        prazo (str): Tipo da meta, podendo ser "curto", "medio" ou "longo", o que determina se o checkbox
-                     será exibido fora do expander ou se uma mensagem informativa será mostrada.
+        goal (dict): Dicionário contendo os dados da meta, incluindo 'goal' (descrição) e 'created_at' (data de atribuição).
+        prazo (str): Tipo da meta ("curto", "medio" ou "longo").
 
     Returns:
-        None: A função apenas renderiza componentes na interface, não retornando nenhum valor explícito.
-
+        None: A função apenas renderiza componentes na interface.
+    
     Calls:
-        - format_date(): Para formatar a data de criação da meta.
-        - render_goal_checkbox(): Para renderizar o checkbox de marcação de progresso (caso a meta seja de curto prazo).
-        - st.expander(): Para criar uma seção expansível contendo os detalhes adicionais da meta.
+        - format_date(): Para formatar a data da meta.
+        - render_goal_checkbox(): Para exibir o checkbox (caso a meta seja de curto prazo).
+        - render_goal_progress_chart(): Para renderizar o gráfico de progresso (para metas de curto prazo).
+        - st.expander(): Para criar a seção expansível com os detalhes da meta.
     """
     dia, mes, ano = format_date(goal['created_at'])
     data_formatada = f"{dia:02d}/{mes:02d}/{ano}" if dia else "Data inválida"
     
-    # Se a meta for de curto prazo, renderiza o checkbox fora do expander.
+    # Se a meta for de curto prazo, renderiza o checkbox fora do expander
     if prazo == "curto":
         render_goal_checkbox(goal)
     
-    # Cria o expander para exibir os detalhes da meta.
+    # Cria o expander para exibir os detalhes da meta
     with st.expander(f"📝 {goal['goal']}"):
         st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
-        # Se a meta não for de curto prazo, exibe uma mensagem informativa.
-        if prazo != "curto":
+        if prazo == "curto":
+            # Exibe o gráfico de progresso dos últimos 30 dias dentro do expander
+            render_goal_progress_chart(goal)
+        else:
             st.info("Esta meta não pode ser marcada como cumprida a curto prazo.")
+
 
 
 # 🖥️ Função para renderizar as metas de um paciente.
@@ -416,3 +421,73 @@ def render_patient_goals(user_id):
             st.markdown(f"### {prazo_labels[prazo]}")
             for goal in metas:
                 render_goal_expander(goal, prazo)
+
+
+# 🖥️ Função para renderizar o gráfico de metas de curto prazo.
+def render_goal_progress_chart(goal):
+    """
+    Renderiza um gráfico de barras de 30 dias que contabiliza a frequência de True's (metas cumpridas)
+    ao longo dos 30 dias, a partir da data em que a meta foi atribuída.
+
+    Fluxo:
+        1. Converte a data de criação da meta (goal['created_at']) para um objeto date.
+        2. Calcula o intervalo de 30 dias, definindo a data de término como a data de início + 29 dias.
+        3. Inicializa um dicionário (progress_dict) com cada dia do intervalo (no formato ISO) como chave e valor 0.
+        4. Consulta a tabela "goal_progress" para obter registros cujo goal_id seja o da meta e cuja data esteja dentro do intervalo.
+        5. Para cada registro retornado, se o campo "completed" for True, incrementa o contador correspondente à data.
+        6. Prepara os dados (lista de datas e contagens) para a plotagem.
+        7. Utiliza matplotlib para criar um gráfico de barras com as datas no eixo X e a contagem de True's no eixo Y.
+        8. Renderiza o gráfico na interface usando st.pyplot().
+
+    Args:
+        goal (dict): Dicionário contendo os dados da meta, devendo incluir:
+                     - "id": identificador único da meta.
+                     - "created_at": data de atribuição da meta (em formato ISO, por exemplo, "YYYY-MM-DDTHH:MM:SS...").
+
+    Returns:
+        None: A função apenas renderiza o gráfico na interface, não retornando nenhum valor explícito.
+
+    Calls:
+        - supabase_client.from_("goal_progress").select(...).gte(...).lte(...).execute() para buscar os registros.
+        - matplotlib.pyplot para criação e renderização do gráfico.
+    """
+    # Converter a data de criação para um objeto date (assumindo que o campo seja ISO e a data esteja nos 10 primeiros caracteres)
+    start_date = datetime.strptime(goal['created_at'][:10], "%Y-%m-%d").date()
+    end_date = start_date + timedelta(days=29)  # 30 dias ao total
+
+    # Inicializa um dicionário para armazenar a contagem de True's para cada dia
+    progress_dict = {}
+    current_date = start_date
+    while current_date <= end_date:
+        progress_dict[current_date.isoformat()] = 0
+        current_date += timedelta(days=1)
+
+    # Consulta registros de progresso para essa meta no intervalo de datas
+    response = supabase_client.from_("goal_progress") \
+        .select("date, completed") \
+        .eq("goal_id", goal["id"]) \
+        .gte("date", start_date.isoformat()) \
+        .lte("date", end_date.isoformat()) \
+        .execute()
+
+    if response and hasattr(response, "data") and response.data:
+        for record in response.data:
+            # Considera apenas os registros com 'completed' True
+            record_date = record["date"][:10]  # extrai a parte da data (YYYY-MM-DD)
+            if record_date in progress_dict and record["completed"]:
+                progress_dict[record_date] += 1
+
+    # Prepara os dados para o gráfico
+    dates = list(progress_dict.keys())
+    counts = list(progress_dict.values())
+
+    # Cria o gráfico de barras
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.bar(dates, counts)
+    ax.set_xlabel("Data")
+    ax.set_ylabel("Quantidade de Conclusões (True)")
+    ax.set_title("Progresso da Meta nos Últimos 30 Dias")
+    ax.tick_params(axis='x', rotation=45)
+
+    # Renderiza o gráfico na interface do Streamlit
+    st.pyplot(fig)
