@@ -198,14 +198,13 @@ def render_add_goal_section(user):
 
 def render_patient_goals(user_id):
     """
-    Renderiza as metas atribuídas ao paciente, agrupadas por prazo (curto, médio e longo).
+    Renderiza as metas atribuídas ao paciente, permitindo que ele registre o progresso diário.
 
     Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
-        2. Agrupa as metas por tipo de prazo (curto, médio, longo).
-        3. Formata a data de criação com `format_date()`.
-        4. Exibe cada grupo de metas separadamente, com títulos apropriados.
-        5. Se um grupo estiver vazio, ele não será exibido.
+        2. Obtém o status de progresso diário da meta (`goal_progress`).
+        3. Exibe um checkbox para que o paciente marque se concluiu a meta no dia.
+        4. Atualiza o banco de dados com a informação ao clicar.
 
     Args:
         user_id (str): ID do paciente autenticado.
@@ -215,7 +214,7 @@ def render_patient_goals(user_id):
 
     Calls:
         goals_utils.py → get_patient_goals()
-        date_utils.py → format_date()
+        goals_utils.py → update_goal_progress()
     """
 
     st.subheader("🎯 Minhas Metas")
@@ -231,15 +230,12 @@ def render_patient_goals(user_id):
         st.info("⚠️ Nenhuma meta foi designada para você ainda.")
         return
 
-    # 📌 Criar um dicionário para agrupar as metas por prazo
     grouped_goals = {"curto": [], "medio": [], "longo": []}
 
-    # 🔄 Percorre as metas e organiza por tipo de prazo
     for goal in goals:
         if goal["timeframe"] in grouped_goals:
             grouped_goals[goal["timeframe"]].append(goal)
 
-    # 🎯 Exibir metas agrupadas por prazo
     prazo_labels = {
         "curto": "⏳ Metas de Curto Prazo (até 1 mês)",
         "medio": "📆 Metas de Médio Prazo (1 a 6 meses)",
@@ -247,14 +243,93 @@ def render_patient_goals(user_id):
     }
 
     for prazo, metas in grouped_goals.items():
-        if metas:  # Exibe apenas se houver metas na categoria
+        if metas:
             st.markdown(f"### {prazo_labels[prazo]}")
 
             for goal in metas:
-                # 📅 Formata a data de criação da meta
                 dia, mes, ano = format_date(goal['created_at'])
                 data_formatada = f"{dia:02d}/{mes:02d}/{ano}" if dia else "Data inválida"
 
+                # 🔍 Verifica se a meta já foi concluída hoje
+                today = date.today().isoformat()
+                progress_response = supabase_client.from_("goal_progress") \
+                    .select("completed") \
+                    .eq("goal_id", goal["id"]) \
+                    .eq("date", today) \
+                    .execute()
+
+                completed_today = False
+                if progress_response.data:
+                    completed_today = progress_response.data[0]["completed"]
+
+                # 🔘 Checkbox para marcar a meta como cumprida
+                checked = st.checkbox(f"✅ Cumprida hoje", value=completed_today, key=f"goal_{goal['id']}")
+                
+                if checked != completed_today:  # Se o usuário mudou o estado
+                    success, msg = update_goal_progress(goal["id"], goal["link_id"], checked)
+                    if success:
+                        st.success(msg)
+                    else:
+                        st.error(msg)
+
                 with st.expander(f"📝 {goal['goal']}"):
-                    st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
-                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")  # Exibe a data forma
+                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
+
+
+
+def update_goal_progress(goal_id, link_id, completed):
+    """
+    Atualiza ou insere o progresso da meta para o paciente no dia atual.
+
+    Fluxo:
+        1. Verifica se já existe um registro para essa meta (`goal_id`) no dia atual.
+        2. Se existir, atualiza o campo `completed` (marcando ou desmarcando a meta).
+        3. Se não existir, insere um novo registro no banco de dados.
+        4. Garante que apenas um registro seja feito por dia por meta.
+
+    Args:
+        goal_id (str): ID da meta.
+        link_id (str): ID do vínculo paciente-profissional.
+        completed (bool): Status da meta (True para cumprida, False para não cumprida).
+
+    Returns:
+        bool, str: Sucesso da operação e mensagem de erro/sucesso.
+
+    Calls:
+        Supabase → `goal_progress`
+    """
+
+    today = date.today().isoformat()  # Obtém a data atual no formato YYYY-MM-DD
+
+    try:
+        # 🔍 Verifica se já existe um registro para essa meta no dia atual
+        response = supabase_client.from_("goal_progress") \
+            .select("id") \
+            .eq("goal_id", goal_id) \
+            .eq("date", today) \
+            .execute()
+
+        if hasattr(response, "error") and response.error:
+            return False, f"Erro ao verificar progresso: {response.error.message}"
+
+        if response.data:  # Se já existir um registro, faz um update
+            progress_id = response.data[0]["id"]
+            update_response = supabase_client.from_("goal_progress") \
+                .update({"completed": completed}) \
+                .eq("id", progress_id) \
+                .execute()
+
+            if hasattr(update_response, "error") and update_response.error:
+                return False, f"Erro ao atualizar progresso: {update_response.error.message}"
+        else:  # Se não existir, cria um novo registro
+            insert_response = supabase_client.from_("goal_progress") \
+                .insert({"goal_id": goal_id, "link_id": link_id, "date": today, "completed": completed}) \
+                .execute()
+
+            if hasattr(insert_response, "error") and insert_response.error:
+                return False, f"Erro ao registrar progresso: {insert_response.error.message}"
+
+        return True, "Progresso atualizado com sucesso!"
+
+    except Exception as e:
+        return False, f"Erro inesperado: {str(e)}"
