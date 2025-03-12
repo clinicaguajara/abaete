@@ -399,6 +399,69 @@ def render_patient_goals(user_id):
     (apenas para metas de curto prazo).
 
     Fluxo:
+        1. Exibe um título grande e chamativo "Minhas Metas" com HTML customizado.
+        2. Busca as metas do paciente a partir do banco de dados.
+        3. Agrupa as metas por prazo (curto, médio e longo) utilizando group_goals_by_timeframe().
+        4. Para cada grupo, exibe um cabeçalho (subtítulo) estilizado em laranja e, para cada meta,
+           chama render_goal_expander() para exibir seus detalhes.
+    
+    Args:
+        user_id (str): ID do paciente autenticado.
+    
+    Returns:
+        None: A função apenas renderiza a interface.
+    
+    Calls:
+        - get_patient_goals() para buscar as metas.
+        - group_goals_by_timeframe() para agrupar as metas.
+        - render_goal_expander() para exibir os detalhes de cada meta.
+    """
+    # Exibe o título "Minhas Metas" com estilo chamativo
+    st.markdown(
+        """
+        <h2 style='color: #FFA500; font-size: 38px; font-weight: bold;'>
+        🎯 Minhas Metas
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 1. Buscar as metas do paciente
+    goals, error_msg = get_patient_goals(user_id)
+    if error_msg:
+        st.error(error_msg)
+        return
+    if not goals:
+        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
+        return
+
+    # 2. Agrupar as metas por prazo
+    grouped_goals = group_goals_by_timeframe(goals)
+    prazo_labels = {
+        "curto": "Metas de Curto Prazo (até 1 mês)",
+        "medio": "Metas de Médio Prazo (1 a 6 meses)",
+        "longo": "Metas de Longo Prazo (acima de 6 meses)"
+    }
+    
+    # 3. Exibir cada grupo de metas com um subtítulo estilizado
+    for prazo, metas in grouped_goals.items():
+        if metas:
+            st.markdown(
+                f"""
+                <h4 style='color: #FFA500; font-size: 24px; font-weight: bold; margin-top: 20px;'>
+                {prazo_labels[prazo]}
+                </h4>
+                """,
+                unsafe_allow_html=True
+            )
+            for goal in metas:
+                render_goal_expander(goal, prazo)
+
+    """
+    Renderiza as metas atribuídas ao paciente, permitindo que ele registre o progresso diário 
+    (apenas para metas de curto prazo).
+
+    Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
         2. Agrupa as metas por prazo (curto, médio e longo) utilizando group_goals_by_timeframe().
         3. Para cada grupo, exibe um cabeçalho e, para cada meta, chama render_goal_expander() para exibir seus detalhes.
@@ -445,7 +508,7 @@ def render_patient_goals(user_id):
     # 3. Exibir cada grupo de metas
     for prazo, metas in grouped_goals.items():
         if metas:
-            st.markdown(f"### {prazo_labels[prazo]}")
+            st.markdown(f"#### {prazo_labels[prazo]}")
             for goal in metas:
                 render_goal_expander(goal, prazo)
 
