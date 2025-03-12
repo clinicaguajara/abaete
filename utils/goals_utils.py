@@ -438,7 +438,14 @@ def render_patient_goals(user_id):
     # 3. Exibir cada grupo de metas
     for prazo, metas in grouped_goals.items():
         if metas:
-            st.markdown(f"### {prazo_labels[prazo]}")
+            st.markdown(
+                f"""
+                <h2 style='color: #FFA500; font-size: 28px; font-weight: bold; margin-top: 20px;'>
+                {prazo_labels[prazo]}
+                </h2>
+                """,
+                unsafe_allow_html=True
+            )
             for goal in metas:
                 render_goal_expander(goal, prazo)
 
@@ -553,7 +560,7 @@ def render_goal_progress_chart(goal):
     
     # 9. Atualiza o layout para aplicar o template e aumentar a fonte do título
     fig.update_layout(
-        title_font=dict(size=24, family="Arial", color="white")
+        title_font=dict(size=20, color="white")
     )
 
     # 10. Renderiza o gráfico na interface do Streamlit
