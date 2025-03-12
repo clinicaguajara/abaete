@@ -39,7 +39,6 @@ def main():
     
     initialize_session_state() # Inicializa a sessão.
     load_css() # Cria o visual.
-    inject_expander_style() # Que também é fundamental.
     user = get_user()  # E verifica quem está navegando.
 
     # Se temos um ID logado na sessão...

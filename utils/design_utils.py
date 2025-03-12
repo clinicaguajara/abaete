@@ -21,22 +21,5 @@ def load_css():
         st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True) # Aplica o CSS na página.
 
 
-def inject_expander_style():
-    st.markdown("""
-    <style>
-    /* Estiliza o título do expander */
-    div[data-testid="stExpander"] > div > div > summary {
-        font-size: 30px !important;
-        font-weight: bold;
-        color: #7159c1 !important;
-    }
-    /* Estiliza a borda do expander */
-    div[data-testid="stExpander"] {
-        border: 2px solid #7159c1 !important;
-        border-radius: 5px;
-        padding: 5px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 
