@@ -195,4 +195,39 @@ def render_add_goal_section(user):
 
 
 
+def render_patient_goals(user_id):
+    """
+    Renderiza as metas atribuídas ao paciente.
+
+    Fluxo:
+        1. Obtém as metas do paciente a partir do banco de dados.
+        2. Se não houver metas, exibe uma mensagem informando.
+        3. Se houver metas, exibe cada uma dentro de um `st.expander()`.
+        4. Mostra detalhes como prazo e data de criação.
+
+    Args:
+        user_id (str): ID do paciente autenticado.
+
+    Returns:
+        None (apenas renderiza a interface).
+
+    Calls:
+        goals_utils.py → get_patient_goals()
+    """
+
+    st.subheader("🎯 Minhas Metas")
+
+    # 🔍 Buscar as metas do paciente
+    goals, error_msg = get_patient_goals(user_id)
+
+    if error_msg:
+        st.error(error_msg)
+    elif not goals:
+        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
+    else:
+        for goal in goals:
+            with st.expander(f"📝 {goal['goal']}"):
+                st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
+                st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe apenas a data (YYYY-MM-DD)
+
 

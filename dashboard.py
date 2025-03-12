@@ -4,7 +4,7 @@ from patient_link import render_pending_invitations, render_patient_invitations,
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import  render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
-from utils.goals_utils import get_patient_goals, render_add_goal_section 
+from utils.goals_utils import render_patient_goals, render_add_goal_section 
 
 
 # 🖥️ Função para renderizar a sidebar.
@@ -71,7 +71,7 @@ def render_dashboard():
         1. Obtém os dados do usuário autenticado.
         2. Renderiza a sidebar com informações do usuário.
         3. Exibe convites pendentes para vinculação com profissionais.
-        4. Exibe metas atribuídas pelo profissional ao paciente.
+        4. Exibe as metas do paciente chamando `render_patient_goals()`.
 
     Args:
         None (Obtém o usuário autenticado internamente).
@@ -82,41 +82,35 @@ def render_dashboard():
     Calls:
         render_sidebar()
         patient_link.py → render_patient_invitations()
+        dashboard.py → render_patient_goals()
     """
 
-    user = get_user() # Obtém os dados do usuário autenticado.
+    user = get_user()  # 🔐 Obtém os dados do usuário autenticado.
 
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    profile = get_user_info(user["id"], full_profile=True) #  Obtém as informações completas do usuário.
+    # 🔍 Obtém as informações completas do usuário.
+    profile = get_user_info(user["id"], full_profile=True)
     
-    saudacao_base = "Bem-vindo" # Ajusta a saudação conforme o gênero do usuário.
+    # 🔄 Ajusta a saudação conforme o gênero do usuário.
+    saudacao_base = "Bem-vindo"
     saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
+    # 📌 Renderiza a sidebar.
     render_sidebar(user)
 
+    # 📢 Exibe uma saudação personalizada na tela inicial.
     st.subheader(f"{saudacao}, {user['display_name']}! 🎉")
     
     st.markdown("---")
 
+    # 📩 Renderiza os convites pendentes do paciente.
     render_patient_invitations(user)
 
-    # 📋 Buscar as metas do paciente
-    st.subheader("🎯 Minhas Metas")
-
-    goals, error_msg = get_patient_goals(user["id"])
-
-    if error_msg:
-        st.error(error_msg)
-    elif not goals:
-        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
-    else:
-        for goal in goals:
-            with st.expander(f"📝 {goal['goal']}"):
-                st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
-                st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe só a data
+    # 📋 Renderiza as metas do paciente (chama a nova função)
+    render_patient_goals(user["id"])
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
