@@ -207,17 +207,17 @@ def render_patient_goals(user_id):
     Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
         2. Agrupa as metas por prazo (curto, médio e longo).
-        3. Para cada meta de curto prazo, exibe um checkbox dentro do expander 
-           para marcar se a meta foi cumprida no dia.
-        4. Atualiza o banco de dados com a informação ao clicar.
-        5. Para metas de médio e longo prazo, exibe uma mensagem informativa dentro do expander.
-
+        3. Para cada meta de curto prazo, exibe um checkbox acima do expander para marcar se a meta foi cumprida no dia.
+           Se a meta for marcada, atualiza o banco de dados e impede que o usuário desmarque (o checkbox fica desabilitado).
+        4. Exibe, dentro do expander, os detalhes da meta (data de criação, por exemplo) e, para metas que não sejam de curto prazo,
+           exibe uma mensagem informativa.
+    
     Args:
         user_id (str): ID do paciente autenticado.
-
+    
     Returns:
         None (apenas renderiza a interface).
-
+    
     Calls:
         goals_utils.py → get_patient_goals()
         goals_utils.py → update_goal_progress()
@@ -227,7 +227,7 @@ def render_patient_goals(user_id):
 
     st.header("🎯 Minhas Metas")
 
-    # 🔍 Buscar as metas do paciente
+    # 1) Buscar as metas do paciente
     goals, error_msg = get_patient_goals(user_id)
     if error_msg:
         st.error(error_msg)
@@ -236,7 +236,7 @@ def render_patient_goals(user_id):
         st.info("⚠️ Nenhuma meta foi designada para você ainda.")
         return
 
-    # Agrupar as metas por prazo
+    # 2) Agrupar as metas por prazo
     grouped_goals = {"curto": [], "medio": [], "longo": []}
     for goal in goals:
         if goal["timeframe"] in grouped_goals:
@@ -248,48 +248,53 @@ def render_patient_goals(user_id):
         "longo": "Metas de Longo Prazo (acima de 6 meses)"
     }
 
-    # Percorre cada grupo de metas
+    # 3) Percorre cada grupo de metas
     for prazo, metas in grouped_goals.items():
         if metas:
             st.markdown(f"### {prazo_labels[prazo]}")
             for goal in metas:
+                # Formata a data de criação da meta
                 dia, mes, ano = format_date(goal['created_at'])
                 data_formatada = f"{dia:02d}/{mes:02d}/{ano}" if dia else "Data inválida"
 
-                # Coloca tudo dentro de um expander para exibir a meta e seus detalhes
-                with st.expander(f"📝 {goal['goal']}"):
-                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
-                    
-                    # Apenas metas de curto prazo terão a opção de marcar o progresso
-                    if prazo == "curto":
-                        today = date.today().isoformat()
-                        progress_response = supabase_client.from_("goal_progress") \
-                            .select("completed") \
-                            .eq("goal_id", goal["id"]) \
-                            .eq("date", today) \
-                            .execute()
-                        completed_today = False
-                        if progress_response.data:
-                            completed_today = progress_response.data[0]["completed"]
-                        
-                        # Verifica se o status já está salvo no session_state
-                        if st.session_state.get(f"goal_{goal['id']}_completed", completed_today):
-                            # Exibe o checkbox desabilitado
-                            st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_final")
-                        else:
-                            checked = st.checkbox(
-                                "Marcar como cumprida hoje",
-                                value=False,
-                                key=f"goal_{goal['id']}"
-                            )
-                            if checked:
-                                success, msg = update_goal_progress(goal["id"], goal["link_id"], True)
-                                if success:
-                                    st.session_state[f"goal_{goal['id']}_completed"] = True
-                                    st.success(msg)
-                                else:
-                                    st.error(msg)
+                if prazo == "curto":
+                    # Para metas de curto prazo, exibe o checkbox acima do expander
+                    today = date.today().isoformat()
+                    progress_response = supabase_client.from_("goal_progress") \
+                        .select("completed") \
+                        .eq("goal_id", goal["id"]) \
+                        .eq("date", today) \
+                        .execute()
+                    completed_today = False
+                    if progress_response.data:
+                        completed_today = progress_response.data[0]["completed"]
+
+                    # Utiliza session_state para manter o status do checkbox
+                    key_state = f"goal_{goal['id']}_completed"
+                    if key_state not in st.session_state:
+                        st.session_state[key_state] = completed_today
+
+                    if st.session_state[key_state]:
+                        # Se a meta já foi marcada, exibe um checkbox desabilitado
+                        st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_final")
                     else:
+                        # Se não foi marcada, exibe o checkbox interativo
+                        checked = st.checkbox("Marcar como cumprida hoje", value=False, key=f"goal_{goal['id']}")
+                        if checked:
+                            success, msg = update_goal_progress(goal["id"], goal["link_id"], True)
+                            if success:
+                                st.session_state[key_state] = True
+                                st.success(msg)
+                            else:
+                                st.error(msg)
+                    # Expande os detalhes da meta
+                    with st.expander(f"📝 {goal['goal']}"):
+                        st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
+                else:
+                    # Para metas que não são de curto prazo, não exibe checkbox fora;
+                    # apenas exibe o expander com detalhes e uma mensagem informativa.
+                    with st.expander(f"📝 {goal['goal']}"):
+                        st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
                         st.info("Esta meta não pode ser marcada como cumprida a curto prazo.")
 
 
