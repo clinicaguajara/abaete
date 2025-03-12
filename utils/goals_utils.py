@@ -207,9 +207,10 @@ def render_patient_goals(user_id):
     Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
         2. Agrupa as metas por prazo (curto, médio e longo).
-        3. Para cada meta, se for de curto prazo, exibe um checkbox para marcar se a meta foi cumprida no dia.
+        3. Para cada meta, se for de curto prazo, exibe um checkbox dentro do expander 
+           para marcar se a meta foi cumprida no dia.
         4. Atualiza o banco de dados com a informação ao clicar.
-        5. Para metas de médio e longo prazo, apenas exibe os detalhes da meta.
+        5. Para metas de médio e longo prazo, exibe uma mensagem informativa dentro do expander.
 
     Args:
         user_id (str): ID do paciente autenticado.
@@ -228,11 +229,9 @@ def render_patient_goals(user_id):
 
     # 🔍 Buscar as metas do paciente
     goals, error_msg = get_patient_goals(user_id)
-
     if error_msg:
         st.error(error_msg)
         return
-
     if not goals:
         st.info("⚠️ Nenhuma meta foi designada para você ainda.")
         return
@@ -257,38 +256,36 @@ def render_patient_goals(user_id):
                 dia, mes, ano = format_date(goal['created_at'])
                 data_formatada = f"{dia:02d}/{mes:02d}/{ano}" if dia else "Data inválida"
 
-                # Apenas metas de curto prazo terão o checkbox para marcar o progresso
-                if prazo == "curto":
-                    today = date.today().isoformat()
-                    progress_response = supabase_client.from_("goal_progress") \
-                        .select("completed") \
-                        .eq("goal_id", goal["id"]) \
-                        .eq("date", today) \
-                        .execute()
+                # Coloca tudo dentro de um expander para exibir a meta e seus detalhes
+                with st.expander(f"📝 {goal['goal']}"):
+                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
+                    
+                    # Se for meta de curto prazo, exibe o checkbox dentro do expander
+                    if prazo == "curto":
+                        today = date.today().isoformat()
+                        progress_response = supabase_client.from_("goal_progress") \
+                            .select("completed") \
+                            .eq("goal_id", goal["id"]) \
+                            .eq("date", today) \
+                            .execute()
+                        completed_today = False
+                        if progress_response.data:
+                            completed_today = progress_response.data[0]["completed"]
+                        
+                        checked = st.checkbox(
+                            "Marcar como cumprida hoje",
+                            value=completed_today,
+                            key=f"goal_{goal['id']}"
+                        )
+                        if checked != completed_today:
+                            success, msg = update_goal_progress(goal["id"], goal["link_id"], checked)
+                            if success:
+                                st.success(msg)
+                            else:
+                                st.error(msg)
+                    else:
+                        st.info("Esta meta não pode ser marcada como cumprida a curto prazo.")
 
-                    completed_today = False
-                    if progress_response.data:
-                        completed_today = progress_response.data[0]["completed"]
-
-                    # Exibe o checkbox para metas de curto prazo
-                    checked = st.checkbox(
-                        f"Cumprida hoje",
-                        value=completed_today,
-                        key=f"goal_{goal['id']}"
-                    )
-
-                    if checked != completed_today:
-                        success, msg = update_goal_progress(goal["id"], goal["link_id"], checked)
-                        if success:
-                            st.success(msg)
-                        else:
-                            st.error(msg)
-                else:
-                
-                    with st.expander(f"📝 {goal['goal']}"):
-                        st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
-                        if prazo != "curto":
-                            st.info("Esta meta não pode ser cumprida a curto prazo.")
 
 
 
