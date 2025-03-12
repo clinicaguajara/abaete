@@ -445,54 +445,57 @@ def render_patient_goals(user_id):
 # 🖥️ Função para renderizar o gráfico de metas de curto prazo.
 def render_goal_progress_chart(goal):
     """
-    Renderiza um gráfico de barras de 30 dias que contabiliza a frequência de True's (metas cumpridas)
-    ao longo dos 30 dias, a partir da data em que a meta foi atribuída.
+    Renderiza um gráfico de linha de 30 dias que mostra o somatório cumulativo de True's (metas cumpridas)
+    ao longo do período, começando na data em que a meta foi criada.
 
     Fluxo:
-        1. Verifica se 'created_at' está presente no dicionário da meta.
-        2. Converte a data de criação (campo 'created_at') em um objeto date.
-        3. Define um intervalo de 30 dias (data de início + 29 dias).
-        4. Inicializa um dicionário (progress_dict) com cada dia do intervalo com valor 0.
-        5. Consulta a tabela "goal_progress" para registros no intervalo e, para cada registro com 'completed' True,
-           incrementa a contagem correspondente à data.
-        6. Prepara os dados e plota um gráfico de barras com matplotlib.
-        7. Renderiza o gráfico na interface com st.pyplot().
+        1. Verifica se o campo 'created_at' existe no dicionário da meta. Se não, exibe um aviso e retorna.
+        2. Converte 'created_at' em um objeto date (usando apenas YYYY-MM-DD).
+        3. Define o intervalo de 30 dias (data de início até data_início + 29 dias).
+        4. Cria um dicionário (progress_dict) que mapeia cada dia do intervalo para 0 (a princípio).
+        5. Consulta a tabela "goal_progress" para obter todos os registros de progresso no intervalo.
+        6. Para cada registro com completed=True, soma 1 no dia correspondente do progress_dict.
+        7. Converte progress_dict em listas (dates e counts) para plotar.
+        8. Cria uma lista (cumulative_counts) que é a soma cumulativa dos valores de counts até cada dia.
+        9. Plota um gráfico de linha (line chart) mostrando o valor cumulativo ao longo dos 30 dias.
+        10. Renderiza o gráfico na interface do Streamlit usando st.pyplot().
 
     Args:
-        goal (dict): Dicionário contendo os dados da meta, devendo incluir:
-                     - "id": identificador único da meta.
-                     - "created_at": data de atribuição da meta (em formato ISO, ex.: "YYYY-MM-DDTHH:MM:SS...").
+        goal (dict): Dicionário com os dados da meta, devendo incluir:
+                     - "id": identificador único da meta
+                     - "created_at": data em que a meta foi criada (no formato ISO, ex.: "YYYY-MM-DDTHH:MM:SS")
 
     Returns:
-        None: A função apenas renderiza o gráfico na interface, sem retornar valor.
+        None: A função apenas renderiza o gráfico na interface, sem retornar valor explícito.
 
     Calls:
-        - supabase_client.from_("goal_progress").select(...).execute() para buscar os registros.
-        - matplotlib.pyplot para criação e renderização do gráfico.
+        - supabase_client.from_("goal_progress") para buscar registros de progresso do banco de dados.
+        - matplotlib.pyplot para criar e exibir o gráfico de linha.
+        - st.pyplot(fig) para renderizar o gráfico na tela do Streamlit.
     """
-    # Verifica se o campo 'created_at' existe e possui um valor válido
+    # 1. Verifica se 'created_at' existe
     if not goal.get("created_at"):
         st.warning("Data de criação da meta não disponível para exibir o gráfico.")
         return
 
     try:
-        # Converte a data de criação para um objeto date (usando apenas os 10 primeiros caracteres para obter YYYY-MM-DD)
+        # 2. Converte a data de criação (apenas os 10 primeiros caracteres: YYYY-MM-DD)
         start_date = datetime.strptime(goal['created_at'][:10], "%Y-%m-%d").date()
     except Exception as e:
         st.error(f"Erro ao processar a data de criação: {e}")
         return
 
-    # Define o intervalo de 30 dias a partir da data de criação
-    end_date = start_date + timedelta(days=29)  # Total de 30 dias
+    # 3. Define o intervalo de 30 dias
+    end_date = start_date + timedelta(days=29)
 
-    # Inicializa o dicionário para armazenar a contagem de True's para cada dia
+    # 4. Inicializa o dicionário com valor 0 para cada dia do intervalo
     progress_dict = {}
     current_date = start_date
     while current_date <= end_date:
         progress_dict[current_date.isoformat()] = 0
         current_date += timedelta(days=1)
 
-    # Consulta os registros de progresso da meta no intervalo definido
+    # 5. Consulta o banco para obter os registros de progresso dessa meta no intervalo
     response = supabase_client.from_("goal_progress") \
         .select("date, completed") \
         .eq("goal_id", goal["id"]) \
@@ -500,25 +503,32 @@ def render_goal_progress_chart(goal):
         .lte("date", end_date.isoformat()) \
         .execute()
 
+    # 6. Para cada registro com completed=True, soma 1 no dia correspondente
     if response and hasattr(response, "data") and response.data:
         for record in response.data:
-            # Extrai a data (YYYY-MM-DD) do registro
-            record_date = record["date"][:10]
-            # Incrementa a contagem se o registro tiver 'completed' True
+            record_date = record["date"][:10]  # YYYY-MM-DD
             if record_date in progress_dict and record["completed"]:
                 progress_dict[record_date] += 1
 
-    # Prepara os dados para o gráfico
-    dates = list(progress_dict.keys())
-    counts = list(progress_dict.values())
+    # 7. Extrai as datas e contagens (de 0 ou 1 por dia)
+    dates = sorted(progress_dict.keys())  # organiza as datas em ordem
+    counts = [progress_dict[d] for d in dates]
 
-    # Cria o gráfico de barras
+    # 8. Calcula a soma cumulativa ao longo dos 30 dias
+    cumulative_counts = []
+    running_sum = 0
+    for c in counts:
+        running_sum += c
+        cumulative_counts.append(running_sum)
+
+    # 9. Cria o gráfico de linha (line chart)
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.bar(dates, counts)
+    ax.plot(dates, cumulative_counts, marker='o', linestyle='-')
     ax.set_xlabel("Data")
-    ax.set_ylabel("Quantidade de Conclusões (True)")
-    ax.set_title("Progresso da Meta nos Últimos 30 Dias")
+    ax.set_ylabel("Soma Cumulativa de Conclusões (True)")
+    ax.set_title("Progresso Cumulativo da Meta nos Últimos 30 Dias")
     ax.tick_params(axis='x', rotation=45)
+    ax.set_ylim(bottom=0)  # o limite inferior do eixo Y em 0
 
-    # Renderiza o gráfico na interface do Streamlit
+    # 10. Renderiza o gráfico na interface do Streamlit
     st.pyplot(fig)
