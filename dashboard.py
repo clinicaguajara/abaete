@@ -102,7 +102,7 @@ def render_dashboard():
     render_sidebar(user)
 
     # 📢 Exibe uma saudação personalizada na tela inicial.
-    st.subheader(f"{saudacao}, {user['display_name']}! 🎉")
+    st.header(f"{saudacao}, {user['display_name']}! 🎉")
     
     st.markdown("---")
 

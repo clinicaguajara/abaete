@@ -416,7 +416,14 @@ def render_patient_goals(user_id):
             group_goals_by_timeframe()
             render_goal_expander()
     """
-    st.header("🎯 Minhas Metas")
+    st.markdown(
+        """
+        <h2 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
+        🎯 Minhas Metas
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
 
     # 1. Buscar as metas do paciente
     goals, error_msg = get_patient_goals(user_id)
