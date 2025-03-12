@@ -450,7 +450,7 @@ def render_patient_goals(user_id):
         if metas:
             st.markdown(
                 f"""
-                <h4 style='color: #7159c1; font-size: 24px; font-weight: bold; margin-top: 20px;'>
+                <h4 style='color: #836fff; font-size: 24px; font-weight: bold; margin-top: 20px;'>
                 {prazo_labels[prazo]}
                 </h4>
                 """,
