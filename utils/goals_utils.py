@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date
 from auth import supabase_client
 from utils.user_utils import get_user_info
 from utils.date_utils import format_date
