@@ -382,7 +382,7 @@ def render_goal_expander(goal, prazo):
         render_goal_checkbox(goal)
     
     # Cria o expander para exibir os detalhes da meta
-    with st.expander(f"📝 ***{goal['goal']}***"):
+    with st.expander(f"📝 **{goal['goal']}**"):
         st.markdown(f"🕒 **Adicionada em:** {data_formatada}")
         if prazo == "curto":
             # Exibe o gráfico de progresso dos últimos 30 dias dentro do expander
