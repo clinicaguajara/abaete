@@ -133,7 +133,7 @@
 
 /* Classe para o título laranja com sombra roxa */
 .orange-title {
-    color: #FFA500;             /* Laranja */
+    color: #7159c1;             /* Laranja */
     font-size: 28px;           
     font-weight: bold;
     text-shadow: 2px 2px 6px rgba(113, 89, 193, 0.8); /* Sombra roxa (rgba(113, 89, 193, 0.8)) */
