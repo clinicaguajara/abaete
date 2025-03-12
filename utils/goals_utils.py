@@ -438,15 +438,7 @@ def render_patient_goals(user_id):
     # 3. Exibir cada grupo de metas
     for prazo, metas in grouped_goals.items():
         if metas:
-            st.markdown(
-                """
-                <h1 class="orange-title">
-                O sistema inteligente que cuida de você!
-                </h1>
-                """,
-                unsafe_allow_html=True
-            )
-
+            st.markdown(f"### {prazo_labels[prazo]}")
             for goal in metas:
                 render_goal_expander(goal, prazo)
 
