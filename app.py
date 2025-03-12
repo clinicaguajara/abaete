@@ -3,7 +3,7 @@ from auth import get_user
 from main_layout import render_main_layout
 from dashboard import render_dashboard, render_professional_dashboard
 from user_profile import render_onboarding_questionnaire
-from utils.design_utils import load_css
+from utils.design_utils import load_css, inject_expander_style
 from utils.professional_utils import is_professional_enabled
 from utils.user_utils import get_user_info
 
@@ -39,7 +39,8 @@ def main():
     
     initialize_session_state() # Inicializa a sessão.
     load_css() # Cria o visual.
-    user = get_user()  # Verificar quem está navegando.
+    inject_expander_style() # Que também é fundamental.
+    user = get_user()  # E verifica quem está navegando.
 
     # Se temos um ID logado na sessão...
     if user and "id" in user:

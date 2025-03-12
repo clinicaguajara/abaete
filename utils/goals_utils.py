@@ -390,7 +390,7 @@ def render_goal_expander(goal, prazo):
             # Exibe o gráfico de progresso dos últimos 30 dias dentro do expander
             render_goal_progress_chart(goal)
         else:
-            st.info("Esta meta não pode ser concluída a curto prazo.")
+            st.info("Essa meta não pode ser concluída a curto prazo.")
 
 
 
@@ -576,3 +576,5 @@ def render_goal_progress_chart(goal):
 
     # 10. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, use_container_width=True)
+
+

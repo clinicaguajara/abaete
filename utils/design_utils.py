@@ -19,3 +19,15 @@ def load_css():
     # Se houver conteúdo...
     if css_content:
         st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True) # Aplica o CSS na página.
+
+
+def inject_expander_style():
+    st.markdown("""
+    <style>
+    /* Aumenta o tamanho da fonte do título do expander */
+    .st-expander > summary {
+        font-size: 24px !important;
+        /* Outras propriedades podem ser adicionadas aqui */
+    }
+    </style>
+    """, unsafe_allow_html=True)
