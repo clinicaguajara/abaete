@@ -430,39 +430,50 @@ def render_goal_progress_chart(goal):
     ao longo dos 30 dias, a partir da data em que a meta foi atribuída.
 
     Fluxo:
-        1. Converte a data de criação da meta (goal['created_at']) para um objeto date.
-        2. Calcula o intervalo de 30 dias, definindo a data de término como a data de início + 29 dias.
-        3. Inicializa um dicionário (progress_dict) com cada dia do intervalo (no formato ISO) como chave e valor 0.
-        4. Consulta a tabela "goal_progress" para obter registros cujo goal_id seja o da meta e cuja data esteja dentro do intervalo.
-        5. Para cada registro retornado, se o campo "completed" for True, incrementa o contador correspondente à data.
-        6. Prepara os dados (lista de datas e contagens) para a plotagem.
-        7. Utiliza matplotlib para criar um gráfico de barras com as datas no eixo X e a contagem de True's no eixo Y.
-        8. Renderiza o gráfico na interface usando st.pyplot().
+        1. Verifica se 'created_at' está presente no dicionário da meta.
+        2. Converte a data de criação (campo 'created_at') em um objeto date.
+        3. Define um intervalo de 30 dias (data de início + 29 dias).
+        4. Inicializa um dicionário (progress_dict) com cada dia do intervalo com valor 0.
+        5. Consulta a tabela "goal_progress" para registros no intervalo e, para cada registro com 'completed' True,
+           incrementa a contagem correspondente à data.
+        6. Prepara os dados e plota um gráfico de barras com matplotlib.
+        7. Renderiza o gráfico na interface com st.pyplot().
 
     Args:
         goal (dict): Dicionário contendo os dados da meta, devendo incluir:
                      - "id": identificador único da meta.
-                     - "created_at": data de atribuição da meta (em formato ISO, por exemplo, "YYYY-MM-DDTHH:MM:SS...").
+                     - "created_at": data de atribuição da meta (em formato ISO, ex.: "YYYY-MM-DDTHH:MM:SS...").
 
     Returns:
-        None: A função apenas renderiza o gráfico na interface, não retornando nenhum valor explícito.
+        None: A função apenas renderiza o gráfico na interface, sem retornar valor.
 
     Calls:
-        - supabase_client.from_("goal_progress").select(...).gte(...).lte(...).execute() para buscar os registros.
+        - supabase_client.from_("goal_progress").select(...).execute() para buscar os registros.
         - matplotlib.pyplot para criação e renderização do gráfico.
     """
-    # Converter a data de criação para um objeto date (assumindo que o campo seja ISO e a data esteja nos 10 primeiros caracteres)
-    start_date = datetime.strptime(goal['created_at'][:10], "%Y-%m-%d").date()
-    end_date = start_date + timedelta(days=29)  # 30 dias ao total
+    # Verifica se o campo 'created_at' existe e possui um valor válido
+    if not goal.get("created_at"):
+        st.warning("Data de criação da meta não disponível para exibir o gráfico.")
+        return
 
-    # Inicializa um dicionário para armazenar a contagem de True's para cada dia
+    try:
+        # Converte a data de criação para um objeto date (usando apenas os 10 primeiros caracteres para obter YYYY-MM-DD)
+        start_date = datetime.strptime(goal['created_at'][:10], "%Y-%m-%d").date()
+    except Exception as e:
+        st.error(f"Erro ao processar a data de criação: {e}")
+        return
+
+    # Define o intervalo de 30 dias a partir da data de criação
+    end_date = start_date + timedelta(days=29)  # Total de 30 dias
+
+    # Inicializa o dicionário para armazenar a contagem de True's para cada dia
     progress_dict = {}
     current_date = start_date
     while current_date <= end_date:
         progress_dict[current_date.isoformat()] = 0
         current_date += timedelta(days=1)
 
-    # Consulta registros de progresso para essa meta no intervalo de datas
+    # Consulta os registros de progresso da meta no intervalo definido
     response = supabase_client.from_("goal_progress") \
         .select("date, completed") \
         .eq("goal_id", goal["id"]) \
@@ -472,8 +483,9 @@ def render_goal_progress_chart(goal):
 
     if response and hasattr(response, "data") and response.data:
         for record in response.data:
-            # Considera apenas os registros com 'completed' True
-            record_date = record["date"][:10]  # extrai a parte da data (YYYY-MM-DD)
+            # Extrai a data (YYYY-MM-DD) do registro
+            record_date = record["date"][:10]
+            # Incrementa a contagem se o registro tiver 'completed' True
             if record_date in progress_dict and record["completed"]:
                 progress_dict[record_date] += 1
 
