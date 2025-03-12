@@ -4,7 +4,7 @@ from patient_link import render_pending_invitations, render_patient_invitations,
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import  render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
 from utils.user_utils import get_user_info
-from utils.goals_utils import add_goal_to_patient, get_linked_patients
+from utils.goals_utils import add_goal_to_patient, get_linked_patients, get_patient_goals  
 
 
 # 🖥️ Função para renderizar a sidebar.
@@ -37,7 +37,8 @@ def render_sidebar(user):
             render_professional_enable_section(user)  # Renderiza o bloqueio da área profissional.
 
 
-# 🖥️ Função para renderizar a dashboard.
+
+# 🖥️ Função para renderizar a dashboard do paciente.
 def render_dashboard():
     
     user = get_user()
@@ -58,11 +59,20 @@ def render_dashboard():
 
     render_patient_invitations(user)
 
+    # 📋 Buscar as metas do paciente
     st.subheader("🎯 Minhas Metas")
 
-    st.markdown("---")
+    goals, error_msg = get_patient_goals(user["id"])
 
-    st.info("🔍 Novos recursos serão adicionados em breve!")
+    if error_msg:
+        st.error(error_msg)
+    elif not goals:
+        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
+    else:
+        for goal in goals:
+            with st.expander(f"📝 {goal['goal']}"):
+                st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
+                st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe só a data
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.

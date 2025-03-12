@@ -80,6 +80,45 @@ def get_linked_patients(professional_id):
 
     except Exception as e:  # 🔹 Certifique-se de que está na mesma indentação do `try`
         return [], f"Erro inesperado: {str(e)}"
+    
+
+@st.cache_data(ttl=10)
+def get_patient_goals(patient_id):
+    """Busca as metas designadas para o paciente."""
+    try:
+        # 🔗 Buscar o vínculo do paciente com um profissional
+        link_response = supabase_client.from_("professional_patient_link") \
+            .select("id") \
+            .eq("patient_id", patient_id) \
+            .eq("status", "accepted") \
+            .execute()
+
+        if hasattr(link_response, "error") and link_response.error:
+            return [], f"Erro ao buscar vínculo: {link_response.error.message}"
+
+        if not link_response.data:
+            return [], "Nenhum vínculo ativo encontrado."
+
+        link_id = link_response.data[0]["id"]
+
+        # 📋 Buscar metas associadas ao link_id
+        goals_response = supabase_client.from_("goals") \
+            .select("goal, timeframe, created_at") \
+            .eq("link_id", link_id) \
+            .order("created_at", desc=True) \
+            .execute()
+
+        if hasattr(goals_response, "error") and goals_response.error:
+            return [], f"Erro ao buscar metas: {goals_response.error.message}"
+
+        if not goals_response.data:
+            return [], "Nenhuma meta encontrada."
+
+        return goals_response.data, None
+
+    except Exception as e:
+        return [], f"Erro inesperado: {str(e)}"
+
 
 
 
