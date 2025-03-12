@@ -197,13 +197,13 @@ def render_add_goal_section(user):
 
 def render_patient_goals(user_id):
     """
-    Renderiza as metas atribuídas ao paciente.
+    Renderiza as metas atribuídas ao paciente, agrupadas por prazo (curto, médio e longo).
 
     Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
-        2. Se não houver metas, exibe uma mensagem informando.
-        3. Se houver metas, exibe cada uma dentro de um `st.expander()`.
-        4. Mostra detalhes como prazo e data de criação.
+        2. Agrupa as metas por tipo de prazo (curto, médio, longo).
+        3. Exibe cada grupo de metas separadamente, com títulos apropriados.
+        4. Se um grupo estiver vazio, ele não será exibido.
 
     Args:
         user_id (str): ID do paciente autenticado.
@@ -222,12 +222,33 @@ def render_patient_goals(user_id):
 
     if error_msg:
         st.error(error_msg)
-    elif not goals:
-        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
-    else:
-        for goal in goals:
-            with st.expander(f"📝 {goal['goal']}"):
-                st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
-                st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe apenas a data (YYYY-MM-DD)
+        return
 
+    if not goals:
+        st.info("⚠️ Nenhuma meta foi designada para você ainda.")
+        return
+
+    # 📌 Criar um dicionário para agrupar as metas por prazo
+    grouped_goals = {"curto": [], "medio": [], "longo": []}
+
+    # 🔄 Percorre as metas e organiza por tipo de prazo
+    for goal in goals:
+        if goal["timeframe"] in grouped_goals:
+            grouped_goals[goal["timeframe"]].append(goal)
+
+    # 🎯 Exibir metas agrupadas por prazo
+    prazo_labels = {
+        "curto": "⏳ Metas de Curto Prazo (até 1 mês)",
+        "medio": "📆 Metas de Médio Prazo (1 a 6 meses)",
+        "longo": "🗓️ Metas de Longo Prazo (acima de 6 meses)"
+    }
+
+    for prazo, metas in grouped_goals.items():
+        if metas:  # Exibe apenas se houver metas na categoria
+            st.markdown(f"### {prazo_labels[prazo]}")
+
+            for goal in metas:
+                with st.expander(f"📝 {goal['goal']}"):
+                    st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
+                    st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe só a data
 
