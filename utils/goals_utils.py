@@ -1,6 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from auth import supabase_client
 from utils.user_utils import get_user_info
 from utils.date_utils import format_date
@@ -286,37 +286,55 @@ def render_add_goal_section(user):
 def render_goal_checkbox(goal):
     """
     Renderiza o checkbox para uma meta de curto prazo, permitindo marcar o progresso diário.
-    
+
     Fluxo:
-        1. Consulta a tabela 'goal_progress' para verificar se a meta já foi marcada hoje.
-        2. Se já estiver concluída, exibe um checkbox desabilitado.
-        3. Caso contrário, exibe um checkbox interativo.
-        4. Se o usuário marcar a meta, chama update_goal_progress() para atualizar o status no banco.
-    
+        1. Obtém a data atual no formato ISO (YYYY-MM-DD) através de date.today().isoformat().
+        2. Consulta a tabela 'goal_progress' no banco para verificar se há registro de progresso para essa meta no dia atual.
+        3. Se o campo 'completed' estiver True para hoje, exibe um checkbox desabilitado, indicando que a meta já foi cumprida.
+        4. Caso contrário, exibe um checkbox interativo.
+        5. Ao clicar no checkbox (marcando como cumprido), chama a função update_goal_progress() para registrar/atualizar
+           o status da meta no banco de dados.
+
     Args:
-        goal (dict): Dicionário contendo os dados da meta, com campos "id" e "link_id".
-    
+        goal (dict): Dicionário contendo os dados da meta, devendo incluir:
+                     - "id": Identificador único da meta no banco de dados.
+                     - "link_id": ID do vínculo entre o paciente e o profissional.
+                     Exemplo:
+                     {
+                         "id": "abc123",
+                         "link_id": "def456",
+                         "goal": "Exemplo de meta",
+                         ...
+                     }
+
     Returns:
-        None (apenas atualiza a interface e o banco de dados).
-    
+        None: A função apenas renderiza o componente (checkbox) na interface do Streamlit,
+              sem retornar valor explícito.
+
     Calls:
-        goals_utils.py → update_goal_progress()
+        - supabase_client.from_("goal_progress"): Para consultar se a meta já foi concluída hoje.
+        - update_goal_progress(goal_id, link_id, completed): Função responsável por inserir
+          ou atualizar o progresso da meta no banco de dados.
     """
+    # Obtém a data atual no formato ISO (YYYY-MM-DD)
     today = date.today().isoformat()
+
+    # Consulta a tabela goal_progress para verificar se há registro de progresso hoje
     progress_response = supabase_client.from_("goal_progress") \
         .select("completed") \
         .eq("goal_id", goal["id"]) \
         .eq("date", today) \
         .execute()
+
     completed_today = False
     if progress_response.data:
         completed_today = progress_response.data[0]["completed"]
 
-    # Se a meta já estiver concluída, exibe o checkbox desabilitado
+    # Se a meta já estiver concluída hoje, exibe o checkbox desabilitado
     if completed_today:
-        st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_final")
+        st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_done")
     else:
-        # Exibe o checkbox interativo
+        # Exibe um checkbox interativo para marcar a meta como cumprida
         checked = st.checkbox("Marcar como cumprida hoje", value=False, key=f"goal_{goal['id']}")
         if checked:
             success, msg = update_goal_progress(goal["id"], goal["link_id"], True)
