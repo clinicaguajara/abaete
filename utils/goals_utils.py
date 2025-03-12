@@ -531,7 +531,7 @@ def render_goal_progress_chart(goal):
     fig = px.line(
         df,
         x="Data",
-        y="Metas Cumpridas",
+        y="Soma Cumulativa",
         markers=True,
         title="Progresso cumulativo da meta nos próximos 30 dias"
     )
