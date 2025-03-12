@@ -439,13 +439,14 @@ def render_patient_goals(user_id):
     for prazo, metas in grouped_goals.items():
         if metas:
             st.markdown(
-                f"""
-                <h2 style='color: #FFA500; font-size: 28px; font-weight: bold; margin-top: 20px;'>
-                {prazo_labels[prazo]}
-                </h2>
+                """
+                <h1 class="orange-title">
+                O sistema inteligente que cuida de você!
+                </h1>
                 """,
                 unsafe_allow_html=True
             )
+
             for goal in metas:
                 render_goal_expander(goal, prazo)
 
