@@ -26,7 +26,7 @@ def inject_expander_style():
     <style>
     /* Aumenta o tamanho da fonte do título do expander */
     .st-expander > summary {
-        font-size: 24px !important;
+        font-size: 30px !important;
         /* Outras propriedades podem ser adicionadas aqui */
     }
     </style>
