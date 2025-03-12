@@ -1,6 +1,7 @@
 import streamlit as st
 from auth import supabase_client
 from utils.user_utils import get_user_info
+from utils.date_utils import format_date
 
 
 def add_goal_to_patient(professional_id, patient_email, goal, timeframe):
@@ -202,8 +203,9 @@ def render_patient_goals(user_id):
     Fluxo:
         1. Obtém as metas do paciente a partir do banco de dados.
         2. Agrupa as metas por tipo de prazo (curto, médio, longo).
-        3. Exibe cada grupo de metas separadamente, com títulos apropriados.
-        4. Se um grupo estiver vazio, ele não será exibido.
+        3. Formata a data de criação com `format_date()`.
+        4. Exibe cada grupo de metas separadamente, com títulos apropriados.
+        5. Se um grupo estiver vazio, ele não será exibido.
 
     Args:
         user_id (str): ID do paciente autenticado.
@@ -213,6 +215,7 @@ def render_patient_goals(user_id):
 
     Calls:
         goals_utils.py → get_patient_goals()
+        date_utils.py → format_date()
     """
 
     st.subheader("🎯 Minhas Metas")
@@ -248,7 +251,10 @@ def render_patient_goals(user_id):
             st.markdown(f"### {prazo_labels[prazo]}")
 
             for goal in metas:
+                # 📅 Formata a data de criação da meta
+                dia, mes, ano = format_date(goal['created_at'])
+                data_formatada = f"{dia:02d}/{mes:02d}/{ano}" if dia else "Data inválida"
+
                 with st.expander(f"📝 {goal['goal']}"):
                     st.markdown(f"📅 **Prazo:** {goal['timeframe']}")
-                    st.markdown(f"🕒 **Adicionada em:** {goal['created_at'].split('T')[0]}")  # Exibe só a data
-
+                    st.markdown(f"🕒 **Adicionada em:** {data_formatada}")  # Exibe a data forma
