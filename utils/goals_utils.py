@@ -457,9 +457,11 @@ def render_goal_progress_chart(goal):
         4. Cria um dicionário (progress_dict) que mapeia cada dia do intervalo para 0 (inicialmente).
         5. Consulta a tabela "goal_progress" para obter todos os registros de progresso no intervalo.
         6. Para cada registro com completed=True, soma 1 no dia correspondente do progress_dict.
-        7. Constrói um DataFrame pandas com as datas (convertidas para datetime) e a soma cumulativa.
-        8. Cria um gráfico de linha interativo com Plotly, adicionando range selector e range slider para zoom.
-        9. Renderiza o gráfico na interface do Streamlit usando st.plotly_chart().
+        7. Ordena as datas e calcula a soma cumulativa, criando um DataFrame pandas com as datas (convertidas para datetime)
+           e a soma cumulativa.
+        8. Cria um gráfico de linha interativo com Plotly, adicionando um range slider (sem os botões de seleção).
+        9. Atualiza o layout do gráfico, aumentando a fonte do título e aplicando o template "seaborn".
+        10. Renderiza o gráfico na interface do Streamlit usando st.plotly_chart().
 
     Args:
         goal (dict): Dicionário com os dados da meta, devendo incluir:
@@ -533,13 +535,13 @@ def render_goal_progress_chart(goal):
         x="Data",
         y="Soma Cumulativa",
         markers=True,
-        title="Progresso Cumulativo da Meta 💎"
+        title="Progresso Cumulativo da Meta"
     )
 
-    # Adiciona zoom apenas com o range slider, sem os botões de seleção de intervalo
+    # Adiciona zoom apenas com o range slider, sem botões de seleção de intervalo
     fig.update_layout(
-        xaxis_title="Barra de Progresso",
-        yaxis_title="⛏️ Esforço",
+        xaxis_title="Barra de Progresso 💎",
+        yaxis_title="Esforço ⛏️",
         xaxis=dict(
             showgrid=False,
             rangeslider=dict(visible=True),
@@ -548,8 +550,12 @@ def render_goal_progress_chart(goal):
         yaxis=dict(showgrid=True, rangemode="tozero")
     )
     fig.update_xaxes(tickformat="%d/%m", tickangle=45)
-    fig.add_hline(y=30, line_dash="dot", annotation_text="Meta 30 dias", annotation_position="top right")
-    fig.update_layout(template="seaborn")
+    
+    # 9. Atualiza o layout para aplicar o template e aumentar a fonte do título
+    fig.update_layout(
+        template="seaborn",
+        title_font=dict(size=24, family="Arial", color="black")
+    )
 
-    # 9. Renderiza o gráfico na interface do Streamlit
+    # 10. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, use_container_width=True)
