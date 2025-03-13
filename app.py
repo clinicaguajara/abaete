@@ -20,6 +20,23 @@ st.set_page_config(
 
 # 🌐 Função para inicializar a sessão e evitar erros de navegação.
 def initialize_session_state():
+    """
+    Inicializa as variáveis de sessão do Streamlit para controlar o estado do app.
+    
+    Fluxo:
+        1. Se a chave "user" não existir em st.session_state, define-a como None.
+        2. Se a chave "processing" não existir, inicializa como False (nenhuma operação em andamento).
+        3. Se a chave "refresh" não existir, inicializa como False (sem necessidade de atualização imediata).
+    
+    Args:
+        None.
+    
+    Returns:
+        None (Configura variáveis diretamente no st.session_state).
+    
+    Calls:
+        Nenhuma.
+    """
     
     # Se a sessão ainda não estiver definida...
     if "user" not in st.session_state:
@@ -36,7 +53,42 @@ def initialize_session_state():
 
 # 🧭 Função principal que tudo controla.
 def main():
-    
+    """
+    Função principal que controla o fluxo de navegação e renderização do aplicativo.
+
+    Fluxo:
+      1. Inicializa as variáveis de sessão utilizando initialize_session_state(), garantindo que as chaves
+         "user", "processing" e "refresh" estejam definidas.
+      2. Carrega o CSS customizado com load_css() para configurar a aparência do aplicativo.
+      3. Recupera o usuário autenticado usando get_user().
+         - Se nenhum usuário estiver logado, chama render_main_layout() para exibir a tela principal.
+      4. Se um usuário estiver autenticado (com campo "id"):
+         a. Armazena o ID do usuário para uso no fluxo.
+         b. Obtém as informações completas do perfil do usuário via get_user_info().
+         c. Verifica se o usuário é um profissional com is_professional_enabled().
+         d. Se o perfil não tiver sido completado (ex.: falta o campo "genero"), exibe o questionário de cadastro
+            chamando render_onboarding_questionnaire().
+         e. Caso o usuário seja um profissional, chama render_professional_dashboard() para renderizar um dashboard especializado.
+         f. Se o usuário não for profissional, chama render_dashboard() para renderizar o dashboard padrão do paciente.
+
+    Args:
+        None (a função utiliza o estado de sessão e funções globais para determinar o fluxo).
+
+    Returns:
+        None (a função renderiza a interface diretamente no Streamlit e não retorna valores).
+
+    Calls:
+        - initialize_session_state()  
+        - load_css()                  
+        - get_user()                  
+        - get_user_info()             
+        - is_professional_enabled()   
+        - render_onboarding_questionnaire() 
+        - render_professional_dashboard() 
+        - render_dashboard()          
+        - render_main_layout()        
+    """
+
     initialize_session_state() # Inicializa a sessão.
     load_css() # Cria o visual.
     user = get_user()  # E verifica quem está navegando.
@@ -57,12 +109,12 @@ def main():
 
         # Mas...
         else:
-            # Se o usuário é profissional...
+            # Se o usuário for um profissional cadastrado...
             if is_professional:
                 render_professional_dashboard(user) # Exibe um dashboard especial.
             # Caso contrário...
             else:
-                render_dashboard() # Renderiza o dashboard normal.
+                render_dashboard() # Renderiza a página normal.
 
     # Entretanto, se ninguém está logado...
     else:
