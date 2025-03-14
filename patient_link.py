@@ -296,6 +296,7 @@ def render_patient_invitations(user):
                 st.cache_data.clear()
                 st.session_state["processing"] = False
                 st.rerun()
+        st.markdown("---")
     else:
         st.info("⏳ Processando...")
 

@@ -113,7 +113,6 @@ def render_dashboard():
     inv_placeholder.info("⏳ Processando...")
     render_patient_invitations(user)
     inv_placeholder.empty()
-    st.markdown("---")
 
     # 6. Selectbox para escolher qual seção exibir.
     opcao = st.selectbox(
