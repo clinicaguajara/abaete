@@ -90,7 +90,7 @@ def main():
     initialize_session_state() # Inicializa a sessão.
     load_css() # Cria o visual.
     user = get_user()  # E verifica quem está navegando.
-
+    
     # Se temos um ID logado na sessão...
     if user and "id" in user:
         user_id = user["id"]  # Guardamos o ID para ser utilizado no fluxo.
