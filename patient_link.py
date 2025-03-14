@@ -231,19 +231,18 @@ def render_patient_invitations(user):
 
     Fluxo:
       1. Obtém os convites pendentes do paciente usando list_invitations_for_patient().
-      2. Seleciona apenas o primeiro convite pendente.
-      3. Obtém as informações do profissional que enviou o convite com get_user_info() e formata o nome com get_professional_title().
+      2. Filtra os convites com status "pending" e exibe apenas o primeiro.
+      3. Obtém as informações do profissional que enviou o convite usando get_user_info() e formata o nome com get_professional_title().
       4. Exibe os detalhes do convite (nome do profissional e data de envio).
-      5. Cria um placeholder de processamento que ocupa a largura total (fora das colunas).
-      6. Cria duas colunas para os botões "Aceitar" e "Recusar", com keys fixas para manter os estilos do CSS.
-      7. Ao clicar em um dos botões, define a flag "processing", atualiza o placeholder para "Processando...", 
-         executa a ação (aceitar ou recusar), e então reinicia a interface com st.rerun().
+      5. Cria duas colunas para exibir os botões "Aceitar" e "Recusar" com keys fixas para manter os estilos.
+      6. Ao clicar em um dos botões, define a flag "processing", executa a função correspondente (aceitar ou recusar) e chama st.rerun() para atualizar a interface.
+      7. Abaixo dos botões, é exibido um placeholder que mostra "Processando..." enquanto o estado de processamento estiver True.
 
     Args:
-        user (dict): Dados do paciente autenticado (incluindo "id").
+        user (dict): Dicionário contendo os dados do paciente autenticado (incluindo "id").
 
     Returns:
-        None (a interface é renderizada diretamente no Streamlit).
+        None (a função renderiza a interface diretamente no Streamlit).
 
     Calls:
         - list_invitations_for_patient() [em utils/patient_link.py]
@@ -262,8 +261,9 @@ def render_patient_invitations(user):
     if not pending_invitations:
         return
 
-    # Seleciona apenas o primeiro convite pendente
+    # Seleciona o primeiro convite pendente para exibição
     inv = pending_invitations[0]
+
     professional_profile = get_user_info(inv["professional_id"], full_profile=True)
     if professional_profile:
         professional_name = get_professional_title(professional_profile)
@@ -274,31 +274,26 @@ def render_patient_invitations(user):
     formatted_date = f"{dia}/{mes}/{ano}" if dia else "Data inválida"
     st.write(f"**Data de Envio:** {formatted_date}")
 
-    # Cria um placeholder que ocupará toda a largura para exibir a mensagem "Processando..."
-    processing_placeholder = st.empty()
-
     # Cria duas colunas para os botões
     col1, col2 = st.columns(2)
-
     with col1:
-        # Botão "Aceitar" com key fixa para manter os estilos definidos no CSS
         if st.button("Aceitar", key="accept", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
-            processing_placeholder.info("⏳ Processando...")
             accept_invitation(inv["professional_id"], inv["patient_id"])
             st.cache_data.clear()
             st.session_state["processing"] = False
             st.rerun()
-
     with col2:
-        # Botão "Recusar" com key fixa
         if st.button("Recusar", key="reject", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
-            processing_placeholder.info("⏳ Processando...")
             reject_invitation(inv["professional_id"], inv["patient_id"])
             st.cache_data.clear()
             st.session_state["processing"] = False
             st.rerun()
+
+    # Exibe o placeholder de processamento abaixo dos botões se a flag estiver ativa
+    if st.session_state.get("processing", False):
+        st.info("⏳ Processando...")
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional
