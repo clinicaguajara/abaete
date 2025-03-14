@@ -230,13 +230,14 @@ def render_patient_invitations(user):
     Renderiza os convites recebidos para o paciente aceitar ou recusar.
 
     Fluxo:
-      1. Obtém os convites recebidos do paciente usando list_invitations_for_patient().
-      2. Filtra os convites para manter apenas aqueles com status "pending".
-      3. Se houver pelo menos um convite pendente, seleciona o primeiro para exibição.
-      4. Obtém as informações do profissional que enviou o convite usando get_user_info() e formata o nome com get_professional_title().
-      5. Exibe os detalhes do convite (nome do profissional, data de envio e e-mail).
-      6. Cria duas colunas para os botões "Aceitar" e "Recusar" com keys fixas (para que os estilos em CSS sejam aplicados).
-      7. Ao clicar em um dos botões, define a flag "processing" para desabilitar os botões, executa a ação (aceitar ou recusar) e, em seguida, limpa o cache e chama st.rerun() para atualizar a interface.
+      1. Obtém os convites pendentes do paciente usando list_invitations_for_patient().
+      2. Para cada convite com status "pending":
+         a. Obtém as informações do profissional que enviou o convite com get_user_info() e formata o nome com get_professional_title().
+         b. Exibe os detalhes do convite (nome do profissional, data de envio).
+         c. Cria duas colunas para os botões "Aceitar" e "Recusar".
+         d. Ao clicar em um dos botões, define a flag "processing" e exibe "Processando...".
+         e. Chama a função correspondente (accept_invitation ou reject_invitation).
+         f. Reinicia a interface com st.rerun() para atualizar a exibição (o convite processado não será mais mostrado).
 
     Args:
         user (dict): Dicionário contendo os dados do paciente autenticado (incluindo "id").
@@ -245,65 +246,52 @@ def render_patient_invitations(user):
         None (a função renderiza a interface diretamente no Streamlit).
 
     Calls:
-        - list_invitations_for_patient() [em utils/patient_link.py]: Para buscar os convites recebidos.
-        - get_user_info() [em utils/user_utils.py]: Para obter as informações do profissional.
-        - get_professional_title() [em utils/gender_utils.py]: Para formatar o nome do profissional.
-        - accept_invitation() [em utils/patient_link.py]: Para atualizar o status para "accepted".
-        - reject_invitation() [em utils/patient_link.py]: Para atualizar o status para "rejected".
-        - st.rerun() [Streamlit]: Para reinicializar a interface após a ação.
+        - list_invitations_for_patient() [em utils/patient_link.py]
+        - get_user_info() [em utils/user_utils.py]
+        - get_professional_title() [em utils/gender_utils.py]
+        - accept_invitation() [em utils/patient_link.py]
+        - reject_invitation() [em utils/patient_link.py]
+        - st.rerun() [Streamlit]
     """
     invitations = list_invitations_for_patient(user["id"])
     if not invitations:
         return
 
-    # Filtra apenas os convites com status "pending"
+    # Seleciona apenas o primeiro convite pendente para exibição
     pending_invitations = [inv for inv in invitations if inv["status"] == "pending"]
     if not pending_invitations:
         return
 
-    # Exibe apenas o primeiro convite pendente
     inv = pending_invitations[0]
-
-    # Obtém informações do profissional
     professional_profile = get_user_info(inv["professional_id"], full_profile=True)
     if professional_profile:
         professional_name = get_professional_title(professional_profile)
         st.markdown(f"##### {professional_name} deseja se vincular a você.")
 
-    # Exibe informações adicionais (opcional: data e email)
     dia, mes, ano = format_date(inv['created_at'])
     formatted_date = f"{dia}/{mes}/{ano}" if dia else "Data inválida"
     st.write(f"**Data de Envio:** {formatted_date}")
-    # Você pode exibir o e-mail, se desejar:
-    # st.write(f"**E-mail:** {get_user_info(inv['professional_id'], full_profile=True).get('email')}")
 
     # Cria duas colunas para os botões
     col1, col2 = st.columns(2)
+    
     with col1:
+        # Mantém a key fixa "accept" para que os estilos definidos no CSS sejam aplicados
         if st.button("Aceitar", key="accept", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
-            success, msg = accept_invitation(inv["professional_id"], inv["patient_id"])
-            if success:
-                st.success("Convite aceito com sucesso!")
-                st.cache_data.clear()
-                st.session_state["processing"] = False
-                st.rerun()
-            else:
-                st.error(msg)
-                st.session_state["processing"] = False
-
+            st.info("Processando...")
+            accept_invitation(inv["professional_id"], inv["patient_id"])
+            st.session_state["processing"] = False
+            st.rerun()
+    
     with col2:
+        # Mantém a key fixa "reject" para que os estilos definidos no CSS sejam aplicados
         if st.button("Recusar", key="reject", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
-            success, msg = reject_invitation(inv["professional_id"], inv["patient_id"])
-            if success:
-                st.success("Convite recusado.")
-                st.cache_data.clear()
-                st.session_state["processing"] = False
-                st.rerun()
-            else:
-                st.error(msg)
-                st.session_state["processing"] = False
+            st.info("Processando...")
+            reject_invitation(inv["professional_id"], inv["patient_id"])
+            st.session_state["processing"] = False
+            st.rerun()
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional
