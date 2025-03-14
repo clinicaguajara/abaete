@@ -235,40 +235,40 @@ def render_patient_invitations(user):
     if not pending_invitations:
         return
 
-    # Seleciona apenas o primeiro convite pendente
+    # Seleciona o primeiro convite pendente
     inv = pending_invitations[0]
-
-    # Cria um container para exibir o convite
-    with st.container():
+    
+    # Cria um container exclusivo para o convite
+    invitation_container = st.container()
+    
+    with invitation_container:
         # Exibe os dados do convite
         professional_profile = get_user_info(inv["professional_id"], full_profile=True)
         if professional_profile:
             professional_name = get_professional_title(professional_profile)
             st.markdown(f"##### {professional_name} deseja se vincular a você.")
-
+        
         dia, mes, ano = format_date(inv["created_at"])
         formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
         st.write(formatted_date)
-
-        # Placeholder para exibir "⏳ Processando..."
-        process_placeholder = st.empty()
-
+        
         # Botões organizados em colunas
         col1, col2 = st.columns(2)
-
+        
         with col1:
             if st.button("Aceitar", key="accept"):
-                process_placeholder.info("⏳ Processando...")
+                # Processa o aceite sem exibir mensagem de "processamento"
                 accept_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()
-                st.rerun()
-
+                # Limpa o container para atualizar a interface
+                invitation_container.empty()
+                
         with col2:
             if st.button("Recusar", key="reject"):
-                process_placeholder.info("⏳ Processando...")
                 reject_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()
-                st.rerun()
+                invitation_container.empty()
+
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional
