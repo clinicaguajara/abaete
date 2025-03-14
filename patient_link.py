@@ -232,17 +232,16 @@ def render_patient_invitations(user):
     Fluxo:
       1. Obtém os convites do paciente usando list_invitations_for_patient().
       2. Filtra os convites com status "pending" e seleciona apenas o primeiro.
-      3. Se a flag de processamento não estiver ativa:
-         a. Exibe as informações do convite (nome do profissional, data de envio).
-         b. Cria duas colunas para os botões "Aceitar" e "Recusar" (com keys fixas, para os estilos aplicados).
-         c. Ao clicar em um dos botões, define a flag de processamento, executa a ação e chama st.rerun().
-      4. Se a flag de processamento estiver ativa, exibe apenas a mensagem "Processando...".
+      3. Se o convite selecionado já foi processado (registrado no estado), não é renderizado.
+      4. Caso contrário, exibe as informações do convite (nome do profissional, data de envio).
+      5. Cria duas colunas para os botões "Aceitar" e "Recusar" com keys fixas, para manter os estilos.
+      6. Ao clicar em um dos botões, registra no estado que esse convite foi processado, chama a ação apropriada (aceitar ou recusar) e reinicializa a interface com st.rerun(), fazendo com que o convite não seja mais exibido.
 
     Args:
         user (dict): Dados do paciente autenticado (incluindo "id").
 
     Returns:
-        None
+        None (a função renderiza a interface diretamente no Streamlit).
 
     Calls:
         - list_invitations_for_patient() [em utils/patient_link.py]
@@ -255,7 +254,7 @@ def render_patient_invitations(user):
     if not invitations:
         return
 
-    # Filtra convites pendentes
+    # Filtra os convites com status "pending"
     pending_invitations = [inv for inv in invitations if inv["status"] == "pending"]
     if not pending_invitations:
         return
@@ -263,42 +262,41 @@ def render_patient_invitations(user):
     # Seleciona somente o primeiro convite pendente
     inv = pending_invitations[0]
 
-    # Inicializa a flag de processamento se ainda não existir
-    if "processing" not in st.session_state:
-        st.session_state["processing"] = False
+    # Inicializa a flag "invitation_processed" se não existir
+    if "invitation_processed" not in st.session_state:
+        st.session_state["invitation_processed"] = None
 
-    if not st.session_state["processing"]:
-        # Exibe os dados do convite
-        professional_profile = get_user_info(inv["professional_id"], full_profile=True)
-        if professional_profile:
-            professional_name = get_professional_title(professional_profile)
-            st.markdown(f"##### {professional_name} deseja se vincular a você.")
+    # Se o convite já foi processado, não o renderiza
+    if st.session_state["invitation_processed"] == inv["id"]:
+        return
 
-        dia, mes, ano = format_date(inv["created_at"])
-        formatted_date = f"{dia}/{mes}/{ano}" if dia else "Data inválida"
-        st.write(f"**Data de Envio:** {formatted_date}")
+    # Exibe os dados do convite
+    professional_profile = get_user_info(inv["professional_id"], full_profile=True)
+    if professional_profile:
+        professional_name = get_professional_title(professional_profile)
+        st.markdown(f"##### {professional_name} deseja se vincular a você.")
 
-        # Cria duas colunas para os botões
-        col1, col2 = st.columns(2)
-        with col1:
-            # Mantém a key fixa "accept" para que os estilos definidos em CSS sejam aplicados
-            if st.button("Aceitar", key="accept", disabled=st.session_state["processing"]):
-                st.session_state["processing"] = True
-                accept_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()
-                st.session_state["processing"] = False
-                st.rerun()
-        with col2:
-            # Mantém a key fixa "reject" para que os estilos definidos em CSS sejam aplicados
-            if st.button("Recusar", key="reject", disabled=st.session_state["processing"]):
-                st.session_state["processing"] = True
-                reject_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()
-                st.session_state["processing"] = False
-                st.rerun()
-        st.markdown("---")
-    else:
-        st.info("⏳ Processando...")
+    dia, mes, ano = format_date(inv["created_at"])
+    formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
+    st.write(formatted_date)
+
+    # Cria duas colunas para os botões
+    col1, col2 = st.columns(2)
+    with col1:
+        # Mantém a key fixa "accept" para manter os estilos do CSS
+        if st.button("Aceitar", key="accept"):
+            st.session_state["invitation_processed"] = inv["id"]
+            accept_invitation(inv["professional_id"], inv["patient_id"])
+            st.cache_data.clear()
+            st.rerun()
+    with col2:
+        # Mantém a key fixa "reject" para manter os estilos do CSS
+        if st.button("Recusar", key="reject"):
+            st.session_state["invitation_processed"] = inv["id"]
+            reject_invitation(inv["professional_id"], inv["patient_id"])
+            st.cache_data.clear()
+            st.rerun()
+
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional
