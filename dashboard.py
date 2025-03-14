@@ -64,20 +64,25 @@ def render_dashboard():
     
     Fluxo:
       1. Obtém os dados do usuário autenticado.
-      2. Obtém as informações completas do perfil do usuário via get_user_info() e ajusta a saudação com adjust_gender_ending().
-      3. Renderiza a sidebar com informações do usuário chamando render_sidebar().
-      4. Exibe uma saudação personalizada.
-      5. Exibe os convites pendentes do paciente usando render_patient_invitations().
-      6. Apresenta um selectbox para que o paciente escolha a seção a ser visualizada:
-         - "Minhas Metas" (chama render_patient_goals())
-         - "Testes Psicométricos" (chama render_patient_scales())
-         - "Relatórios" (chama render_scale_correction_section())
+      2. Ajusta a saudação com base no gênero do usuário.
+      3. Renderiza a sidebar com informações do usuário.
+      4. Exibe o cabeçalho do dashboard utilizando um placeholder para manter a interface estável.
+      5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
+      6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
     
     Args:
-        None (obtém o usuário autenticado internamente).
+      None (obtém o usuário autenticado internamente).
     
     Returns:
-        None (a interface é renderizada diretamente no Streamlit).
+      None.
+    
+    Calls:
+      - get_user() para obter o usuário.
+      - get_user_info() para obter os dados do perfil.
+      - adjust_gender_ending() para ajustar a saudação.
+      - render_sidebar() para exibir a barra lateral.
+      - render_patient_invitations() para exibir os convites pendentes.
+      - render_patient_goals(), render_patient_scales() e render_scale_correction_section() para renderizar as seções específicas.
     """
     # 1. Obtém os dados do usuário autenticado.
     user = get_user()
@@ -88,23 +93,25 @@ def render_dashboard():
     # 2. Obtém o perfil completo e ajusta a saudação.
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-
-    # 3. Renderiza a sidebar.
+    
+    # 3. Renderiza a sidebar com informações do usuário.
     render_sidebar(user)
-
-    # 4. Exibe a saudação personalizada.
-    st.header(f"{saudacao}, {user['display_name']}! 🎉")
+    
+    # 4. Placeholder para manter o cabeçalho estável durante recarregamentos.
+    header_placeholder = st.empty()
+    header_placeholder.header(f"{saudacao}, {user['display_name']}! 🎉")
     st.markdown("---")
-
+    
+    # 5. Exibe os convites pendentes.
     render_patient_invitations(user)
-
-    # 6. Selectbox para escolher qual seção exibir.
+    
+    # 6. Apresenta um selectbox para escolher qual seção exibir.
     opcao = st.selectbox(
         "Selecione uma seção:",
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
-
-    # 7. Dependendo da opção escolhida, exibe a respectiva seção.
+    
+    # 7. Renderiza a seção escolhida.
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])
     elif opcao == "Testes Psicométricos":

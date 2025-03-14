@@ -3,19 +3,41 @@ from auth import sign_in, sign_up, reset_password
 
 # 🏗️ Função para renderizar o layout principal.
 def render_main_layout():
-    # O título do sistema que aparece no cabeçalho.
-    st.markdown("# Abaeté 🌱")
+    """
+    Renderiza o layout principal da página de autenticação.
     
-    # Subtítulo destacado.
-    st.markdown(
+    Fluxo:
+      1. Exibe o título e o subtítulo utilizando placeholders para manter a interface estável.
+      2. Exibe a introdução com as principais funções.
+      3. Permite a escolha entre Login ou Cadastro, com os respectivos campos.
+      4. Processa a ação de login ou cadastro e exibe mensagens de feedback.
+    
+    Args:
+      None.
+    
+    Returns:
+      None.
+    
+    Calls:
+      - sign_in() para login.
+      - sign_up() para cadastro.
+      - reset_password() para recuperação de senha.
+    """
+    # Placeholder para manter o título estável durante recarregamentos.
+    title_placeholder = st.empty()
+    title_placeholder.markdown("# Abaeté 🌱")
+    
+    # Placeholder para o subtítulo.
+    subtitle_placeholder = st.empty()
+    subtitle_placeholder.markdown(
         """
         <h1 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
         O sistema inteligente que cuida de você!</h1>
         """,
         unsafe_allow_html=True
     )
-
-    # Introdução com as principais funções.
+    
+    # Exibe a introdução com as principais funções.
     st.markdown(
         """
         ##### 💻 **Transforme a sua prática clínica com tecnologia avançada:**
