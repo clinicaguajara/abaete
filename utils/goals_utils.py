@@ -575,6 +575,7 @@ def render_goal_progress_chart(goal):
     )
 
     # 10. Renderiza o gráfico na interface do Streamlit
-    st.plotly_chart(fig, key=f"plotly_chart_{response["goal_id"]}", use_container_width=True)
+    st.plotly_chart(fig, key=f"plotly_chart_{goal['id']}", use_container_width=True)
+
 
 
