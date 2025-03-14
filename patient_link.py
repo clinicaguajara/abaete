@@ -34,30 +34,29 @@ def create_patient_invitation(professional_id: str, patient_email: str):
     """
     message_placeholder = st.empty()
     message_placeholder.info("Processando...")
-    
+
     # Buscar informações do paciente pelo e-mail
     patient_info = get_user_info(patient_email, by_email=True, full_profile=True)
-    
-    # Se o paciente não for encontrado...
+
     if not patient_info.get("auth_user_id"):
         message_placeholder.empty()
         st.error(f"🚨 Paciente {patient_email} não encontrado no banco.")
         return False, "Paciente não encontrado."
-    
+
     patient_auth_id = patient_info["auth_user_id"]
-    
+
     # Verificar se já existe um convite pendente
     existing_link = supabase_client.from_("professional_patient_link") \
         .select("id, status") \
         .eq("professional_id", professional_id) \
         .eq("patient_id", patient_auth_id) \
         .execute()
-    
+
     if existing_link and existing_link.data:
         message_placeholder.empty()
         st.warning("📩 Convite já foi enviado.")
         return False, "Convite já enviado."
-    
+
     # Criar um novo convite de vinculação
     invitation_id = str(uuid.uuid4())
     data = {
@@ -66,16 +65,15 @@ def create_patient_invitation(professional_id: str, patient_email: str):
         "patient_id": patient_auth_id,
         "status": "pending"
     }
-    
+
     response = supabase_client.from_("professional_patient_link").insert(data).execute()
     message_placeholder.empty()
-    
+
     if hasattr(response, "error") and response.error:
         st.error(f"❌ Erro ao criar convite: {response.error.message}")
         return False, f"Erro ao criar convite: {response.error.message}"
-    
+
     st.cache_data.clear()
-    
     return True, None
 
 
@@ -234,12 +232,13 @@ def render_patient_invitations(user):
     Fluxo:
       1. Obtém os convites pendentes do paciente usando list_invitations_for_patient().
       2. Para cada convite com status "pending":
-         a. Obtém as informações do profissional com get_user_info() e formata o nome com get_professional_title().
+         a. Obtém as informações do profissional que enviou o convite com get_user_info() e formata o nome com get_professional_title().
          b. Exibe os detalhes do convite (nome do profissional, data de envio e e-mail).
-         c. Cria duas colunas para os botões "Aceitar" e "Recusar", cada um com uma key única baseada no ID do convite.
-         d. Ao clicar, define a flag "processing" em st.session_state para desabilitar os botões e chama a função apropriada
+         c. Cria duas colunas para os botões "Aceitar" e "Recusar".  
+            OBSERVAÇÃO: As keys dos botões permanecem fixas ("accept" e "reject") para que os estilos definidos em styles.css sejam aplicados.
+         d. Ao clicar, define a flag "processing" em st.session_state para desabilitar os botões e chama a função correspondente
             (accept_invitation ou reject_invitation). Após a ação, a interface é reinicializada com st.rerun().
-    
+
     Args:
         user (dict): Dicionário contendo os dados do paciente autenticado (incluindo "id").
 
@@ -269,7 +268,8 @@ def render_patient_invitations(user):
             col1, col2 = st.columns(2)
 
             with col1:
-                if st.button("Aceitar", key=f"accept_{inv['id']}", disabled=st.session_state.get("processing", False)):
+                # Mantemos a key fixa "accept" para que o CSS seja aplicado.
+                if st.button("Aceitar", key="accept", disabled=st.session_state.get("processing", False)):
                     st.session_state["processing"] = True
                     success, msg = accept_invitation(inv["professional_id"], inv["patient_id"])
                     if success:
@@ -281,7 +281,8 @@ def render_patient_invitations(user):
                         st.session_state["processing"] = False
 
             with col2:
-                if st.button("Recusar", key=f"reject_{inv['id']}", disabled=st.session_state.get("processing", False)):
+                # Mantemos a key fixa "reject" para que o CSS seja aplicado.
+                if st.button("Recusar", key="reject", disabled=st.session_state.get("processing", False)):
                     st.session_state["processing"] = True
                     success, msg = reject_invitation(inv["professional_id"], inv["patient_id"])
                     if success:
