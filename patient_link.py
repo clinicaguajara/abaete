@@ -279,6 +279,7 @@ def render_patient_invitations(user):
         # Mantém a key fixa "accept" para que os estilos definidos no CSS sejam aplicados
         if st.button("Aceitar", key="accept", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
+            st.info("⏳ Processando...")
             accept_invitation(inv["professional_id"], inv["patient_id"])
             st.session_state["processing"] = False
             st.rerun()
@@ -287,6 +288,7 @@ def render_patient_invitations(user):
         # Mantém a key fixa "reject" para que os estilos definidos no CSS sejam aplicados
         if st.button("Recusar", key="reject", disabled=st.session_state.get("processing", False)):
             st.session_state["processing"] = True
+            st.info("⏳ Processando...")
             reject_invitation(inv["professional_id"], inv["patient_id"])
             st.session_state["processing"] = False
             st.rerun()
