@@ -2,7 +2,7 @@ import streamlit as st
 from auth import get_user
 from main_layout import render_main_layout
 from dashboard import render_dashboard, render_professional_dashboard
-from user_profile import render_onboarding_questionnaire
+from utils.profile_utils import render_onboarding_questionnaire
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
 from utils.user_utils import get_user_info
@@ -35,9 +35,8 @@ def initialize_session_state():
         None (Configura variáveis diretamente no st.session_state).
     
     Calls:
-        Nenhuma.
+        None.
     """
-    
     # Se a sessão ainda não estiver definida...
     if "user" not in st.session_state:
         st.session_state["user"] = None  # O usuário é inicializado como não autenticado.
@@ -88,7 +87,6 @@ def main():
         - render_dashboard()          
         - render_main_layout()        
     """
-
     initialize_session_state() # Inicializa a sessão.
     load_css() # Cria o visual.
     user = get_user()  # E verifica quem está navegando.

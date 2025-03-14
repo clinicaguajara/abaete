@@ -13,34 +13,34 @@ def create_patient_invitation(professional_id: str, patient_email: str):
     Cria um convite para um paciente se vincular a um profissional.
 
     Fluxo:
-        1. Busca o paciente no banco pelo e-mail.
-        2. Se o paciente não existir, exibe um erro.
-        3. Verifica se já existe um convite pendente.
-        4. Se não houver convite, cria um novo com status "pending".
-        5. Retorna True se a inserção for bem-sucedida, ou False se houver erro.
+      1. Exibe uma mensagem "Processando..." enquanto busca informações do paciente.
+      2. Busca o paciente no banco pelo e-mail usando get_user_info().
+      3. Se o paciente não for encontrado, exibe um erro.
+      4. Verifica se já existe um convite pendente para o mesmo vínculo.
+      5. Se não houver convite, gera um ID único e insere um novo registro na tabela 'professional_patient_link'
+         com status "pending".
+      6. Limpa o cache e retorna True se a inserção for bem-sucedida; caso contrário, retorna False e uma mensagem de erro.
 
     Args:
-        professional_id (str): O ID do profissional que está enviando o convite.
-        patient_email (str): O e-mail do paciente que será convidado.
+        professional_id (str): ID do profissional que envia o convite.
+        patient_email (str): E-mail do paciente a ser convidado.
 
     Returns:
-        tuple (bool, str or None)
-            - (True, None): Se o convite foi criado com sucesso.
-            - (False, "Paciente não encontrado."): Se o paciente não foi encontrado.
-            - (False, "Convite já enviado."): Se o convite já existe.
-            - (False, mensagem_de_erro): Se houve erro na inserção.
-
+        tuple: (True, None) em caso de sucesso ou (False, mensagem_de_erro).
+    
     Calls:
-        dashboard.py → render_professional_dashboard()
+        - get_user_info() [em utils/user_utils.py]
+        - supabase_client.from_("professional_patient_link").select()/insert()/execute() [do Supabase]
     """
-
-    st.write(f"🔍 Buscando {patient_email} no banco de dados do sistema.")
+    message_placeholder = st.empty()
+    message_placeholder.info("Processando...")
 
     # Buscar informações do paciente pelo e-mail
     patient_info = get_user_info(patient_email, by_email=True, full_profile=True)
 
     # Se o ID não foi encontrado...
-    if not patient_info["auth_user_id"]: 
+    if not patient_info.get("auth_user_id"):
+        message_placeholder.empty()
         st.error(f"🚨 Paciente {patient_email} não encontrado no banco.")
         return False, "Paciente não encontrado."
 
@@ -54,6 +54,7 @@ def create_patient_invitation(professional_id: str, patient_email: str):
         .execute()
 
     if existing_link and existing_link.data:
+        message_placeholder.empty()
         st.warning("📩 Convite já foi enviado.")
         return False, "Convite já enviado."
 
@@ -67,39 +68,36 @@ def create_patient_invitation(professional_id: str, patient_email: str):
     }
 
     response = supabase_client.from_("professional_patient_link").insert(data).execute()
+    message_placeholder.empty()  # Limpa a mensagem de processamento
 
     if hasattr(response, "error") and response.error:
         st.error(f"❌ Erro ao criar convite: {response.error.message}")
         return False, f"Erro ao criar convite: {response.error.message}"
 
     st.cache_data.clear()
-
     return True, None
+
 
 
 # 🟢 Função para aceitar um convite de vínculação.
 def accept_invitation(professional_id: str, patient_id: str):
     """
-    Atualiza o status do convite para 'accepted' quando um paciente aceita um vínculo com um profissional.
+    Atualiza o status do convite para 'accepted' quando um paciente aceita o vínculo com um profissional.
 
-     Fluxo:
-        1. Busca a entrada no banco.
-        2. Atualiza o status para "accepted".
-        3. Retorna True se a operação for bem-sucedida, False se houver erro.
+    Fluxo:
+      1. Atualiza o registro correspondente na tabela 'professional_patient_link' definindo o status para "accepted".
+      2. Retorna True se a operação foi bem-sucedida; caso contrário, retorna False e uma mensagem de erro.
 
-     Args:
-        professional_id (str): ID do profissional vinculado ao convite.
+    Args:
+        professional_id (str): ID do profissional vinculado.
         patient_id (str): ID do paciente que aceita o convite.
 
-     Returns:
-        tuple (bool, str or None)
-            - (True, None): Se a atualização foi bem-sucedida.
-            - (False, mensagem_de_erro): Se houve erro.
-     
-     Calls:
-        patient_link.py → render_patient_invitations(user)
-    """
+    Returns:
+        tuple: (True, None) se a atualização foi bem-sucedida, ou (False, mensagem_de_erro).
 
+    Calls:
+        - supabase_client.from_("professional_patient_link").update()/execute() [do Supabase]
+    """
     update_response = supabase_client.from_("professional_patient_link") \
         .update({"status": "accepted"}) \
         .eq("professional_id", professional_id) \
@@ -115,26 +113,22 @@ def accept_invitation(professional_id: str, patient_id: str):
 # 🔴 Função para rejeitar um convite de vínculação.
 def reject_invitation(professional_id: str, patient_id: str):
     """
-    Atualiza o status do convite para 'rejected' quando um paciente recusa um vínculo.
+    Atualiza o status do convite para 'rejected' quando um paciente recusa o vínculo.
 
-     Fluxo:
-        1. Busca a entrada no banco.
-        2. Atualiza o status para "rejected".
-        3. Retorna True se a operação for bem-sucedida, False se houver erro.
+    Fluxo:
+      1. Atualiza o registro correspondente na tabela 'professional_patient_link' definindo o status para "rejected".
+      2. Retorna True se a operação foi bem-sucedida; caso contrário, retorna False e uma mensagem de erro.
 
-     Args:
-        professional_id (str): ID do profissional vinculado ao convite.
+    Args:
+        professional_id (str): ID do profissional vinculado.
         patient_id (str): ID do paciente que rejeita o convite.
 
-     Returns:
-        tuple (bool, str or None)
-            - (True, None): Se a atualização foi bem-sucedida.
-            - (False, mensagem_de_erro): Se houve erro.
-    
-     Calls:
-        patient_link.py → render_patient_invitations(user)
-    """
+    Returns:
+        tuple: (True, None) se a atualização foi bem-sucedida, ou (False, mensagem_de_erro).
 
+    Calls:
+        - supabase_client.from_("professional_patient_link").update()/execute() [do Supabase]
+    """
     update_response = supabase_client.from_("professional_patient_link") \
         .update({"status": "rejected"}) \
         .eq("professional_id", professional_id) \
@@ -150,23 +144,21 @@ def reject_invitation(professional_id: str, patient_id: str):
 # ⏳ Função para listar convites pendentes.
 def list_pending_invitations(professional_id: str):
     """
-    Retorna todos os convites pendentes de um profissional.
+    Retorna todos os convites pendentes para um profissional.
 
-     Fluxo:
-        1. Consulta a tabela "professional_patient_link".
-        2. Filtra apenas os convites onde `status="pending"` e `professional_id` corresponde.
-        3. Retorna a lista de convites pendentes.
+    Fluxo:
+      1. Consulta a tabela "professional_patient_link" filtrando por professional_id e status "pending".
+      2. Retorna a lista de convites pendentes.
 
-     Args:
+    Args:
         professional_id (str): ID do profissional.
 
-     Returns:
+    Returns:
         list[dict]: Lista de convites pendentes.
 
-     Calls:
-        patient_link.py → render_pending_invitations(professional_id)
+    Calls:
+        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
     """
-    
     response = supabase_client.from_("professional_patient_link") \
         .select("id, patient_id, status, created_at") \
         .eq("professional_id", professional_id) \
@@ -182,21 +174,19 @@ def list_invitations_for_patient(patient_id: str):
     """
     Retorna todos os convites recebidos por um paciente.
 
-     Fluxo:
-        1. Consulta a tabela "professional_patient_link".
-        2. Filtra todos os registros onde `patient_id` corresponde.
-        3. Retorna a lista completa de convites (pendentes ou não).
+    Fluxo:
+      1. Consulta a tabela "professional_patient_link" filtrando por patient_id.
+      2. Retorna a lista de convites (pendentes ou não).
 
-     Args:
+    Args:
         patient_id (str): ID do paciente.
 
-     Returns:
+    Returns:
         list[dict]: Lista de convites associados ao paciente.
 
-     Calls:
-        patient_link.py → render_patient_invitations(user)
+    Calls:
+        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
     """
-
     response = supabase_client.from_("professional_patient_link") \
         .select("*") \
         .eq("patient_id", patient_id) \
@@ -212,21 +202,19 @@ def list_invitations_for_professional(professional_id: str):
     """
     Retorna todos os convites enviados por um profissional.
 
-     Fluxo:
-        1. Consulta a tabela "professional_patient_link".
-        2. Filtra todos os registros onde `professional_id` corresponde.
-        3. Retorna a lista completa de convites (pendentes ou não).
+    Fluxo:
+      1. Consulta a tabela "professional_patient_link" filtrando por professional_id.
+      2. Retorna a lista completa de convites.
 
-     Args:
+    Args:
         professional_id (str): ID do profissional.
 
-     Returns:
-        list[dict]: Lista de convites associados ao profissional.
+    Returns:
+        list[dict]: Lista de convites enviados pelo profissional.
 
-     Calls:
-        Não chamada diretamente no código atual. Pode ser útil para um painel administrativo.
+    Calls:
+        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
     """
-
     response = supabase_client.from_("professional_patient_link") \
         .select("*") \
         .eq("professional_id", professional_id) \
@@ -243,25 +231,32 @@ def render_patient_invitations(user):
     Renderiza os convites recebidos para o paciente aceitar ou recusar.
 
     Fluxo:
-        1. Obtém os convites pendentes do paciente.
-        2. Exibe informações sobre o profissional que enviou o convite.
-        3. Cria botões estilizados para aceitar ou recusar.
-        4. Atualiza a interface ao interagir com os botões.
+      1. Obtém os convites pendentes do paciente usando list_invitations_for_patient().
+      2. Para cada convite com status "pending":
+         a. Busca as informações do profissional que enviou o convite com get_user_info().
+         b. Formata o nome do profissional usando get_professional_title().
+         c. Exibe os detalhes do convite (nome do profissional, data de envio e email).
+         d. Cria duas colunas para os botões "Aceitar" e "Recusar".
+         e. Ao clicar em um dos botões, chama a função correspondente (accept_invitation ou reject_invitation)
+            e reinicia a interface com st.rerun().
 
     Args:
-        user (dict): Dicionário contendo os dados do usuário autenticado.
+        user (dict): Dicionário com os dados do paciente autenticado (incluindo "id").
 
     Returns:
-        None (apenas renderiza a interface).
+        None (renderiza a interface no Streamlit).
 
     Calls:
-        dashboard.py → render_dashboard()
+        - list_invitations_for_patient() [em utils/patient_link.py]
+        - get_user_info() [em utils/user_utils.py]
+        - get_professional_title() [em utils/gender_utils.py]
+        - accept_invitation() [em utils/patient_link.py]
+        - reject_invitation() [em utils/patient_link.py]
+        - st.rerun() [Streamlit]
     """
-
     invitations = list_invitations_for_patient(user["id"])
     if not invitations:
         return
-
 
     for inv in invitations:
         if inv["status"] == "pending":
@@ -270,11 +265,10 @@ def render_patient_invitations(user):
                 professional_name = get_professional_title(professional_profile)
                 st.markdown(f"##### {professional_name} deseja se vincular a você.")
 
-            # Criamos colunas para organizar os botões
+            # Cria duas colunas para os botões
             col1, col2 = st.columns(2)
 
             with col1:
-                # ✅ Aqui garantimos que a chave do botão está associada ao CSS correto!
                 if st.button("Aceitar", key="accept"):
                     success, msg = accept_invitation(inv["professional_id"], inv["patient_id"])
                     if success:
@@ -284,7 +278,6 @@ def render_patient_invitations(user):
                         st.error(msg)
 
             with col2:
-                # ✅ Aqui garantimos que a chave do botão está associada ao CSS correto!
                 if st.button("Recusar", key="reject"):
                     success, msg = reject_invitation(inv["professional_id"], inv["patient_id"])
                     if success:
@@ -311,7 +304,9 @@ def render_pending_invitations(professional_id):
         None (apenas renderiza a interface).
 
     Calls:
-        dashboard.py → render_professional_dashboard()
+        - list_pending_invitations()
+        - get_user_info() 
+        - format_date()
     """
 
     st.subheader("📩 Convites Pendentes")

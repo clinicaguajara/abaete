@@ -38,13 +38,6 @@ def render_sidebar(user):
             st.warning("⚠️ Erro: Usuário não autenticado.")
             return
 
-        # Obtém os dados completos do usuário.
-        profile = get_user_info(user["id"], full_profile=True) or {} 
-        
-        # Ajusta a saudação conforme o gênero do usuário.
-        saudacao_base = "Bem-vindo" 
-        saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
-
         st.markdown(f"**👤 {user['display_name']}**")
         st.markdown(f"✉️ {user['email']}")
 
