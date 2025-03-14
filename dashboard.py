@@ -63,33 +63,21 @@ def render_dashboard():
     Renderiza a dashboard do paciente, mostrando convites, metas, escalas e a seção de correção.
     
     Fluxo:
-      1. Obtém os dados do usuário autenticado via get_user().
+      1. Obtém os dados do usuário autenticado.
       2. Obtém as informações completas do perfil do usuário via get_user_info() e ajusta a saudação com adjust_gender_ending().
       3. Renderiza a sidebar com informações do usuário chamando render_sidebar().
       4. Exibe uma saudação personalizada.
       5. Exibe os convites pendentes do paciente usando render_patient_invitations().
-         - Enquanto os convites são carregados, exibe um placeholder com a mensagem "Carregando convites pendentes...".
       6. Apresenta um selectbox para que o paciente escolha a seção a ser visualizada:
          - "Minhas Metas" (chama render_patient_goals())
          - "Testes Psicométricos" (chama render_patient_scales())
          - "Relatórios" (chama render_scale_correction_section())
-         - Para cada opção, antes de renderizar a seção, é exibido um placeholder com a mensagem de carregamento.
     
     Args:
         None (obtém o usuário autenticado internamente).
     
     Returns:
         None (a interface é renderizada diretamente no Streamlit).
-    
-    Calls:
-        - get_user() [em auth.py]
-        - get_user_info() [em utils/user_utils.py]
-        - adjust_gender_ending() [em utils/gender_utils.py]
-        - render_sidebar() [em dashboard.py]
-        - render_patient_invitations() [em utils/patient_link.py]
-        - render_patient_goals() [em utils/goals_utils.py]
-        - render_patient_scales() [em utils/scales_utils.py]
-        - render_scale_correction_section() [em utils/correction_utils.py]
     """
     # 1. Obtém os dados do usuário autenticado.
     user = get_user()
@@ -116,23 +104,13 @@ def render_dashboard():
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
 
-    # 7. Dependendo da opção escolhida, exibe o placeholder e a respectiva seção.
+    # 7. Dependendo da opção escolhida, exibe a respectiva seção.
     if opcao == "Minhas Metas":
-        metas_placeholder = st.empty()
-        metas_placeholder.info("⏳ Processando...")
         render_patient_goals(user["id"])
-        metas_placeholder.empty()
     elif opcao == "Testes Psicométricos":
-        testes_placeholder = st.empty()
-        testes_placeholder.info("⏳ Processando...")
         render_patient_scales(user["id"])
-        testes_placeholder.empty()
     elif opcao == "Relatórios":
-        relatorios_placeholder = st.empty()
-        relatorios_placeholder.info("⏳ Processando...")
         render_scale_correction_section(user["id"])
-        relatorios_placeholder.empty()
-
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
