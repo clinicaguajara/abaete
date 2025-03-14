@@ -226,32 +226,6 @@ def list_invitations_for_professional(professional_id: str):
 
 # 🖥️ Renderiza os convites pendentes para o paciente aceitar ou recusar.
 def render_patient_invitations(user):
-    """
-    Renderiza os convites recebidos para o paciente aceitar ou recusar, 
-    sem utilizar st.rerun() e sem deixar a mensagem "Processando..." indefinidamente.
-
-    Fluxo:
-      1. Obtém os convites do paciente e filtra os com status "pending".
-      2. Seleciona apenas o primeiro convite pendente.
-      3. Cria um container (invitation_container) que agrupa a exibição do convite.
-         - Se o convite já foi processado (st.session_state["invitation_processed"] == inv["id"]), não exibe nada.
-         - Caso contrário, exibe nome do profissional, data de envio, e dois botões (keys fixas).
-      4. Ao clicar em "Aceitar" ou "Recusar", registra o ID do convite em st.session_state["invitation_processed"],
-         exibe "⏳ Processando..." no placeholder, chama a função de aceite/rejeição, e por fim limpa o container e o placeholder,
-         removendo o convite da tela sem st.rerun().
-
-    Args:
-        user (dict): Dicionário contendo os dados do paciente autenticado (incluindo "id").
-
-    Returns:
-        None (a função renderiza a interface diretamente no Streamlit).
-
-    Calls:
-        - list_invitations_for_patient() [em utils/patient_link.py]
-        - get_user_info() [em utils/user_utils.py]
-        - get_professional_title() [em utils/gender_utils.py]
-        - accept_invitation() / reject_invitation() [em utils/patient_link.py]
-    """
     invitations = list_invitations_for_patient(user["id"])
     if not invitations:
         return
@@ -264,18 +238,8 @@ def render_patient_invitations(user):
     # Seleciona apenas o primeiro convite pendente
     inv = pending_invitations[0]
 
-    # Inicializa a variável no estado para identificar convites processados
-    if "invitation_processed" not in st.session_state:
-        st.session_state["invitation_processed"] = None
-
-    # Se já foi processado, não exibe nada
-    if st.session_state["invitation_processed"] == inv["id"]:
-        return
-
     # Cria um container para exibir o convite
-    invitation_container = st.container()
-
-    with invitation_container:
+    with st.container():
         # Exibe os dados do convite
         professional_profile = get_user_info(inv["professional_id"], full_profile=True)
         if professional_profile:
@@ -289,30 +253,22 @@ def render_patient_invitations(user):
         # Placeholder para exibir "⏳ Processando..."
         process_placeholder = st.empty()
 
-        # Botões em colunas
+        # Botões organizados em colunas
         col1, col2 = st.columns(2)
 
         with col1:
             if st.button("Aceitar", key="accept"):
-                # Marca o convite como processado
-                st.session_state["invitation_processed"] = inv["id"]
-                # Exibe a mensagem de processamento
                 process_placeholder.info("⏳ Processando...")
-                # Executa a ação de aceitar
                 accept_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()
-                # Limpa a mensagem e o container para remover o convite da tela
-                process_placeholder.empty()
-                invitation_container.empty()
+                st.rerun()
 
         with col2:
             if st.button("Recusar", key="reject"):
-                st.session_state["invitation_processed"] = inv["id"]
                 process_placeholder.info("⏳ Processando...")
                 reject_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()
-                process_placeholder.empty()
-                invitation_container.empty()
+                st.rerun()
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional
