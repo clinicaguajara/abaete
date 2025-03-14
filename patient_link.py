@@ -217,46 +217,81 @@ def list_invitations_for_professional(professional_id: str):
 
 # 🖥️ Renderiza os convites pendentes para o paciente aceitar ou recusar.
 def render_patient_invitations(user):
+    """
+    Renderiza os convites pendentes para o paciente.
+
+    Fluxo:
+      1. Busca os convites recebidos para o paciente a partir do ID do usuário.
+      2. Filtra apenas os convites com status "pending".
+      3. Se houver convites pendentes, seleciona o primeiro convite.
+      4. Cria um container para exibir os detalhes do convite.
+      5. Exibe informações do profissional que enviou o convite.
+      6. Exibe a data de envio do convite.
+      7. Organiza botões para o paciente aceitar ou recusar o convite.
+      8. Após a ação (aceitar ou recusar), limpa o cache e força a reinicialização da interface.
+    
+    Args:
+      user (dict): Dicionário contendo os dados do usuário autenticado, incluindo seu ID.
+    
+    Returns:
+      None: A função renderiza a interface diretamente no Streamlit.
+    
+    Calls:
+      - list_invitations_for_patient() para obter os convites.
+      - get_user_info() para obter os dados do profissional.
+      - get_professional_title() para formatar o nome do profissional.
+      - format_date() para formatar a data de envio.
+      - accept_invitation() e reject_invitation() para atualizar o status do convite.
+      - st.rerun() para atualizar a interface.
+    """
+    # Obtém os convites recebidos para o paciente através do ID do usuário.
     invitations = list_invitations_for_patient(user["id"])
     if not invitations:
-        return
+        return  # Se não houver convites, finaliza a função.
 
-    # Filtra somente os convites com status "pending"
+    # Filtra somente os convites com status "pending" (pendentes).
     pending_invitations = [inv for inv in invitations if inv["status"] == "pending"]
     if not pending_invitations:
-        return
+        return  # Se não houver convites pendentes, finaliza a função.
 
-    # Seleciona o primeiro convite pendente
+    # Seleciona o primeiro convite pendente.
     inv = pending_invitations[0]
     
-    # Cria um container exclusivo para o convite
+    # Cria um container exclusivo para exibir os detalhes do convite.
     invitation_container = st.container()
     
     with invitation_container:
-        # Exibe os dados do convite
+        # Obtém as informações do profissional que enviou o convite.
         professional_profile = get_user_info(inv["professional_id"], full_profile=True)
         if professional_profile:
+            # Formata o nome do profissional utilizando a função get_professional_title().
             professional_name = get_professional_title(professional_profile)
             st.markdown(f"##### {professional_name} deseja se vincular a você.")
         
+        # Formata a data de envio do convite.
         dia, mes, ano = format_date(inv["created_at"])
         formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
         st.write(formatted_date)
         
-        # Botões organizados em colunas
+        # Organiza os botões de ação em duas colunas.
         col1, col2 = st.columns(2)
         
         with col1:
+            # Botão para aceitar o convite.
             if st.button("Aceitar", key="accept"):
+                # Atualiza o status do convite para "accepted".
                 accept_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()
-                invitation_container.empty()
+                st.cache_data.clear()  # Limpa o cache para garantir que os dados atualizados sejam carregados.
+                st.rerun()  # Reinicia a interface para que o convite não seja mais renderizado.
                 
         with col2:
+            # Botão para recusar o convite.
             if st.button("Recusar", key="reject"):
+                # Atualiza o status do convite para "rejected".
                 reject_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()
-                invitation_container.empty()
+                st.cache_data.clear()  # Limpa o cache.
+                st.rerun()  # Reinicia a interface para remover o convite da exibição.
+
 
 
 # 🖥️ Renderiza os convites pendentes para o profissional.
