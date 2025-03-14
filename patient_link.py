@@ -319,3 +319,45 @@ def render_patient_invitations(user):
                 st.cache_data.clear()
                 invitation_container.empty()
                 update_global_processing_message("")
+
+
+# ------------------------------------------------------------------------------
+# Função: render_pending_invitations
+# ------------------------------------------------------------------------------
+def render_pending_invitations(professional_id: str):
+    """
+    Renderiza os convites pendentes para o profissional ver os pacientes convidados.
+
+    Fluxo:
+      1. Obtém os convites pendentes filtrando por professional_id e status "pending".
+      2. Exibe informações de cada convite, incluindo nome do paciente, data de envio e e-mail.
+
+    Args:
+        professional_id (str): ID do profissional autenticado.
+
+    Returns:
+        None
+
+    Calls:
+        - list_pending_invitations() [em utils/patient_link.py]
+        - get_user_info() [em utils/user_utils.py]
+        - format_date() [em utils/date_utils.py]
+    """
+    st.subheader("📩 Convites Pendentes")
+    pending_invitations = list_pending_invitations(professional_id)
+    if not pending_invitations:
+        st.info("✅ Nenhum convite pendente no momento.")
+        return
+
+    for invitation in pending_invitations:
+        patient_info = get_user_info(invitation['patient_id'], full_profile=True)
+        patient_name = patient_info["display_name"]
+        patient_email = patient_info["email"]
+
+        dia, mes, ano = format_date(invitation['created_at'])
+        formatted_date = f"{dia}/{mes}/{ano}" if dia else "Data inválida"
+
+        st.write(f"👤 **Paciente:** {patient_name}")
+        st.write(f"📅 **Data de Envio:** {formatted_date}")
+        st.write(f"✉️ **E-mail:** {patient_email}")
+        st.markdown("---")
