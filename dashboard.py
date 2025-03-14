@@ -108,11 +108,7 @@ def render_dashboard():
     st.header(f"{saudacao}, {user['display_name']}! 🎉")
     st.markdown("---")
 
-    # 5. Exibe os convites pendentes com placeholder de carregamento.
-    inv_placeholder = st.empty()
-    inv_placeholder.info("⏳ Processando...")
     render_patient_invitations(user)
-    inv_placeholder.empty()
 
     # 6. Selectbox para escolher qual seção exibir.
     opcao = st.selectbox(
