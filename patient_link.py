@@ -13,13 +13,12 @@ def create_patient_invitation(professional_id: str, patient_email: str):
     Cria um convite para um paciente se vincular a um profissional.
 
     Fluxo:
-      1. Exibe uma mensagem "Processando..." enquanto busca informações do paciente.
-      2. Busca o paciente no banco pelo e-mail usando get_user_info().
-      3. Se o paciente não for encontrado, exibe um erro.
-      4. Verifica se já existe um convite pendente para o mesmo vínculo.
-      5. Se não houver convite, gera um ID único e insere um novo registro na tabela 'professional_patient_link'
+      1. Busca o paciente no banco pelo e-mail usando get_user_info().
+      2. Se o paciente não for encontrado, exibe um erro.
+      3. Verifica se já existe um convite pendente para o mesmo vínculo.
+      4. Se não houver convite, gera um ID único e insere um novo registro na tabela 'professional_patient_link'
          com status "pending".
-      6. Limpa o cache e retorna True se a inserção for bem-sucedida; caso contrário, retorna False e uma mensagem de erro.
+      5. Limpa o cache e retorna True se a inserção for bem-sucedida; caso contrário, retorna False e uma mensagem de erro.
 
     Args:
         professional_id (str): ID do profissional que envia o convite.
@@ -32,14 +31,10 @@ def create_patient_invitation(professional_id: str, patient_email: str):
         - get_user_info() [em utils/user_utils.py]
         - supabase_client.from_("professional_patient_link").select()/insert()/execute() [do Supabase]
     """
-    message_placeholder = st.empty()
-    message_placeholder.info("⏳ Processando...")
-
     # Buscar informações do paciente pelo e-mail
     patient_info = get_user_info(patient_email, by_email=True, full_profile=True)
 
     if not patient_info.get("auth_user_id"):
-        message_placeholder.empty()
         st.error(f"🚨 Paciente {patient_email} não encontrado no banco.")
         return False, "Paciente não encontrado."
 
@@ -53,7 +48,6 @@ def create_patient_invitation(professional_id: str, patient_email: str):
         .execute()
 
     if existing_link and existing_link.data:
-        message_placeholder.empty()
         st.warning("📩 Convite já foi enviado.")
         return False, "Convite já enviado."
 
@@ -67,7 +61,6 @@ def create_patient_invitation(professional_id: str, patient_email: str):
     }
 
     response = supabase_client.from_("professional_patient_link").insert(data).execute()
-    message_placeholder.empty()
 
     if hasattr(response, "error") and response.error:
         st.error(f"❌ Erro ao criar convite: {response.error.message}")
@@ -75,7 +68,6 @@ def create_patient_invitation(professional_id: str, patient_email: str):
 
     st.cache_data.clear()
     return True, None
-
 
 
 # 🟢 Função para aceitar um convite de vínculação.
@@ -167,7 +159,6 @@ def list_pending_invitations(professional_id: str):
     return response.data if response and hasattr(response, "data") else []
 
 
-
 # 📜 Função para listar convites de um paciente.
 def list_invitations_for_patient(patient_id: str):
     """
@@ -257,10 +248,8 @@ def render_patient_invitations(user):
         
         with col1:
             if st.button("Aceitar", key="accept"):
-                # Processa o aceite sem exibir mensagem de "processamento"
                 accept_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()
-                # Limpa o container para atualizar a interface
                 invitation_container.empty()
                 
         with col2:
@@ -270,8 +259,7 @@ def render_patient_invitations(user):
                 invitation_container.empty()
 
 
-
-# 🖥️ Renderiza os convites pendentes para o profissional
+# 🖥️ Renderiza os convites pendentes para o profissional.
 def render_pending_invitations(professional_id):
     """
     Renderiza os convites recebidos para o profissional ver os pacientes convidados.
@@ -292,7 +280,6 @@ def render_pending_invitations(professional_id):
         - get_user_info() 
         - format_date()
     """
-
     st.subheader("📩 Convites Pendentes")
 
     pending_invitations = list_pending_invitations(professional_id)
