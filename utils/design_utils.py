@@ -20,10 +20,11 @@ def load_css():
     if css_content:
         st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True) # Aplica o CSS na página.
 
-        hide_spinner_style = """
-                <style>
-                    div[role="status"] {display: none;}
-                </style>
-            """
-        st.markdown(hide_spinner_style, unsafe_allow_html=True)
+        hide_elements_style = """
+            <style>
+                div[role="status"] { display: none; }
+                div[role="alert"] { display: none !important; }
+            </style>
+        """
+        st.markdown(hide_elements_style, unsafe_allow_html=True)
 
