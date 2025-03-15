@@ -226,10 +226,10 @@ def render_patient_invitations(user):
       3. Busca os convites recebidos para o paciente a partir do ID do usuário.
       4. Filtra apenas os convites com status "pending".
       5. Se houver convites pendentes, seleciona o primeiro convite.
-      6. Utiliza um placeholder (armazenado no session_state) para exibir os detalhes do convite.
+      6. Utiliza um placeholder armazenado no session_state para exibir os detalhes do convite.
       7. Exibe informações do profissional que enviou o convite e a data de envio.
-      8. Organiza botões para o paciente aceitar ou recusar o convite.
-      9. Após a ação, atualiza o session_state para indicar que o convite foi processado, limpa o cache e esvazia o placeholder, fazendo com que o convite não seja exibido na próxima renderização.
+      8. Organiza botões para o paciente aceitar ou recusar o convite, desabilitando-os imediatamente após o clique.
+      9. Após a ação, atualiza o session_state para indicar que o convite foi processado, limpa o cache e esvazia o placeholder.
     
     Args:
       user (dict): Dicionário contendo os dados do usuário autenticado, incluindo seu ID.
@@ -282,22 +282,26 @@ def render_patient_invitations(user):
         formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
         st.write(formatted_date)
 
-        # 8. Organiza os botões de ação em duas colunas.
+        # 8. Organiza os botões de ação em duas colunas, desabilitando-os se o convite já foi processado.
         col1, col2 = st.columns(2)
         with col1:
-            # Botão para aceitar o convite.
-            if st.button("Aceitar", key="accept"):
+            # Botão para aceitar o convite com parâmetro disabled.
+            accept_clicked = st.button("Aceitar", key="accept", disabled=st.session_state.invitation_processed)
+            if accept_clicked:
+                # Atualiza o status do convite para "accepted".
                 accept_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()  # Limpa o cache para garantir a atualização dos dados.
                 st.session_state.invitation_processed = True  # Marca o convite como processado.
         with col2:
-            # Botão para recusar o convite.
-            if st.button("Recusar", key="reject"):
+            # Botão para recusar o convite com parâmetro disabled.
+            reject_clicked = st.button("Recusar", key="reject", disabled=st.session_state.invitation_processed)
+            if reject_clicked:
+                # Atualiza o status do convite para "rejected".
                 reject_invitation(inv["professional_id"], inv["patient_id"])
                 st.cache_data.clear()  # Limpa o cache.
                 st.session_state.invitation_processed = True  # Marca o convite como processado.
 
-    # 9. Se o convite foi processado, esvazia o placeholder.
+    # 9. Se o convite foi processado, esvazia o placeholder para remover os botões e informações.
     if st.session_state.invitation_processed:
         st.session_state.invitation_placeholder.empty()
 
