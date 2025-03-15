@@ -336,7 +336,7 @@ def render_goal_checkbox(goal):
         st.checkbox("Meta concluída hoje", value=True, disabled=True, key=f"goal_{goal['id']}_done_{today_str}")
     else:
         # 4. Exibe um checkbox interativo para marcar a meta como cumprida, com uma chave única também
-        checked = st.checkbox("Marcar como cumprida hoje", value=False, key=f"goal_{goal['id']}_{today_str}")
+        checked = st.checkbox("Concluir", value=False, key=f"goal_{goal['id']}_{today_str}")
         # 5. Se o checkbox for marcado, chama a função update_goal_progress para atualizar o progresso
         if checked:
             success, msg = update_goal_progress(goal["id"], goal["link_id"], True)
