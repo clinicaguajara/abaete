@@ -44,7 +44,6 @@ def load_css():
             summary {
                 font-size: 18px;
                 font-weight: bold;
-                color: #4CAF50; /* Verde bonito */
                 cursor: pointer;
                 padding: 10px;
                 border-radius: 8px;
@@ -53,7 +52,7 @@ def load_css():
 
             /* Efeito ao passar o mouse no cabeçalho */
             summary:hover {
-                background-color: #e6ffe6; /* Verde bem claro */
+                background-color: #4CAF50; /* Verde bem claro */
             }
 
             /* Define um espaço melhor entre expanders */
