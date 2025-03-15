@@ -22,8 +22,7 @@ def load_css():
 
         hide_elements_style = """
             <style>
-                div[role="status"] { display: none; }
-                div[role="alert"] { display: none !important; }
+                div[role="status"] { display: none !important; }
             </style>
         """
         st.markdown(hide_elements_style, unsafe_allow_html=True)
