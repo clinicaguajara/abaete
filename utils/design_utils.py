@@ -33,7 +33,6 @@ def load_css():
         <style>
             /* Personaliza a aparência do expander */
             details {
-                background-color: #f9f9f9; /* Fundo cinza claro */
                 border-radius: 10px; /* Bordas arredondadas */
                 padding: 10px;
                 margin-bottom: 10px;
