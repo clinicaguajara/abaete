@@ -40,9 +40,17 @@ def load_css():
                 transition: all 0.3s ease-in-out;
             }
 
+            /* Remove o efeito vermelho ao passar o mouse no cabeçalho */
+            summary:hover {
+                background-color: transparent !important; /* Nenhuma cor de fundo no hover */
+                box-shadow: none !important; /* Remove qualquer sombra vermelha */
+                outline: none !important; /* Remove o contorno vermelho */
+                border: none !important; /* Remove qualquer borda vermelha */
+            }
+
             /* Personaliza o cabeçalho do expander */
             summary {
-                font-size: 18px;
+                font-size: 18px !important;
                 font-weight: bold;
                 cursor: pointer;
                 padding: 10px;
