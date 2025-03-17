@@ -190,7 +190,7 @@ def render_professional_dashboard(user):
         key="action_select"
     )
 
-    if opcao_selecionada == "📩 Convidar Paciente":
+    if opcao_selecionada == "Convidar Paciente":
         st.markdown("##### 📩 Convidar Paciente")
         patient_email = st.text_input("Digite o email do paciente:", key="patient_email_input")
         if st.button("Enviar Convite", key="patientlink", use_container_width=True):
@@ -203,12 +203,12 @@ def render_professional_dashboard(user):
             else:
                 st.warning("⚠️ Por favor, insira o email do paciente.")
     
-    elif opcao_selecionada == "📜 Visualizar Convites Pendentes":
+    elif opcao_selecionada == "Visualizar Convites Pendentes":
         st.markdown("##### 📜 Convites Pendentes")
         render_pending_invitations(user["id"])
     
-    elif opcao_selecionada == "🎯 Adicionar Meta para Paciente":
+    elif opcao_selecionada == "Adicionar Meta para Paciente":
         render_add_goal_section(user)
     
-    elif opcao_selecionada == "📝 Enviar Escala Psicometica":
+    elif opcao_selecionada == "Enviar Escala Psicometica":
         render_add_scale_section(user)
