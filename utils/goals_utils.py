@@ -419,14 +419,7 @@ def render_patient_goals(user_id):
         - render_goal_expander() para exibir os detalhes de cada meta.
     """
     # Exibe o título "Minhas Metas" com estilo chamativo
-    st.markdown(
-        """
-        <h2 style='color: white; font-size: 36px; font-weight: bold;'>
-        🎯 Minhas Metas
-        </h2>
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown("### 🎯 Minhas Metas")
 
     # 1. Buscar as metas do paciente
     goals, error_msg = get_patient_goals(user_id)
@@ -448,14 +441,7 @@ def render_patient_goals(user_id):
     # 3. Exibir cada grupo de metas com um subtítulo estilizado
     for prazo, metas in grouped_goals.items():
         if metas:
-            st.markdown(
-                f"""
-                <h4 style='color: #FFA500; font-size: 24px; font-weight: bold; margin-top: 20px;'>
-                {prazo_labels[prazo]}
-                </h4>
-                """,
-                unsafe_allow_html=True
-            )
+            st.markdown(f"{prazo_labels[prazo]}")
             for goal in metas:
                 render_goal_expander(goal, prazo)
 
