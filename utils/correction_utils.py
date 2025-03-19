@@ -6,13 +6,13 @@ from auth import supabase_client
 # ===============================
 # Esses dados são fixos e representam os escores normativos para cada subescala e o total.
 percentile_table_bis11 = {
-    "Attention": [0, 5, 6, 7, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 16, 18],
-    "Cognitive Instability": [0, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 10, 12],
-    "Motor": [0, 7, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 13, 13, 14, 14, 15, 15, 16, 18, 20, 23],
-    "Perseverance": [0, 4, 4, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10, 12],
-    "Cognitive Complexity": [0, 6, 8, 9, 9, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 18],
-    "Self-Control": [0, 6, 8, 9, 10, 10, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 17, 18, 19, 22],
-    "Total": [0, 40, 47, 50, 52, 53, 55, 56, 58, 59, 60, 62, 63, 64, 65, 67, 68, 70, 72, 76, 80, 90]
+    "Attention": [5, 6, 7, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 16, 18],
+    "Cognitive Instability": [3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 10, 12],
+    "Motor": [7, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 13, 13, 14, 14, 15, 15, 16, 18, 20, 23],
+    "Perseverance": [4, 4, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10, 12],
+    "Cognitive Complexity": [6, 8, 9, 9, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 18],
+    "Self-Control": [6, 8, 9, 10, 10, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 17, 18, 19, 22],
+    "Total": [40, 47, 50, 52, 53, 55, 56, 58, 59, 60, 62, 63, 64, 65, 67, 68, 70, 72, 76, 80, 90]
 }
 
 percentile_indices_bis11 = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 99, 100]
@@ -45,31 +45,28 @@ subscale_mapping = {
 # Função para Encontrar Intervalos de Percentis
 # ===============================
 def find_percentile_interval(score, factor, percentile_table, percentile_indices):
-    """
-    Encontra o intervalo de percentis com base no escore e no fator.
-
-    Args:
-        score (int): Escore do paciente.
-        factor (str): Nome do fator/subescala.
-        percentile_table (dict): Tabela normativa de percentis para a escala.
-        percentile_indices (list): Lista de percentis disponíveis.
-
-    Returns:
-        str: Intervalo ou percentil correspondente ao escore.
-    """
     normative_scores = percentile_table[factor]
     matching_percentiles = []
+
+    # Se o escore for exatamente igual, usamos o próprio i
     for i, value in enumerate(normative_scores):
         if score == value:
-            matching_percentiles.append(percentile_indices[i + 1])
+            matching_percentiles.append(percentile_indices[i])  # Removido o +1
+
+    # Se não há matches exatos...
     if not matching_percentiles:
         for i, value in enumerate(normative_scores):
+            # Assim que encontro o primeiro 'value' maior ou igual ao 'score'
             if score <= value:
-                if i + 1 < len(percentile_indices):
-                    return f"{percentile_indices[i]}-{percentile_indices[i+1]}"
+                # Se estou no início do array, já volto o 1° valor
+                if i == 0:
+                    return f"{percentile_indices[0]}"
                 else:
-                    return f"{percentile_indices[-1]}"
-        return f"{percentile_indices[-1]}"
+                    return f"{percentile_indices[i-1]}-{percentile_indices[i]}"
+        # Se terminar o loop, é porque 'score' é maior que todos de normative_scores
+        return f"{percentile_indices[-2]}-{percentile_indices[-1]}"
+
+    # Se tem matches exatos, pode ter valores repetidos no array, então retorno min-max
     if len(matching_percentiles) == 1:
         return f"{matching_percentiles[0]}"
     else:
