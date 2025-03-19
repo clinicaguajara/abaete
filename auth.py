@@ -1,6 +1,5 @@
 import streamlit as st
 import supabase
-from utils.user_utils import get_user_info
 
 # Recupera as credenciais do Supabase Auth a partir do arquivo de secrets do Streamlit.
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
@@ -56,6 +55,7 @@ def sign_in(email, password):
         - supabase_client.auth.sign_in_with_password()
         - get_user_info() (para buscar o perfil completo do banco)
     """
+    from utils.user_utils import get_user_info
     try:
         response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
        
