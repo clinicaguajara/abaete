@@ -98,10 +98,18 @@ def render_dashboard():
     # 4. Renderiza a sidebar com informações do usuário.
     render_sidebar(user)
     
-    # 5. Placeholder para manter o cabeçalho estável durante recarregamentos.
+# -------------- USANDO st.session_state PARA CONTROLAR A SAUDAÇÃO --------------
+    # Se ainda não definimos a chave 'saudacao_exibida', criamos agora.
+    if "saudacao_exibida" not in st.session_state:
+        st.session_state.saudacao_exibida = False
+
+    # Podemos usar um placeholder, mas agora controlamos o conteúdo que vai aparecer só na primeira vez.
     header_placeholder = st.empty()
-    header_placeholder.header(f"{saudacao}, {first_name}!")  # Agora exibe apenas o primeiro nome
-    st.markdown("---")
+
+    if not st.session_state.saudacao_exibida:
+        # Exibimos a saudação completa apenas na primeira vez
+        header_placeholder.header(f"{saudacao}, {first_name}!")
+        st.session_state.saudacao_exibida = True
     
     # 6. Exibe os convites pendentes.
     render_patient_invitations(user)
@@ -112,7 +120,6 @@ def render_dashboard():
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
     
-    placeholder = st.empty()
 
     # 8. Renderiza a seção escolhida.
     if opcao == "Minhas Metas":
