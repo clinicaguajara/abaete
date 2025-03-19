@@ -93,7 +93,7 @@ def render_dashboard():
 
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-    first_name = user['display_name'].split()[0]
+    first_name = profile.get("display_name", "Usuário").split()[0]  
 
     # Mantém o cabeçalho estável durante atualizações
     with st.container():
@@ -162,7 +162,7 @@ def render_professional_dashboard(user):
     profile = get_user_info(user["id"], full_profile=True)
 
     # 3. Obtém apenas o primeiro nome do profissional.
-    first_name = user['display_name'].split()[0]
+    first_name = profile.get("display_name", "Usuário").split()[0]  
 
     # 4. Obtém o título do profissional.
     professional_title = get_professional_title(profile)
