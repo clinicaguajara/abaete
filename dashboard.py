@@ -61,8 +61,8 @@ def render_dashboard():
     
     Fluxo:
       1. Obtém os dados do usuário autenticado.
-      2. Ajusta a saudação com base no gênero do usuário.
-      3. Renderiza a sidebar com informações do usuário.
+      2. Renderiza a sidebar com informações do usuário.
+      3. Ajusta a saudação com base no gênero do usuário.
       4. Exibe o cabeçalho do dashboard utilizando um `st.container()` para manter a interface estável.
       5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
       6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
@@ -77,6 +77,7 @@ def render_dashboard():
       - get_user() 
       - get_user_info() 
       - adjust_gender_ending()
+      - render_sidebar()
       - render_patient_invitations() 
       - render_patient_goals()
       - render_patient_scales()
@@ -86,6 +87,9 @@ def render_dashboard():
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
+
+    # Renderiza a sidebar com as informações do usuário.
+    render_sidebar(user)
 
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
@@ -112,6 +116,7 @@ def render_dashboard():
         render_patient_scales(user["id"])
     elif opcao == "Relatórios":
         render_scale_correction_section(user["id"])
+
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
