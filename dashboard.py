@@ -63,7 +63,7 @@ def render_dashboard():
       1. Obtém os dados do usuário autenticado.
       2. Ajusta a saudação com base no gênero do usuário.
       3. Renderiza a sidebar com informações do usuário.
-      4. Exibe o cabeçalho do dashboard utilizando um placeholder para manter a interface estável.
+      4. Exibe o cabeçalho do dashboard utilizando um `st.container()` para manter a interface estável.
       5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
       6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
     
@@ -77,42 +77,35 @@ def render_dashboard():
       - get_user() 
       - get_user_info() 
       - adjust_gender_ending()
-      - render_sidebar() 
       - render_patient_invitations() 
       - render_patient_goals()
+      - render_patient_scales()
+      - render_scale_correction_section()
     """
-    # 1. Obtém os dados do usuário autenticado.
     user = get_user()
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    # 2. Obtém o perfil completo e ajusta a saudação.
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-
-    # 3. Pega apenas o primeiro nome do usuário para exibir na saudação.
     first_name = user['display_name'].split()[0]
-    
-    # 4. Renderiza a sidebar com informações do usuário.
-    render_sidebar(user)
-    
-    # 5. Placeholder para manter o cabeçalho estável durante recarregamentos.
-    header_placeholder = st.empty()
-    header_placeholder.header(f"{saudacao}, {first_name}!")  # Exibe apenas o primeiro nome
-    st.markdown("---")
-    
-    # 6. Exibe os convites pendentes.
+
+    # ⬇️ Mantém o cabeçalho estável durante atualizações
+    with st.container():
+        st.header(f"{saudacao}, {first_name}!")  
+        st.markdown("---")
+
+    # Convites pendentes
     render_patient_invitations(user)
-    
-    # 7. Apresenta um selectbox para escolher qual seção exibir.
+
+    # Seletor de seções
     opcao = st.selectbox(
         "🔽 Selecione uma ação:",
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
-    
 
-    # 8. Renderiza a seção escolhida.
+    # Renderiza a seção escolhida
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])
     elif opcao == "Testes Psicométricos":
