@@ -1,5 +1,6 @@
 import streamlit as st
 import supabase
+from utils.user_utils import get_user_info
 
 # Recupera as credenciais do Supabase Auth a partir do arquivo de secrets do Streamlit.
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
