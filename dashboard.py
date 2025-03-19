@@ -54,35 +54,32 @@ def render_sidebar(user):
             render_professional_enable_section(user)  # Renderiza o bloqueio da área profissional.
 
 
-
 # 🖥️ Função para renderizar a dashboard do paciente.
 def render_dashboard():
     """
     Renderiza a dashboard do paciente, mostrando convites, metas, escalas e a seção de correção.
-
+    
     Fluxo:
-      1. Obtém os dados do usuário autenticado via get_user().
-      2. Obtém as informações completas do perfil via get_user_info() e ajusta a saudação com adjust_gender_ending().
-      3. Renderiza a parte estática (sidebar e cabeçalho) apenas uma vez e guarda uma flag no st.session_state.
-      4. Exibe os convites pendentes.
-      5. Usa um selectbox para que o usuário escolha qual seção dinâmica exibir (Minhas Metas, Testes Psicométricos ou Relatórios).
-         Essa parte é renderizada a cada mudança no selectbox.
-      
+      1. Obtém os dados do usuário autenticado.
+      2. Ajusta a saudação com base no gênero do usuário.
+      3. Renderiza a sidebar com informações do usuário.
+      4. Exibe o cabeçalho do dashboard utilizando um placeholder para manter a interface estável.
+      5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
+      6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
+    
     Args:
-        None (obtém o usuário autenticado internamente).
-
+      None (obtém o usuário autenticado internamente).
+    
     Returns:
-        None (a interface é renderizada diretamente no Streamlit).
-
+      None.
+    
     Calls:
-        - get_user()              [em auth.py]
-        - get_user_info()         [em utils/user_utils.py]
-        - adjust_gender_ending()  [em utils/gender_utils.py]
-        - render_sidebar()        [em dashboard.py]
-        - render_patient_invitations()  [em utils/patient_link.py]
-        - render_patient_goals()        [em utils/goals_utils.py]
-        - render_patient_scales()       [em utils/scales_utils.py]
-        - render_scale_correction_section() [em utils/correction_utils.py]
+      - get_user() 
+      - get_user_info() 
+      - adjust_gender_ending()
+      - render_sidebar() 
+      - render_patient_invitations() 
+      - render_patient_goals()
     """
     # 1. Obtém os dados do usuário autenticado.
     user = get_user()
@@ -90,38 +87,32 @@ def render_dashboard():
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
 
-    # 2. Obtém o perfil completo e define a saudação.
+    # 2. Obtém o perfil completo e ajusta a saudação.
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-    first_name = user["display_name"].split()[0]
 
-    # 3. Renderiza a parte estática (sidebar e cabeçalho) somente se ainda não foram "fixados" no estado.
-    if "dashboard_initialized" not in st.session_state:
-        render_sidebar(user)
-        # Cria o cabeçalho e o guarda no estado.
-        st.session_state["dashboard_header"] = f"{saudacao}, {first_name}!"
-        st.header(st.session_state["dashboard_header"])
-        st.session_state["dashboard_initialized"] = True
-    else:
-        st.header(st.session_state["dashboard_header"]) # Evita a renderização repetida da dashboard.
-        
-
+    # 3. Pega apenas o primeiro nome do usuário para exibir na saudação.
+    first_name = user['display_name'].split()[0]
+    
+    # 4. Renderiza a sidebar com informações do usuário.
+    render_sidebar(user)
+    
+    # 5. Placeholder para manter o cabeçalho estável durante recarregamentos.
+    header_placeholder = st.empty()
+    header_placeholder.header(f"{saudacao}, {first_name}!")  # Exibe apenas o primeiro nome
     st.markdown("---")
     
-    # 4. Renderiza os convites pendentes (isso é dinâmico e pode mudar)
+    # 6. Exibe os convites pendentes.
     render_patient_invitations(user)
+    
+    # 7. Apresenta um selectbox para escolher qual seção exibir.
+    opcao = st.selectbox(
+        "🔽 Selecione uma ação:",
+        ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
+    )
+    
 
-    # 5. Utiliza um selectbox para escolher a seção dinâmica a ser exibida.
-    # Armazena a escolha no estado para que a mesma opção seja preservada entre reexecuções.
-    if "dashboard_section" not in st.session_state:
-        st.session_state["dashboard_section"] = "Minhas Metas"
-    options = ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
-    # Define o índice inicial com base na opção salva
-    index = options.index(st.session_state.dashboard_section) if st.session_state.dashboard_section in options else 0
-    opcao = st.selectbox("🔽 Selecione uma ação:", options, index=index)
-    st.session_state.dashboard_section = opcao
-
-    # 6. Renderiza somente a seção dinâmica escolhida.
+    # 8. Renderiza a seção escolhida.
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])
     elif opcao == "Testes Psicométricos":
