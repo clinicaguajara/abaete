@@ -1,5 +1,5 @@
 [theme]
-primaryColor= "rgb(0, 143, 88)" # Elementos interativos.
+primaryColor= "#7159c1" # Elementos interativos.
 backgroundColor= "#0e1117"  # Fundo escuro.
 secondaryBackgroundColor="#161a1f"  # Fundo da sidebar.
 textColor="#FFFFFF"  # Texto branco.
