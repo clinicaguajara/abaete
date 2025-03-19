@@ -29,7 +29,6 @@ def render_sidebar(user):
 
     Calls:
     """
-    
     with st.sidebar:
         
         if not user or "id" not in user:
@@ -55,7 +54,7 @@ def render_sidebar(user):
 
 
 # 🖥️ Função para renderizar a dashboard do paciente.
-def render_dashboard():
+def render_dashboard(user):
     """
     Renderiza a dashboard do paciente, mostrando convites, metas, escalas e a seção de correção.
     
@@ -159,25 +158,22 @@ def render_professional_dashboard(user):
     render_sidebar(user)
 
     # 2. Obtém as informações completas do profissional.
-    profile = get_user_info(user["id"], full_profile=True)
-
-    # 3. Obtém apenas o primeiro nome do profissional.
-    first_name = profile.get("display_name", "Usuário").split()[0]  
-
+    profile = st.session_state.get("user_profile", {})
+    
     # 4. Obtém o título do profissional.
     professional_title = get_professional_title(profile)
 
     # 5. Ajusta a saudação conforme o gênero do profissional.
-    saudacao_base = "Bem-vindo"
-    saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
+    saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
 
     # 6. Exibe a saudação personalizada com o primeiro nome.
-    st.subheader(f"{saudacao}, {first_name}!")
+    st.subheader(f"{saudacao}, {professional_title}!")
     st.divider()
     
 
     # --- Seletor de funcionalidades usando selectbox ---
     st.markdown("##### Painel Profissional")
+    
     opcao_selecionada = st.selectbox(
         "🔽 Selecione uma ação:",
         [
