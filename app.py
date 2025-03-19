@@ -5,7 +5,6 @@ from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
-from utils.user_utils import get_user_info
 
 
 # Configuração inicial.

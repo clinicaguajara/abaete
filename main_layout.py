@@ -23,15 +23,20 @@ def render_main_layout():
       - sign_up() para cadastro.
       - reset_password() para recuperação de senha.
     """
-    with st.container():
-        st.markdown("# Abaeté 🌱")
-        st.markdown(
-            """
-            <h1 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
-            O sistema inteligente que cuida de você!</h1>
-            """,
-            unsafe_allow_html=True
-        )
+    
+    # Placeholder para manter o título estável durante recarregamentos.
+    title_placeholder = st.empty()
+    title_placeholder.markdown("# Abaeté 🌱")
+     
+    # Placeholder para o subtítulo.
+    subtitle_placeholder = st.empty()
+    subtitle_placeholder.markdown(
+        """
+        <h1 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
+        O sistema inteligente que cuida de você!</h1>
+        """,
+        unsafe_allow_html=True
+    )
     
     # Exibe a introdução com as principais funções.
     st.markdown(
