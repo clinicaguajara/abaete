@@ -102,7 +102,8 @@ def render_dashboard():
         st.session_state["dashboard_header"] = f"{saudacao}, {first_name}!"
         st.header(st.session_state["dashboard_header"])
         st.session_state["dashboard_initialized"] = True
-    
+    else:
+        st.header(st.session_state["dashboard_header"]) # Evita a renderização repetida da dashboard.
         
 
     st.markdown("---")
@@ -127,7 +128,6 @@ def render_dashboard():
         render_patient_scales(user["id"])
     elif opcao == "Relatórios":
         render_scale_correction_section(user["id"])
-
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
