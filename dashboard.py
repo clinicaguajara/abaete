@@ -100,10 +100,10 @@ def render_dashboard():
         render_sidebar(user)
         # Cria o cabeçalho e o guarda no estado.
         st.session_state["dashboard_header"] = f"{saudacao}, {first_name}!"
-        st.session_state["dashboard_initialized"] = True
-    else:
-        # Se já inicializado, simplesmente exibe o cabeçalho armazenado.
         st.header(st.session_state["dashboard_header"])
+        st.session_state["dashboard_initialized"] = True
+    
+        
 
     st.markdown("---")
     
