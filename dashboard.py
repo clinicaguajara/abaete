@@ -61,26 +61,33 @@ def render_dashboard():
     Renderiza a dashboard do paciente, mostrando convites, metas, escalas e a seção de correção.
     
     Fluxo:
-      1. Obtém os dados do usuário autenticado.
-      2. Ajusta a saudação com base no gênero do usuário.
-      3. Renderiza a sidebar com informações do usuário.
+      1. Obtém os dados do usuário autenticado via get_user().
+      2. Obtém as informações completas do perfil do usuário via get_user_info() e ajusta a saudação com adjust_gender_ending().
+      3. Renderiza a sidebar com informações do usuário chamando render_sidebar().
       4. Exibe o cabeçalho do dashboard utilizando um placeholder para manter a interface estável.
-      5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
-      6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
+      5. Exibe os convites pendentes do paciente.
+      6. Usa um selectbox para escolher qual seção exibir:
+         - "Minhas Metas" (chama render_patient_goals())
+         - "Testes Psicométricos" (chama render_patient_scales())
+         - "Relatórios" (chama render_scale_correction_section())
+      7. Usa o st.session_state para armazenar a opção selecionada, de modo que, ao mudar de seção, 
+         a escolha persista e a renderização seja "localizada" na parte alterada.
     
     Args:
       None (obtém o usuário autenticado internamente).
     
     Returns:
-      None.
+      None (a interface é renderizada diretamente no Streamlit).
     
     Calls:
-      - get_user() 
-      - get_user_info() 
-      - adjust_gender_ending()
-      - render_sidebar() 
-      - render_patient_invitations() 
-      - render_patient_goals()
+      - get_user()              [em auth.py]
+      - get_user_info()         [em utils/user_utils.py]
+      - adjust_gender_ending()  [em utils/gender_utils.py]
+      - render_sidebar()        [em dashboard.py]
+      - render_patient_invitations()  [em utils/patient_link.py]
+      - render_patient_goals()        [em utils/goals_utils.py]
+      - render_patient_scales()       [em utils/scales_utils.py]
+      - render_scale_correction_section() [em utils/correction_utils.py]
     """
     # 1. Obtém os dados do usuário autenticado.
     user = get_user()
@@ -91,29 +98,30 @@ def render_dashboard():
     # 2. Obtém o perfil completo e ajusta a saudação.
     profile = get_user_info(user["id"], full_profile=True)
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-
-    # 3. Pega apenas o primeiro nome do usuário para exibir na saudação.
     first_name = user['display_name'].split()[0]
     
-    # 4. Renderiza a sidebar com informações do usuário.
+    # 3. Renderiza a sidebar.
     render_sidebar(user)
     
-    # 5. Placeholder para manter o cabeçalho estável durante recarregamentos.
+    # 4. Placeholder para manter o cabeçalho estável.
     header_placeholder = st.empty()
-    header_placeholder.header(f"{saudacao}, {first_name}!")  # Exibe apenas o primeiro nome
+    header_placeholder.header(f"{saudacao}, {first_name}!")
     st.markdown("---")
     
-    # 6. Exibe os convites pendentes.
+    # 5. Exibe os convites pendentes.
     render_patient_invitations(user)
     
-    # 7. Apresenta um selectbox para escolher qual seção exibir.
-    opcao = st.selectbox(
-        "🔽 Selecione uma ação:",
-        ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
-    )
+    # 6. Usa uma variável no session_state para armazenar a seção selecionada.
+    if "dashboard_section" not in st.session_state:
+        st.session_state.dashboard_section = "Minhas Metas"
     
-
-    # 8. Renderiza a seção escolhida.
+    # Exibe o selectbox com a opção previamente selecionada (persistente)
+    options = ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
+    index = options.index(st.session_state.dashboard_section) if st.session_state.dashboard_section in options else 0
+    opcao = st.selectbox("🔽 Selecione uma ação:", options, index=index)
+    st.session_state.dashboard_section = opcao
+    
+    # 7. Renderiza somente a seção escolhida.
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])
     elif opcao == "Testes Psicométricos":

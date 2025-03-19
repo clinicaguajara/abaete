@@ -1,10 +1,11 @@
 [theme]
-backgroundColor="#0e1117"  # Fundo escuro
-secondaryBackgroundColor="#161a1f"  # Fundo da sidebar
-textColor="#FFFFFF"  # Texto branco
+primaryColor= "#007366" # Elementos interativos.
+backgroundColor="#0e1117"  # Fundo escuro.
+secondaryBackgroundColor="#161a1f"  # Fundo da sidebar.
+textColor="#FFFFFF"  # Texto branco.
 
 [ui]
-layout = "wide"  # Expande para ocupar a largura total
+layout = "wide"  # Expande para ocupar a largura total.
 
 [server]
 headless = true
