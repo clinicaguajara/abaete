@@ -441,7 +441,14 @@ def render_patient_goals(user_id):
     # 3. Exibir cada grupo de metas com um subtítulo estilizado
     for prazo, metas in grouped_goals.items():
         if metas:
-            st.markdown(f"{prazo_labels[prazo]}")
+            st.markdown(
+                f"""
+                <h4 style='color: #FFA500; font-size: 24px; font-weight: bold; margin-top: 20px;'>
+                {prazo_labels[prazo]}
+                </h4>
+                """,
+                unsafe_allow_html=True
+            )
             for goal in metas:
                 render_goal_expander(goal, prazo)
 

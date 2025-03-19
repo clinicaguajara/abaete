@@ -59,8 +59,8 @@ def render_dashboard(user):
     Renderiza a dashboard do paciente, mostrando convites, metas, escalas e a seção de correção.
     
     Fluxo:
-      1. Obtém os dados do usuário autenticado.
-      2. Renderiza a sidebar com informações do usuário.
+      1. Utiliza o usuário passado como argumento, sem sobrescrevê-lo com `get_user()`.
+      2. Obtém o perfil do usuário do `session_state`, garantindo que não seja buscado novamente.
       3. Ajusta a saudação com base no gênero do usuário.
       4. Exibe o cabeçalho do dashboard utilizando um `st.container()` para manter a interface estável.
       5. Exibe convites pendentes e apresenta um selectbox para escolher a seção a ser exibida.
@@ -73,16 +73,12 @@ def render_dashboard(user):
       None (apenas renderiza a interface).
     
     Calls:
-      - get_user() 
-      - get_user_info() 
-      - adjust_gender_ending()
       - render_sidebar()
       - render_patient_invitations() 
       - render_patient_goals()
       - render_patient_scales()
       - render_scale_correction_section()
     """
-    user = get_user()
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return
@@ -90,28 +86,38 @@ def render_dashboard(user):
     # Renderiza a sidebar com as informações do usuário.
     render_sidebar(user)
 
-    profile = st.session_state.get("user_profile", {})
-    saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
-    first_name = profile.get("display_name", "Usuário").split()[0]  
+    # Garante que os dados do usuário estão no session_state
+    if "user_profile" not in st.session_state:
+        st.session_state["user_profile"] = get_user_info(user["id"], full_profile=True) or {}
 
-    # Mantém o cabeçalho estável durante atualizações
+    profile = st.session_state["user_profile"]
+
+    # Mantém a saudação fixa no session_state para evitar blinks
+    if "dashboard_header" not in st.session_state:
+        saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
+        first_name = profile.get("display_name", "Usuário").split()[0]  
+        st.session_state["dashboard_header"] = f"{saudacao}, {first_name}!"
+
     with st.container():
-        st.header(f"{saudacao}, {first_name}!")  
+        st.header(st.session_state["dashboard_header"])  # Saudação agora é fixa e não pisca
         st.divider()
 
     # Convites pendentes
     render_patient_invitations(user)
 
-    # Seletor de seções
+    # Garante que a opção do selectbox seja persistente no session_state
+    if "selected_option" not in st.session_state:
+        st.session_state["selected_option"] = "Minhas Metas"
+
     opcao = st.selectbox(
         "🔽 Selecione uma ação:",
-        [
-            "Minhas Metas",
-            "Testes Psicométricos",
-            "Relatórios"
-        ],
+        ["Minhas Metas", "Testes Psicométricos", "Relatórios"],
+        index=["Minhas Metas", "Testes Psicométricos", "Relatórios"].index(st.session_state["selected_option"]),
         key="action_select"
     )
+
+    if opcao != st.session_state["selected_option"]:
+        st.session_state["selected_option"] = opcao  # Atualiza o session_state sem recarregar a página
 
     # Renderiza a seção escolhida
     if opcao == "Minhas Metas":
@@ -120,7 +126,6 @@ def render_dashboard(user):
         render_patient_scales(user["id"])
     elif opcao == "Relatórios":
         render_scale_correction_section(user["id"])
-
 
 
 # 🖥️ Função para renderizar a dashboard exclusiva para profissionais habilitados.
