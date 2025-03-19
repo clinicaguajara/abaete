@@ -91,7 +91,7 @@ def render_dashboard():
     # Renderiza a sidebar com as informações do usuário.
     render_sidebar(user)
 
-    profile = get_user_info(user["id"], full_profile=True)
+    profile = st.session_state.get("user_profile", {})
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
     first_name = profile.get("display_name", "Usuário").split()[0]  
 

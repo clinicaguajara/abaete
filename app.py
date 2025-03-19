@@ -96,7 +96,9 @@ def main():
         user_id = user["id"]  # Guardamos o ID para ser utilizado no fluxo.
 
         # Busca as informações do perfil do usuário.
-        user_profile = get_user_info(user_id, full_profile=True)
+        if "user_profile" not in st.session_state:
+            st.session_state["user_profile"] = get_user_info(user_id, full_profile=True)
+
         
         # Busca quais usuários são profissionais.
         is_professional = is_professional_enabled(user_id)
