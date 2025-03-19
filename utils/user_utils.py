@@ -12,9 +12,10 @@ def get_user_info(identifier, by_email=False, full_profile=False):
         1. Se `by_email=True`, busca o usuário pelo e-mail.
         2. Se `by_email=False`, busca o usuário pelo ID.
         3. Primeiro, tenta obter os dados do `user_profile`, incluindo o `display_name`.
-        4. Se não encontrar o perfil do usuário, busca o `display_name` nos metadados do Supabase Auth.
-        5. Se `full_profile=True`, retorna todos os dados do usuário.
-        6. Se `full_profile=False`, retorna apenas `display_name` e `email`.
+        4. Se encontrar o perfil no `user_profile`, retorna esses dados e não consulta o Supabase Auth.
+        5. Se não encontrar o perfil no `user_profile`, busca o `display_name` nos metadados do Supabase Auth.
+        6. Se `full_profile=True`, retorna todos os dados do usuário.
+        7. Se `full_profile=False`, retorna apenas `display_name` e `email`.
 
     Args:
         identifier (str): `auth_user_id` ou `email` do usuário.
@@ -27,9 +28,9 @@ def get_user_info(identifier, by_email=False, full_profile=False):
             - Se `full_profile=False`: Retorna apenas `auth_user_id`, `display_name` e `email`.
     """
     
-    # Garante que o cache seja separado por usuário.
+    # Criar uma chave única para cache por usuário
     cache_key = f"user_info_{identifier}_{full_profile}"
-    
+
     @st.cache_data
     def fetch_user_info(identifier, by_email, full_profile):
         """Busca os dados no banco de dados do Supabase."""
@@ -49,11 +50,11 @@ def get_user_info(identifier, by_email=False, full_profile=False):
         else:
             response = query.eq("auth_user_id", identifier).execute()
 
-        # Se encontrou dados no user_profile, retorna
+        # ⚠️ Se o perfil do usuário EXISTIR no `user_profile`, retorna esses dados e NÃO consulta o Supabase Auth
         if response and hasattr(response, "data") and response.data:
             return response.data[0]  
 
-        # Se o perfil do usuário ainda não foi criado, buscar nos metadados do Supabase Auth
+        # 📌 Se o perfil AINDA NÃO FOI CRIADO, buscar os dados do Supabase Auth
         auth_response = supabase_client.auth.get_user()
         if auth_response and auth_response.user:
             user_metadata = auth_response.user.user_metadata if auth_response.user.user_metadata else {}
