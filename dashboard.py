@@ -95,10 +95,10 @@ def render_dashboard():
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
     first_name = user['display_name'].split()[0]
 
-    # ⬇️ Mantém o cabeçalho estável durante atualizações
+    # Mantém o cabeçalho estável durante atualizações
     with st.container():
         st.header(f"{saudacao}, {first_name}!")  
-        st.markdown("---")
+        st.divider()
 
     # Convites pendentes
     render_patient_invitations(user)
@@ -173,6 +173,8 @@ def render_professional_dashboard(user):
 
     # 6. Exibe a saudação personalizada com o primeiro nome.
     st.subheader(f"{saudacao}, {first_name}!")
+    st.divider()
+    
 
     # --- Seletor de funcionalidades usando selectbox ---
     st.markdown("##### Painel Profissional")
