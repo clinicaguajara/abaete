@@ -233,39 +233,30 @@ def update_scale_answers(scale_progress_id, answers):
 
 
 
+import streamlit as st
+from utils.scales_utils import get_assigned_scales, initialize_scale_progress, update_scale_answers
+import json
+
+# 🏆 Otimização: Cache para evitar múltiplas consultas ao banco
+@st.cache_data(ttl=60)
+def get_assigned_scales_cached(patient_id):
+    return get_assigned_scales(patient_id)
+
 def render_patient_scales(user_id):
     """
-    Renderiza as escalas psicométricas atribuídas ao paciente e permite que ele responda aos itens da escala.
-    Apenas escalas que ainda não foram respondidas (não concluídas) serão exibidas. Se houver mais de uma escala pendente,
-    exibe somente a primeira, de modo que, após o envio, a próxima apareça.
-
-    Fluxo:
-        1. Obtém as escalas atribuídas ao paciente via get_assigned_scales().
-        2. Para cada escala, inicializa ou recupera o registro de progresso para o dia atual usando initialize_scale_progress().
-        3. Se o registro de progresso indicar que a escala já foi respondida (completed = True), essa escala é ignorada.
-        4. Se houver uma escala pendente, busca sua definição no catálogo (available_scales) para obter os itens (perguntas e opções).
-        5. Exibe um formulário dinâmico para responder à escala, com cada item apresentado com um widget (st.radio) cujo valor padrão é "Selecione...".
-        6. Ao submeter, valida se todas as perguntas foram respondidas (nenhum valor permanece "Selecione...").
-        7. Se todas forem respondidas, salva as respostas via update_scale_answers() e marca a escala como concluída,
-           fazendo com que ela não seja mais exibida na próxima renderização.
+    Renderiza as escalas psicométricas atribuídas ao paciente sem pisca-pisca,
+    armazenando os dados no cache e garantindo fluidez na interface.
 
     Args:
         user_id (str): ID do paciente autenticado.
 
     Returns:
         None (apenas renderiza a interface).
-
-    Calls:
-        scales_utils.py → get_assigned_scales()
-        scales_utils.py → initialize_scale_progress()
-        scales_utils.py → update_scale_answers()
-        Supabase → Tabela 'available_scales' (para buscar os itens da escala)
-        date_utils.py → format_date()
     """
     st.header("📝 Minhas Escalas")
 
-    # 1. Buscar as escalas atribuídas ao paciente
-    assigned_scales, err = get_assigned_scales(user_id)
+    # 🔄 Busca escalas com cache para evitar recarregamento desnecessário
+    assigned_scales, err = get_assigned_scales_cached(user_id)
     if err:
         st.error(err)
         return
@@ -273,62 +264,59 @@ def render_patient_scales(user_id):
         st.info("Nenhuma escala atribuída no momento.")
         return
 
-    # 2. Filtra as escalas que ainda não foram respondidas hoje
+    # 🔎 Filtra escalas que ainda não foram respondidas hoje
     pending_scale = None
     pending_scale_progress_id = None
     for scale in assigned_scales:
-        # Inicializa ou recupera o registro de progresso para hoje
         init_success, scale_progress_id_or_msg = initialize_scale_progress(scale["id"], scale.get("link_id"))
         if not init_success:
             st.error(scale_progress_id_or_msg)
             continue
-        scale_progress_id = scale_progress_id_or_msg
-
-        # Consulta o registro de progresso usando o ID do registro (não o scale["id"])
+        
+        # Verifica se a escala já foi respondida
         progress_resp = supabase_client.from_("scale_progress") \
             .select("completed") \
-            .eq("id", scale_progress_id) \
+            .eq("id", scale_progress_id_or_msg) \
             .execute()
         if progress_resp.data and progress_resp.data[0].get("completed") is True:
-            # Escala já respondida; não a exibe
-            continue
-        else:
-            # Encontra a primeira escala pendente e sai do loop
-            pending_scale = scale
-            pending_scale_progress_id = scale_progress_id
-            break
+            continue  # Pula escalas já concluídas
+        
+        # Define a escala pendente
+        pending_scale = scale
+        pending_scale_progress_id = scale_progress_id_or_msg
+        break
 
     if pending_scale is None:
         st.info("Você já respondeu todas as escalas.")
         return
 
-    # 3. Exibe a escala pendente
+    # 📝 Exibe a escala pendente
     st.markdown(f"## {pending_scale['scale_name']}")
 
-    # 4. Buscar a definição da escala no catálogo available_scales (para obter os itens)
+    # 🔍 Busca os itens da escala no banco de dados
     scale_id_catalogo = pending_scale["scale_id"]
     scale_info = supabase_client.from_("available_scales") \
         .select("items") \
         .eq("id", scale_id_catalogo) \
         .execute()
+    
     if not scale_info.data:
         st.warning("Não foi possível encontrar os itens para essa escala.")
         return
 
-    # Converte o campo 'items' para dicionário, se necessário
+    # Converte os itens para JSON, se necessário
     escala_json = scale_info.data[0]["items"]
     if isinstance(escala_json, str):
         escala_json = json.loads(escala_json)
     lista_perguntas = escala_json.get("items", [])
 
-    # 5. Exibe o formulário para responder à escala
+    # Formulário para responder à escala
     with st.form(key=f"form_scale_{pending_scale['id']}"):
         st.write("Responda a escala abaixo:")
         answers_dict = {}
         for item_obj in lista_perguntas:
             question_id = item_obj["id"]
             question_text = item_obj["question"]
-            # Define as opções com um placeholder
             options = ["Selecione..."] + item_obj.get("options", [])
             user_response = st.radio(
                 label=f"{question_id}. {question_text}",
@@ -349,9 +337,6 @@ def render_patient_scales(user_id):
                     st.success(msg)
                 else:
                     st.error(msg)
-
-
-
 
 
 def render_add_scale_section(user):
