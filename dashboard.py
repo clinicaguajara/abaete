@@ -112,6 +112,8 @@ def render_dashboard():
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
     
+    placeholder = st.empty()
+
     # 8. Renderiza a seção escolhida.
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])

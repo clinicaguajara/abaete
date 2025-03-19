@@ -1,5 +1,4 @@
 [theme]
-base="dark"  # Força o modo escuro
 backgroundColor="#0e1117"  # Fundo escuro
 secondaryBackgroundColor="#161a1f"  # Fundo da sidebar
 textColor="#FFFFFF"  # Texto branco
