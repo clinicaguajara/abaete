@@ -67,10 +67,10 @@ def render_dashboard(user):
       6. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
     
     Args:
-      None (obtém o usuário autenticado internamente).
+      user (dict): Dicionário contendo os dados do usuário autenticado.
     
     Returns:
-      None.
+      None (apenas renderiza a interface).
     
     Calls:
       - get_user() 
@@ -105,7 +105,12 @@ def render_dashboard(user):
     # Seletor de seções
     opcao = st.selectbox(
         "🔽 Selecione uma ação:",
-        ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
+        [
+            "Minhas Metas",
+            "Testes Psicométricos",
+            "Relatórios"
+        ],
+        key="action_select"
     )
 
     # Renderiza a seção escolhida
@@ -159,18 +164,14 @@ def render_professional_dashboard(user):
 
     # 2. Obtém as informações completas do profissional.
     profile = st.session_state.get("user_profile", {})
-    
-    # 4. Obtém o título do profissional.
-    professional_title = get_professional_title(profile)
-
-    # 5. Ajusta a saudação conforme o gênero do profissional.
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
+    professional_title_with_first_name = get_professional_title(profile)
 
-    # 6. Exibe a saudação personalizada com o primeiro nome.
-    st.subheader(f"{saudacao}, {professional_title}!")
-    st.divider()
+    # Mantém o cabeçalho estável durante atualizações
+    with st.container():
+        st.header(f"{saudacao}, {professional_title_with_first_name}!")  
+        st.divider()
     
-
     # --- Seletor de funcionalidades usando selectbox ---
     st.markdown("##### Painel Profissional")
     
