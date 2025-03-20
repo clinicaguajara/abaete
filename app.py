@@ -8,8 +8,8 @@ from utils.professional_utils import is_professional_enabled
 from utils.user_utils import get_user_info
 
 
-# Configuração inicial.
-# Definimos título, ícone e o layout central.
+# 📬 Configuração inicial.
+# Define título, ícone e o layout central.
 st.set_page_config(
     page_title="Abaeté",
     page_icon="🪴",
@@ -21,104 +21,105 @@ st.set_page_config(
 # 🌐 Função para inicializar a sessão e evitar erros de navegação.
 def initialize_session_state():
     """
-    Inicializa as variáveis de sessão do Streamlit para controlar o estado do app.
-    
+    Inicializa as variáveis de estado da sessão do Streamlit para garantir que o aplicativo funcione corretamente.
+
     Fluxo:
-        1. Se a chave "user" não existir em st.session_state, define-a como None.
-        2. Se a chave "processing" não existir, inicializa como False (nenhuma operação em andamento).
-        3. Se a chave "refresh" não existir, inicializa como False (sem necessidade de atualização imediata).
-    
+        1. Se "user" não existir no `st.session_state`, inicializa como `None`, indicando que o usuário não está autenticado.
+        2. Se "processing" não existir, inicializa como `False`, indicando que nenhuma operação está em andamento.
+        3. Se "refresh" não existir, inicializa como `False`, evitando atualizações desnecessárias na interface.
+
     Args:
         None.
-    
+
     Returns:
-        None (Configura variáveis diretamente no st.session_state).
-    
+        None(as variáveis são configuradas diretamente no `st.session_state`).
+
     Calls:
-        None.
+        None (modifica apenas `st.session_state`).
     """
-    # Se a sessão ainda não estiver definida...
+    # 1. Se a sessão ainda não estiver definida...
     if "user" not in st.session_state:
         st.session_state["user"] = None  # O usuário é inicializado como não autenticado.
    
-    # Se o processamento das páginas ainda não foi executado...
+    # 2. Se o processamento das páginas ainda não foi executado...
     if "processing" not in st.session_state:
         st.session_state["processing"] = False # É porque não há nada para ser processado.
    
-    # Se a interface do aplicativo ainda não foi atualizada...
+    # 3. Se a interface do aplicativo ainda não foi atualizada...
     if "refresh" not in st.session_state:
-        st.session_state["refresh"] = False # Devemos aguardar alguma interação do usuário.
+        st.session_state["refresh"] = False # Aguarda alguma interação do usuário antes de continuar.
 
 
 # 🧭 Função principal que tudo controla.
 def main():
     """
-    Função principal que controla o fluxo de navegação e renderização do aplicativo.
+    Controla o fluxo de navegação e renderização do aplicativo.
 
     Fluxo:
-      1. Inicializa as variáveis de sessão utilizando initialize_session_state(), garantindo que as chaves
-         "user", "processing" e "refresh" estejam definidas.
-      2. Carrega o CSS customizado com load_css() para configurar a aparência do aplicativo.
-      3. Recupera o usuário autenticado usando get_user().
-         - Se nenhum usuário estiver logado, chama render_main_layout() para exibir a tela principal.
-      4. Se um usuário estiver autenticado (com campo "id"):
-         a. Armazena o ID do usuário para uso no fluxo.
-         b. Obtém as informações completas do perfil do usuário via get_user_info().
-         c. Verifica se o usuário é um profissional com is_professional_enabled().
-         d. Se o perfil não tiver sido completado (ex.: falta o campo "genero"), exibe o questionário de cadastro
-            chamando render_onboarding_questionnaire().
-         e. Caso o usuário seja um profissional, chama render_professional_dashboard() para renderizar um dashboard especializado.
-         f. Se o usuário não for profissional, chama render_dashboard() para renderizar o dashboard padrão do paciente.
+        1. Inicializa as variáveis de sessão com initialize_session_state(), garantindo que as chaves "user", "processing" e "refresh" estejam definidas.
+        2. Carrega o CSS customizado com load_css() para configurar a aparência do aplicativo.
+        3. Obtém o usuário autenticado através de get_user().
+            3.1 Se o usuário não estiver logado, exibe a tela principal com render_main_layout().
+        4. Se um usuário autenticado for identificado:
+            4.1 Armazena seu ID e obtém as informações do perfil com get_user_info().
+            4.2 Verifica se o usuário é um profissional cadastrado usando is_professional_enabled().
+            4.3 Se o perfil estiver incompleto (exemplo: ausência do campo "genero"), exibe o questionário de cadastro com render_onboarding_questionnaire().
+            4.4 Caso contrário, exibe um dashboard:
+                4.4.1 Se for profissional, chama render_professional_dashboard().
+                4.4.2 Caso contrário, chama render_dashboard() para um usuário padrão.
 
     Args:
-        None (a função utiliza o estado de sessão e funções globais para determinar o fluxo).
+        Nenhum.
 
     Returns:
-        None (a função renderiza a interface diretamente no Streamlit e não retorna valores).
+        Nenhum (a função apenas renderiza a interface do Streamlit).
 
     Calls:
-        - initialize_session_state()  
-        - load_css()                  
-        - get_user()                  
-        - get_user_info()             
-        - is_professional_enabled()   
-        - render_onboarding_questionnaire() 
-        - render_professional_dashboard() 
-        - render_dashboard()          
-        - render_main_layout()        
+        - initialize_session_state() → Inicializa o estado da sessão.
+        - load_css() → Carrega o estilo visual do aplicativo.
+        - get_user() → Obtém o usuário autenticado.
+        - get_user_info(user_id, full_profile=True) → Recupera informações completas do usuário.
+        - is_professional_enabled(user_id) → Verifica se o usuário é profissional.
+        - render_onboarding_questionnaire(user_id, user["email"]) → Exibe o questionário de cadastro, se necessário.
+        - render_professional_dashboard(user) → Renderiza o dashboard para profissionais.
+        - render_dashboard() → Renderiza o dashboard padrão para usuários não profissionais.
+        - render_main_layout() → Renderiza a tela principal caso ninguém esteja autenticado.
     """
-    initialize_session_state() # Inicializa a sessão.
-    load_css() # Cria o visual.
-    user = get_user()  # E verifica quem está navegando.
+    # 1. Inicializa a sessão.
+    initialize_session_state()
+    # 2. Cria o visual.
+    load_css()
+    # 3. Verifica quem está navegando.
+    user = get_user() 
     
-    # Se temos um ID logado na sessão...
+    # 4. Se existir um ID logado na sessão...
     if user and "id" in user:
-        user_id = user["id"]  # Guardamos o ID para ser utilizado no fluxo.
+        user_id = user["id"]  # 4.1 Guarda o ID em uma variável do tipo string.
 
-        # Busca as informações do perfil do usuário.
+        # 4.1 Busca as informações do perfil do usuário com user_id e salva em um dicionário.
         user_profile = get_user_info(user_id, full_profile=True)
         
-        # Busca quais usuários são profissionais.
+        # 4.2 Busca quais usuários são profissionais e salva em um dicionário.
         is_professional = is_professional_enabled(user_id)
 
-        # Se o questionário de cadastro ainda não foi respondido...
+        # 4.3 Se o questionário de cadastro ainda não foi respondido...
         if not user_profile or not user_profile.get("genero"):
-            render_onboarding_questionnaire(user_id, user["email"]) # Renderizamos o questionário de cadastro.
+            render_onboarding_questionnaire(user_id, user["email"]) # 4.3 Renderiza o questionário de cadastro.
 
-        # Mas...
+        # 4.4 Mas...
         else:
-            # Se o usuário for um profissional cadastrado...
+            # 4.4.1 Se o usuário for um profissional cadastrado...
             if is_professional:
-                render_professional_dashboard(user) # Exibe um dashboard especial.
-            # Caso contrário...
+                render_professional_dashboard(user) # 4.4.1 Exibe um dashboard especial.
+            # 4.4.2 Caso contrário...
             else:
-                render_dashboard() # Renderiza a página normal.
+                render_dashboard() # 4.4.2 Renderiza a página normal.
 
-    # Entretanto, se ninguém está logado...
+    # 3.1 Entretanto, se ninguém está logado...
     else:
-        render_main_layout()  # Renderizamos o layout principal.
+        render_main_layout()  # 3.1 Renderiza o layout principal.
 
 
 # ⏯️ Executa o código, sem mais demora.
 if __name__ == "__main__":
-    main() # Chamando main() e começando a história!
+    main() # Chama a função principal.
