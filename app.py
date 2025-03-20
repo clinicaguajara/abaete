@@ -5,6 +5,7 @@ from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
+from utils.user_utils import get_user_info
 
 
 # Configuração inicial.
@@ -94,7 +95,8 @@ def main():
     if user and "id" in user:
         user_id = user["id"]  # Guardamos o ID para ser utilizado no fluxo.
 
-        user_profile = st.session_state["user_profile"]
+        # Busca as informações do perfil do usuário.
+        user_profile = get_user_info(user_id, full_profile=True)
         
         # Busca quais usuários são profissionais.
         is_professional = is_professional_enabled(user_id)
@@ -110,7 +112,7 @@ def main():
                 render_professional_dashboard(user) # Exibe um dashboard especial.
             # Caso contrário...
             else:
-                render_dashboard(user) # Renderiza a página normal.
+                render_dashboard() # Renderiza a página normal.
 
     # Entretanto, se ninguém está logado...
     else:

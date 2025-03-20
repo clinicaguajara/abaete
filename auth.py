@@ -37,59 +37,47 @@ def sign_in(email, password):
 
     Fluxo:
       1. Tenta autenticar o usuário com o Supabase através de sign_in_with_password().
-      2. Se a autenticação for bem-sucedida:
-         a. Obtém `email` e `id` do usuário autenticado.
-         b. Tenta buscar `display_name` do `user_profile` no banco.
-         c. Se não encontrar o perfil, usa o `display_name` dos metadados do Supabase Auth.
-         d. Armazena `user_data` em `st.session_state["user"]`.
-      3. Retorna o usuário autenticado e uma mensagem de erro caso haja falha.
+      2. Se a autenticação for bem-sucedida e o objeto usuário estiver presente:
+         a. Cria um dicionário (user_data) contendo email, id e display_name.
+         b. Armazena user_data em st.session_state["user"].
+         c. Limpa o cache e marca st.session_state["refresh"] como True para reinicializar a interface.
+      3. Retorna o dicionário do usuário e uma mensagem de sucesso (ou None, se não houver mensagem).
 
     Args:
         email (str): O email do usuário.
         password (str): A senha do usuário.
 
     Returns:
-        tuple: (user_data, None) em caso de sucesso ou (None, mensagem_de_erro) se ocorrer erro.
+        tuple: (user_data, None) em caso de sucesso ou (None, mensagem_de_erro) se ocorrer alguma exceção.
 
     Calls:
-        - supabase_client.auth.sign_in_with_password()
-        - get_user_info() (para buscar o perfil completo do banco)
+        - supabase_client.auth.sign_in_with_password() 
+        - get_user()
     """
-    from utils.user_utils import get_user_info
     try:
+        # Tenta logar com email e senha.
         response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
        
-        if response and hasattr(response, "user") and response.user:
-            user_obj = response.user  # Objeto do usuário autenticado.
+        # Se a autenticação foi bem-sucedida, processa os dados do usuário.
+        if response and hasattr(response, "user") and response.user: 
+            user_obj = response.user  # Objeto do usuário retornado pelo Supabase.
 
-            user_id = user_obj.id
-            email = user_obj.email
-
-            # Busca o perfil completo do usuário no banco
-            user_profile = get_user_info(user_id, full_profile=True)
-
-            # Se o perfil existir no banco, usamos esse nome. Se não, pegamos dos metadados do Supabase.
-            display_name = user_profile.get("display_name") if user_profile else user_obj.user_metadata.get("display_name", "Usuário")
-
-            # Criamos um dicionário com os dados do usuário autenticado.
+            # Cria um dicionário com informações essenciais para a sessão.
             user_data = {
-                "email": email,
-                "id": user_id,
-                "display_name": display_name  # Agora pegamos do banco, se disponível.
+                "email": user_obj.email,
+                "id": user_obj.id,
+                "display_name": user_obj.user_metadata.get("display_name", "Usuário") if hasattr(user_obj, "user_metadata") else "Usuário"
             }
 
-            # Armazena o usuário autenticado na sessão e limpa o cache.
+            # Armazena o usuário na sessão e atualiza o estado.
             st.session_state["user"] = user_data
-            st.session_state["user_profile"] = user_profile
             st.cache_data.clear()
             st.session_state["refresh"] = True
-            st.rerun() 
-            
             return user_data, None
 
     except Exception as e:
         return None, f"❌ Erro ao logar: {str(e)}"
-    
+
 
 # 📝 Função para o usuário se registrar.
 def sign_up(email, password, confirm_password, display_name):
@@ -186,5 +174,4 @@ def sign_out():
     st.session_state["show_prof_input"] = False
     st.cache_data.clear() 
     st.rerun()  # Reinicia a interface para refletir o logout.
-
 

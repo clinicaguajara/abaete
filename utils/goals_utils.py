@@ -395,43 +395,57 @@ def render_goal_expander(goal, prazo):
 
 
 # 🖥️ Função para renderizar as metas de um paciente.
-import streamlit as st
-from utils.goals_utils import get_patient_goals, group_goals_by_timeframe, render_goal_expander
-
 def render_patient_goals(user_id):
     """
-    Renderiza as metas atribuídas ao paciente, armazenando os dados no session_state para evitar blinks.
+    Renderiza as metas atribuídas ao paciente, permitindo que ele registre o progresso diário 
+    (apenas para metas de curto prazo).
 
+    Fluxo:
+        1. Exibe um título grande e chamativo "Minhas Metas" com HTML customizado.
+        2. Busca as metas do paciente a partir do banco de dados.
+        3. Agrupa as metas por prazo (curto, médio e longo) utilizando group_goals_by_timeframe().
+        4. Para cada grupo, exibe um cabeçalho (subtítulo) estilizado em laranja e, para cada meta,
+           chama render_goal_expander() para exibir seus detalhes.
+    
     Args:
         user_id (str): ID do paciente autenticado.
-
+    
     Returns:
-        None (apenas renderiza a interface).
+        None: A função apenas renderiza a interface.
+    
+    Calls:
+        - get_patient_goals() para buscar as metas.
+        - group_goals_by_timeframe() para agrupar as metas.
+        - render_goal_expander() para exibir os detalhes de cada meta.
     """
-    st.markdown("### 🎯 Minhas Metas")
+    # Exibe o título "Minhas Metas" com estilo chamativo
+    st.markdown(
+        """
+        <h2 style='color: white; font-size: 36px; font-weight: bold;'>
+        🎯 Minhas Metas
+        </h2>
+        """,
+        unsafe_allow_html=True
+    )
 
-    # ⚡ Otimização: Armazena os dados no session_state para evitar blinks
-    if "patient_goals" not in st.session_state:
-        st.session_state["patient_goals"], error_msg = get_patient_goals(user_id)
-        if error_msg:
-            st.error(error_msg)
-            return
-
-    goals = st.session_state["patient_goals"]
-
+    # 1. Buscar as metas do paciente
+    goals, error_msg = get_patient_goals(user_id)
+    if error_msg:
+        st.error(error_msg)
+        return
     if not goals:
         st.info("⚠️ Nenhuma meta foi designada para você ainda.")
         return
 
-    # 🏷️ Organiza as metas por prazo
+    # 2. Agrupar as metas por prazo
     grouped_goals = group_goals_by_timeframe(goals)
     prazo_labels = {
         "curto": "Metas de Curto Prazo",
         "medio": "Metas de Médio Prazo",
         "longo": "Metas de Longo Prazo"
     }
-
-    # 🔄 Renderiza cada grupo de metas sem recarregar desnecessariamente
+    
+    # 3. Exibir cada grupo de metas com um subtítulo estilizado
     for prazo, metas in grouped_goals.items():
         if metas:
             st.markdown(
@@ -562,6 +576,5 @@ def render_goal_progress_chart(goal):
 
     # 10. Renderiza o gráfico na interface do Streamlit
     st.plotly_chart(fig, key=f"plotly_chart_{goal['id']}", use_container_width=True)
-
 
 

@@ -8,39 +8,39 @@ def get_user_info(identifier, by_email=False, full_profile=False):
     """
     Obtém informações de um usuário (paciente ou profissional) do banco de dados.
 
-    Fluxo:
+     Fluxo:
         1. Se `by_email=True`, busca o usuário pelo e-mail.
         2. Se `by_email=False`, busca o usuário pelo ID.
-        3. Primeiro, tenta obter os dados do `user_profile`, incluindo o `display_name`.
-        4. Se encontrar o perfil no `user_profile`, retorna esses dados e não consulta o Supabase Auth.
-        5. Se não encontrar o perfil no `user_profile`, busca o `display_name` nos metadados do Supabase Auth.
-        6. Se `full_profile=True`, retorna todos os dados do usuário.
-        7. Se `full_profile=False`, retorna apenas `display_name` e `email`.
+        3. Se `full_profile=True`, retorna todos os dados do usuário.
+        4. Se `full_profile=False`, retorna apenas `display_name` e `email`.
+        5. Se o usuário não estiver cadastrado em `user_profile`, tenta obter `display_name` do Supabase Auth.
 
-    Args:
+     Args:
         identifier (str): `auth_user_id` ou `email` do usuário.
         by_email (bool): Se `True`, faz a busca pelo e-mail. Se `False`, usa `auth_user_id`.
         full_profile (bool): Se `True`, retorna todos os campos do usuário. Se `False`, retorna apenas `display_name` e `email`.
 
-    Returns:
+     Returns:
         dict: Dados do usuário.
             - Se `full_profile=True`: Retorna todos os campos do usuário.
             - Se `full_profile=False`: Retorna apenas `auth_user_id`, `display_name` e `email`.
     """
-    # Criar uma chave única para cache por usuário
+    
+    # Garante que o cache seja separado por usuário.
     cache_key = f"user_info_{identifier}_{full_profile}"
-
+    
     @st.cache_data
     def fetch_user_info(identifier, by_email, full_profile):
         """Busca os dados no banco de dados do Supabase."""
         
+        # Se identifier for None, retorna None imediatamente (evita consultas desnecessárias).
         if not identifier:
-            return None  # Evita consultas desnecessárias
+            return None
 
         # Define os campos que serão retornados dependendo da necessidade
         select_fields = "*" if full_profile else "auth_user_id, display_name, email"
 
-        # Define a query base na tabela `user_profile`
+        # Define a query base
         query = supabase_client.from_("user_profile").select(select_fields)
 
         # Aplica o filtro adequado (busca por email ou ID)
@@ -49,18 +49,18 @@ def get_user_info(identifier, by_email=False, full_profile=False):
         else:
             response = query.eq("auth_user_id", identifier).execute()
 
-        # ⚠️ Se o perfil do usuário EXISTIR no `user_profile`, retorna esses dados e NÃO consulta o Supabase Auth
+        # Se encontrou dados, retorna o resultado correto
         if response and hasattr(response, "data") and response.data:
-            return response.data[0]  
+            return response.data[0]  # Retorna o primeiro resultado encontrado
 
-        # 📌 Se o perfil AINDA NÃO FOI CRIADO, buscar os dados do Supabase Auth
-        auth_response = supabase_client.auth.get_user()
-        if auth_response and auth_response.user:
-            user_metadata = auth_response.user.user_metadata if auth_response.user.user_metadata else {}
+        # Se o usuário não estiver na tabela `user_profile`, buscamos nos metadados do Supabase Auth
+        user_response = supabase_client.auth.get_user()
+        if user_response and user_response.user:
+            user_metadata = user_response.user.user_metadata if user_response.user.user_metadata else {}
             return {
                 "auth_user_id": identifier,
                 "display_name": user_metadata.get("display_name", "Usuário"),
-                "email": auth_response.user.email
+                "email": user_response.user.email
             }
 
         # Se ainda assim não encontrou, retorna valores padrões
