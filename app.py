@@ -5,7 +5,6 @@ from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
-from utils.user_utils import get_user_info
 
 
 # 📬 Configuração inicial.
@@ -56,7 +55,7 @@ def main():
     Controla o fluxo de navegação e renderização do aplicativo.
 
     Fluxo:
-        1. Inicializa as variáveis de sessão com initialize_session_state(), garantindo que as chaves user, "rocessing e refresh estejam definidas.
+        1. Inicializa as variáveis de sessão com initialize_session_state(), garantindo que as chaves user, processing e refresh estejam definidas.
         2. Carrega o CSS customizado com load_css() para configurar a aparência do aplicativo.
         3. Obtém o usuário autenticado através de get_user().
             3.1 Se o usuário não estiver logado, exibe a tela principal com render_main_layout().
@@ -78,11 +77,10 @@ def main():
         - initialize_session_state() → Inicializa o estado da sessão.
         - load_css() → Carrega o estilo visual do aplicativo.
         - get_user() → Obtém o usuário autenticado.
-        - get_user_info(user_id, full_profile=True) → Recupera informações completas do usuário.
-        - is_professional_enabled(user_id) → Verifica se o usuário é profissional.
-        - render_onboarding_questionnaire(user_id, user["email"]) → Exibe o questionário de cadastro, se necessário.
+        - is_professional_enabled(user["id"]) → Verifica se o usuário é profissional.
+        - render_onboarding_questionnaire(user["id", user["email"]) → Exibe o questionário de cadastro, se necessário.
         - render_professional_dashboard(user) → Renderiza o dashboard para profissionais.
-        - render_dashboard() → Renderiza o dashboard padrão para usuários não profissionais.
+        - render_dashboard(user) → Renderiza o dashboard padrão para usuários não profissionais.
         - render_main_layout() → Renderiza a tela principal caso ninguém esteja autenticado.
     """
     # 1. Inicializa a sessão.
@@ -92,7 +90,7 @@ def main():
     # 3. Verifica quem está navegando.
     user = get_user() 
     
-    # 4. Se existir um ID logado na sessão...
+    # 4. Se houver um ID logado na sessão...
     if user and "id" in user:
         
         # 4.2 Busca quais usuários são profissionais e salva em um dicionário.
