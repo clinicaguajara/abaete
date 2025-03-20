@@ -115,7 +115,7 @@ def sign_up(email, password, confirm_password, display_name):
         display_name (str): Nome do usuário.
 
     Returns:
-        tuple: (user_obj, mensagem): user_obj se o cadastro for bem-sucedido; None e mensagem de erro caso contrário.
+        tuple: (user_obj, mensagem) se o cadastro for bem-sucedido ou (None, mensagem_de_erro) se houver falha.
 
     Calls:
         - supabase_client.auth.sign_up()
@@ -142,7 +142,7 @@ def sign_up(email, password, confirm_password, display_name):
 
     # 5. Se houver ume exceção...
     except Exception as e:
-        return None, f"❌ Erro ao criar conta: {str(e)}" # Explica o problema.
+        return None, f"❌ Erro ao criar conta: {str(e)}" # 5. Explica o problema.
 
 
 # 🕵️‍♂️ Função que busca o usuário que fez a conexão.
@@ -157,7 +157,7 @@ def get_user():
         None.
 
     Returns:
-        dict or None (Dados do usuário autenticado, se existir. Caso contrário, None).
+        dict or None: Dados do usuário autenticado, se existir. Caso contrário, None.
 
     Calls:
         None.
