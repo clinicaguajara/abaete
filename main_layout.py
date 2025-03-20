@@ -25,7 +25,7 @@ def render_main_layout():
     """
     # Placeholder para manter o título estável durante recarregamentos.
     title_placeholder = st.empty()
-    title_placeholder.markdown("# Abaeté 🌱")
+    title_placeholder.markdown("# Abaeté 🪴")
     
     # Placeholder para o subtítulo.
     subtitle_placeholder = st.empty()
@@ -48,7 +48,8 @@ def render_main_layout():
         - **Utilize nossas correções automatizadas** para garantir mais precisão na interpretação dos dados.
         - **Monitore a evolução longitudinalmente** observando padrões ao longo do tempo.
         
-        🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.**  
+        🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.** 
+        
         🔍 **Eleve sua prática profissional e ofereça um acompanhamento mais eficaz e personalizado.**  
         """
     )
