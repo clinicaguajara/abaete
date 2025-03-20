@@ -19,10 +19,12 @@ def sign_in(email, password):
     Fluxo:
         1. Tenta autenticar o usuário com o Supabase através de sign_in_with_password().
         2. Se a autenticação for bem-sucedida e o objeto usuário estiver presente:
-            2.1 Cria um dicionário (user_data) contendo email, id e display_name.
-            2.2 Armazena user_data em st.session_state["user"].
-            2.3 Limpa o cache e marca st.session_state["refresh"] como True para reinicializar a interface.
-        3. Retorna o dicionário do usuário e uma mensagem de sucesso (ou None, se não houver mensagem).
+            2.1 Busca as informações completas do usuário a partir do objeto.
+            2.2 Mescla as informações em user_data.
+            2.3 Armazena user_data em st.session_state["user"].
+            2.4 Limpa o cache e marca st.session_state["refresh"] como True para reinicializar a interface.
+            2.5 Força a reinicialização da interface.
+        3. Se houver uma exceção no fluxo, explica o problema.
 
     Args:
         email (str): Email do usuário.
@@ -40,14 +42,14 @@ def sign_in(email, password):
         # 1. Tenta logar com email e senha.
         response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
        
-        # 2. Se a autenticação foi bem-sucedida, processa os dados do usuário.
+        # 2. Se conseguir autenticar, processa os dados do usuário.
         if response and hasattr(response, "user") and response.user: 
-            user_obj = response.user  # 2. Objeto do usuário retornado pelo Supabase.
+            user_obj = response.user
             
-            # Obtém os dados completos do perfil
+            # 2.1 Obtém os dados completos do perfil do usuário.
             user_profile = get_user_info(user_obj.id, full_profile=True)
 
-            # Unifica os dados básicos do Supabase Auth com os do perfil
+            # 2.2 Mescla as informações em um dicionário.
             user_data = {
                 "id": user_obj.id,
                 "email": user_obj.email,
@@ -55,14 +57,15 @@ def sign_in(email, password):
                 **user_profile  # Mescla os dados do perfil
             }
 
-            # 2.2 Armazena o usuário na sessão.
+            # 2.3 Armazena o usuário na sessão.
             st.session_state["user"] = user_data
-            st.cache_data.clear() # 2.3 Limpa o cache e atualiza refresh.
+            st.cache_data.clear() # 2.4 Limpa o cache e atualiza refresh.
             st.session_state["refresh"] = True
-            st.rerun() # 3. Força o recarregamento da interface imediatamente.
+            st.rerun() # 2.5 Força a reinicialização da interface imediatamente.
 
+    # 3. Se houver uma exceção no fluxo...
     except Exception as e:
-        return None, f"❌ Erro ao logar: {str(e)}"
+        return None, f"❌ Erro ao logar: {str(e)}" # 3. Explica o problema.
 
 
 # 🔓 Função para a senha recuperar.
