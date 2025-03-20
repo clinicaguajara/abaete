@@ -24,18 +24,18 @@ def initialize_session_state():
     Inicializa as variáveis de estado da sessão do Streamlit para garantir que o aplicativo funcione corretamente.
 
     Fluxo:
-        1. Se "user" não existir no `st.session_state`, inicializa como `None`, indicando que o usuário não está autenticado.
-        2. Se "processing" não existir, inicializa como `False`, indicando que nenhuma operação está em andamento.
-        3. Se "refresh" não existir, inicializa como `False`, evitando atualizações desnecessárias na interface.
+        1. Se user não existir no st.session_state, inicializa como None, indicando que o usuário não está autenticado.
+        2. Se processing não existir, inicializa como False, indicando que nenhuma operação está em andamento.
+        3. Se refresh não existir, inicializa como False, evitando atualizações desnecessárias na interface.
 
     Args:
         None.
 
     Returns:
-        None(as variáveis são configuradas diretamente no `st.session_state`).
+        None: As variáveis são configuradas diretamente no st.session_state).
 
     Calls:
-        None (modifica apenas `st.session_state`).
+        None: Modifica apenas st.session_state.
     """
     # 1. Se a sessão ainda não estiver definida...
     if "user" not in st.session_state:
@@ -56,7 +56,7 @@ def main():
     Controla o fluxo de navegação e renderização do aplicativo.
 
     Fluxo:
-        1. Inicializa as variáveis de sessão com initialize_session_state(), garantindo que as chaves "user", "processing" e "refresh" estejam definidas.
+        1. Inicializa as variáveis de sessão com initialize_session_state(), garantindo que as chaves user, "rocessing e refresh estejam definidas.
         2. Carrega o CSS customizado com load_css() para configurar a aparência do aplicativo.
         3. Obtém o usuário autenticado através de get_user().
             3.1 Se o usuário não estiver logado, exibe a tela principal com render_main_layout().
@@ -72,7 +72,7 @@ def main():
         Nenhum.
 
     Returns:
-        Nenhum (a função apenas renderiza a interface do Streamlit).
+        Nenhum: Apenas renderiza a interface no Streamlit.
 
     Calls:
         - initialize_session_state() → Inicializa o estado da sessão.
