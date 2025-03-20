@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import get_user, sign_out
+from auth import sign_out
 from patient_link import render_pending_invitations, render_patient_invitations, create_patient_invitation
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data

@@ -42,11 +42,11 @@ def sign_in(email, password):
         # 1. Tenta logar com email e senha.
         response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
        
-        # 2. Se conseguir autenticar, processa os dados do usuário.
+        # 2. Se conseguir autenticar, processa os dados do usuário no Supabase Auth.
         if response and hasattr(response, "user") and response.user: 
             user_obj = response.user
             
-            # 2.1 Obtém os dados completos do perfil do usuário.
+            # 2.1 Obtém os dados completos do perfil do usuário na tabela user_profile.
             user_profile = get_user_info(user_obj.id, full_profile=True)
 
             # 2.2 Mescla as informações em um dicionário.
@@ -65,7 +65,7 @@ def sign_in(email, password):
 
     # 3. Se houver uma exceção no fluxo...
     except Exception as e:
-        return None, f"❌ Erro ao logar: {str(e)}" # 3. Explica o problema.
+        st.error(f"❌ Erro ao logar: {str(e)}") # 3. Explica o problema.
 
 
 # 🔓 Função para a senha recuperar.
