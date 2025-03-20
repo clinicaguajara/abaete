@@ -113,7 +113,7 @@ def main():
                 render_professional_dashboard(user) # 4.4.1 Exibe um dashboard especial.
             # 4.4.2 Caso contrário...
             else:
-                render_dashboard() # 4.4.2 Renderiza a página normal.
+                render_dashboard(user) # 4.4.2 Renderiza a página normal.
 
     # 3.1 Entretanto, se ninguém está logado...
     else:
