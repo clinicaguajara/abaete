@@ -59,7 +59,7 @@ def sign_in(email, password):
             st.session_state["user"] = user_data
             st.cache_data.clear() # 2.3 Limpa o cache e atualiza refresh.
             st.session_state["refresh"] = True
-            return user_data, None # 3. Retorna user_data com informações essenciais.
+            st.rerun() # 3. Força o recarregamento da interface imediatamente.
 
     except Exception as e:
         return None, f"❌ Erro ao logar: {str(e)}"
