@@ -32,7 +32,6 @@ def render_sidebar(user):
         - is_professional_enabled()
         - render_professional_enable_section()
     """
-    
     with st.sidebar:
         
         # 1. Se o usuário não estiver autenticado...
@@ -98,15 +97,12 @@ def render_dashboard(user):
         
     # 2. Renderiza a sidebar com informações do usuário.
     render_sidebar(user)
-    
-    # 3. Obtém o perfil completo do usuário.
-    profile = get_user_info(user["id"], full_profile=True)
 
     # 4. Ajusta a saudação conforme o gênero do usuário.
-    saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
+    saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
 
     # 5. Obtém o primeiro nome do usuário para exibir na saudação.
-    first_name = profile.get("display_name", "Usuário").split()[0] 
+    first_name = user.get("display_name", "Usuário").split()[0] 
     
     # 6. Placeholder para manter o cabeçalho estável durante recarregamentos.
     header_placeholder = st.empty()
@@ -171,18 +167,15 @@ def render_professional_dashboard(user):
     # 2. Renderiza a sidebar.
     render_sidebar(user)
 
-    # 3. Obtém as informações completas do profissional.
-    profile = get_user_info(user["id"], full_profile=True)
-
     # 4. Obtém apenas o primeiro nome do profissional.
-    first_name = profile.get("display_name", "Usuário").split()[0] 
+    first_name = user.get("display_name", "Usuário").split()[0] 
 
     # 5. Obtém o título do profissional.
-    professional_title_first_name = get_professional_title(profile)
+    professional_title_first_name = get_professional_title(user)
 
     # 6. Ajusta a saudação conforme o gênero do profissional.
     saudacao_base = "Bem-vindo"
-    saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
+    saudacao = adjust_gender_ending(saudacao_base, user.get("genero", "M"))
 
     # 7. Exibe a saudação personalizada com o primeiro nome.
     st.subheader(f"{saudacao}, {professional_title_first_name}!")

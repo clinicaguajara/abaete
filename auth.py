@@ -35,6 +35,7 @@ def sign_in(email, password):
         - supabase_client.auth.sign_in_with_password()
         - get_user()
     """
+    from utils.user_utils import get_user_info
     try:
         # 1. Tenta logar com email e senha.
         response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
@@ -42,12 +43,16 @@ def sign_in(email, password):
         # 2. Se a autenticação foi bem-sucedida, processa os dados do usuário.
         if response and hasattr(response, "user") and response.user: 
             user_obj = response.user  # 2. Objeto do usuário retornado pelo Supabase.
+            
+            # Obtém os dados completos do perfil
+            user_profile = get_user_info(user_obj.id, full_profile=True)
 
-            # 2.1 Cria um dicionário com informações essenciais para a sessão.
+            # Unifica os dados básicos do Supabase Auth com os do perfil
             user_data = {
-                "email": user_obj.email,
                 "id": user_obj.id,
-                "display_name": user_obj.user_metadata.get("display_name", "Usuário") if hasattr(user_obj, "user_metadata") else "Usuário"
+                "email": user_obj.email,
+                "display_name": user_obj.user_metadata.get("display_name", "Usuário"),
+                **user_profile  # Mescla os dados do perfil
             }
 
             # 2.2 Armazena o usuário na sessão.

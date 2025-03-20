@@ -94,17 +94,13 @@ def main():
     
     # 4. Se existir um ID logado na sessão...
     if user and "id" in user:
-        user_id = user["id"]  # 4.1 Guarda o ID em uma variável do tipo string.
-
-        # 4.1 Busca as informações do perfil do usuário com user_id e salva em um dicionário.
-        user_profile = get_user_info(user_id, full_profile=True)
         
         # 4.2 Busca quais usuários são profissionais e salva em um dicionário.
-        is_professional = is_professional_enabled(user_id)
+        is_professional = is_professional_enabled(user["id"])
 
         # 4.3 Se o questionário de cadastro ainda não foi respondido...
-        if not user_profile or not user_profile.get("genero"):
-            render_onboarding_questionnaire(user_id, user["email"]) # 4.3 Renderiza o questionário de cadastro.
+        if not user or not user.get("genero"):
+            render_onboarding_questionnaire(user["id"], user["email"]) # 4.3 Renderiza o questionário de cadastro.
 
         # 4.4 Mas...
         else:
