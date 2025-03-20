@@ -93,7 +93,7 @@ def render_dashboard():
     saudacao = adjust_gender_ending("Bem-vindo", profile.get("genero", "M"))
 
     # 3. Pega apenas o primeiro nome do usuário para exibir na saudação.
-    first_name = user['display_name'].split()[0]
+    first_name = profile.get("display_name", "Usuário").split()[0] 
     
     # 4. Renderiza a sidebar com informações do usuário.
     render_sidebar(user)
@@ -166,17 +166,17 @@ def render_professional_dashboard(user):
     profile = get_user_info(user["id"], full_profile=True)
 
     # 3. Obtém apenas o primeiro nome do profissional.
-    first_name = user['display_name'].split()[0]
+    first_name = profile.get("display_name", "Usuário").split()[0] 
 
     # 4. Obtém o título do profissional.
-    professional_title = get_professional_title(profile)
+    professional_title_first_name = get_professional_title(profile)
 
     # 5. Ajusta a saudação conforme o gênero do profissional.
     saudacao_base = "Bem-vindo"
     saudacao = adjust_gender_ending(saudacao_base, profile.get("genero", "M"))
 
     # 6. Exibe a saudação personalizada com o primeiro nome.
-    st.subheader(f"{saudacao}, {first_name}!")
+    st.subheader(f"{saudacao}, {professional_title_first_name}!")
 
     # --- Seletor de funcionalidades usando selectbox ---
     st.markdown("##### Painel Profissional")

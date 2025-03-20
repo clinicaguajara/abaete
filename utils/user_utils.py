@@ -27,6 +27,7 @@ def get_user_info(identifier, by_email=False, full_profile=False):
             - Se `full_profile=True`: Retorna todos os campos do usuário.
             - Se `full_profile=False`: Retorna apenas `auth_user_id`, `display_name` e `email`.
     """
+    
     # Criar uma chave única para cache por usuário
     cache_key = f"user_info_{identifier}_{full_profile}"
 
