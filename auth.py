@@ -1,10 +1,13 @@
 import streamlit as st
 import supabase
+from urllib.parse import urlencode
 
-# 🔑 Configuração inicial do Supabase...
+# 🔑 Configuração inicial do Supabase e autenticação OAuth.
 # Obtém as credenciais a partir do Streamlit.
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+GOOGLE_CLIENT_ID = st.secrets["auth.google"]["CLIENT_ID"]
+GOOGLE_REDIRECT_URI = st.secrets["auth"]["REDIRECT_URI"]
 
 # Cria o client de autenticação do Supabase.
 # Esse client é utilizado para realizar operações de login, cadastro, recuperação de senha e logout.
@@ -203,3 +206,29 @@ def sign_out():
     st.cache_data.clear() # 3. Limpa o cache.
     st.rerun()  # 4. Reinicia a interface para refletir o logout.
 
+
+def get_google_login_url():
+    """
+    Gera a URL para autenticação via Google no Supabase.
+
+    Returns:
+        str: URL de autenticação do Google.
+    """
+    params = {
+        "provider": "google",
+        "redirect_to": GOOGLE_REDIRECT_URI
+    }
+    return f"{SUPABASE_URL}/auth/v1/authorize?{urlencode(params)}"
+
+def sign_in_with_google():
+    """
+    Realiza o login do usuário via Google e armazena na sessão.
+
+    - Se o usuário já estiver autenticado no Supabase, ele será vinculado à conta existente.
+    """
+    query_params = st.experimental_get_query_params()
+    if "access_token" in query_params:
+        access_token = query_params["access_token"][0]
+        st.session_state["user"] = supabase_client.auth.get_user(access_token)
+        st.success("✅ Login realizado com sucesso!")
+        st.rerun()
