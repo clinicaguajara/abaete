@@ -3,13 +3,12 @@ from auth import get_user, sign_out
 from patient_link import render_pending_invitations, render_patient_invitations, create_patient_invitation
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import render_professional_enable_section, is_professional_enabled, enable_professional_area, get_professional_data
-from utils.user_utils import get_user_info
 from utils.goals_utils import render_patient_goals, render_add_goal_section 
 from utils.scales_utils import render_add_scale_section, render_patient_scales
 from utils.correction_utils import render_scale_correction_section 
 
 
-# 🖥️ Renderiza a sidebar...
+# 🖥️ Função para renderiza a sidebar.
 def render_sidebar(user):
     """
     Renderiza a barra lateral do usuário autenticado.
@@ -82,7 +81,6 @@ def render_dashboard(user):
 
     Calls:
         - get_user() 
-        - get_user_info() 
         - adjust_gender_ending()
         - render_sidebar() 
         - render_patient_invitations() 
@@ -136,12 +134,11 @@ def render_professional_dashboard(user):
         1. Verifica se o usuário está autenticado. Se não, retorna.
         2. Renderiza a sidebar com informações do usuário.
         3. Obtém as informações completas do profissional.
-        4. Obtém apenas o primeiro nome do profissional.
-        5. Obtém o título do profissional.
-        6. Ajusta a saudação conforme o gênero do profissional.
-        7. Exibe a saudação personalizada.
-        8. Exibe um seletor de ações para o profissional.
-        9. Executa a ação escolhida.
+        4. Obtém o título do profissional junto com o seu primeiro nome.
+        5. Ajusta a saudação conforme o gênero do profissional.
+        6. Exibe a saudação personalizada.
+        7. Exibe um seletor de ações para o profissional.
+        8. Executa a ação escolhida.
 
     Args:
         user (dict): Dicionário contendo os dados do usuário autenticado.
@@ -151,7 +148,6 @@ def render_professional_dashboard(user):
 
     Calls:
         - render_sidebar()
-        - get_user_info()
         - get_professional_title()
         - adjust_gender_ending()
         - create_patient_invitation()
@@ -167,20 +163,17 @@ def render_professional_dashboard(user):
     # 2. Renderiza a sidebar.
     render_sidebar(user)
 
-    # 4. Obtém apenas o primeiro nome do profissional.
-    first_name = user.get("display_name", "Usuário").split()[0] 
-
-    # 5. Obtém o título do profissional.
+    # 4. Obtém o título do profissional.
     professional_title_first_name = get_professional_title(user)
 
-    # 6. Ajusta a saudação conforme o gênero do profissional.
+    # 5. Ajusta a saudação conforme o gênero do profissional.
     saudacao_base = "Bem-vindo"
     saudacao = adjust_gender_ending(saudacao_base, user.get("genero", "M"))
 
-    # 7. Exibe a saudação personalizada com o primeiro nome.
+    # 6. Exibe a saudação personalizada com o primeiro nome.
     st.subheader(f"{saudacao}, {professional_title_first_name}!")
 
-    # 8. Seletor de funcionalidades do painel profissional.
+    # 7. Seletor de funcionalidades do painel profissional.
     st.markdown("##### Painel Profissional")
     opcao_selecionada = st.selectbox(
         "🔽 Selecione uma ação:",
@@ -193,7 +186,7 @@ def render_professional_dashboard(user):
         key="action_select"
     )
 
-    # 9. Executa a ação escolhida.
+    # 8. Executa a ação escolhida.
     if opcao_selecionada == "Convidar Paciente":
         st.markdown("##### 📩 Convidar Paciente")
         patient_email = st.text_input("Digite o email do paciente:", key="patient_email_input")
