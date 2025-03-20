@@ -101,7 +101,7 @@ def render_dashboard():
     # 5. Placeholder para manter o cabeçalho estável durante recarregamentos.
     header_placeholder = st.empty()
     header_placeholder.header(f"{saudacao}, {first_name}!")  # Exibe apenas o primeiro nome
-    st.markdown("---")
+    st.divider()
     
     # 6. Exibe os convites pendentes.
     render_patient_invitations(user)
