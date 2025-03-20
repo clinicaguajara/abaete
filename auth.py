@@ -65,7 +65,7 @@ def sign_in(email, password):
             user_id = user_obj.id
             email = user_obj.email
 
-            # 🔥 Busca o perfil completo do usuário no banco
+            # Busca o perfil completo do usuário no banco
             user_profile = get_user_info(user_id, full_profile=True)
 
             # Se o perfil existir no banco, usamos esse nome. Se não, pegamos dos metadados do Supabase.
@@ -78,11 +78,12 @@ def sign_in(email, password):
                 "display_name": display_name  # Agora pegamos do banco, se disponível.
             }
 
-            # 🔥 Armazena o usuário autenticado na sessão e limpa o cache.
+            # Armazena o usuário autenticado na sessão e limpa o cache.
             st.session_state["user"] = user_data
-            st.session_state["user_profile"] = user_profile  # 🔥 Agora o perfil completo já está salvo.
+            st.session_state["user_profile"] = user_profile
             st.cache_data.clear()
             st.session_state["refresh"] = True
+            st.rerun() 
             
             return user_data, None
 
