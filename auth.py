@@ -174,6 +174,7 @@ def get_user():
     Calls:
         None.
     """
+    st.write("Token recebido:", access_token)
     # 1. Obtém e retorna o valor associado à chave "user" no st.session_state.
     return st.session_state.get("user")
 
