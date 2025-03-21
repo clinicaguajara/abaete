@@ -223,36 +223,54 @@ def get_google_login_url():
 
 def sign_in_with_google():
     """
-    Processa o callback do Google OAuth e autentica o usuário no Supabase,
-    mesclando os dados do perfil da tabela `user_profile`.
+    Processa o callback do Google OAuth trocando o 'code' por um access_token,
+    e autentica o usuário no Supabase, mesclando com os dados da tabela `user_profile`.
     """
     from utils.user_utils import get_user_info
+    import requests
+
     query_params = st.query_params
 
-    if "access_token" in query_params:
-        access_token = query_params["access_token"][0]
-        
-        # ✅ Obtém os dados do usuário autenticado no Supabase
-        response = supabase_client.auth.get_user(access_token)
+    if "code" in query_params:
+        code = query_params["code"][0]
 
-        if response and "user" in response:
-            user_obj = response["user"]
-            
-            # ✅ Obtém os dados do perfil do usuário na tabela `user_profile`
-            user_profile = get_user_info(user_obj["id"], full_profile=True)
-
-            # ✅ Mescla os dados do usuário com os dados do perfil
-            user_data = {
-                "id": user_obj["id"],
-                "email": user_obj["email"],
-                "display_name": user_obj.get("user_metadata", {}).get("display_name", "Usuário"),
-                **user_profile  # Mescla os dados do perfil
+        # ⚙️ Troca o code por access_token no Supabase
+        token_url = f"{SUPABASE_URL}/auth/v1/token"
+        response = requests.post(
+            token_url,
+            headers={"Content-Type": "application/json"},
+            json={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": GOOGLE_REDIRECT_URI
             }
+        )
 
-            # ✅ Armazena o usuário na sessão
-            st.session_state["user"] = user_data
-            st.cache_data.clear()  # Limpa o cache
-            st.session_state["refresh"] = True  # Força atualização da interface
-            st.rerun()
+        if response.status_code == 200:
+            tokens = response.json()
+            access_token = tokens.get("access_token")
+
+            # ✅ Pega o usuário usando o token
+            user_response = supabase_client.auth.get_user(access_token)
+
+            if user_response and "user" in user_response:
+                user_obj = user_response["user"]
+
+                # 🔄 Consulta o perfil
+                user_profile = get_user_info(user_obj["id"], full_profile=True)
+
+                user_data = {
+                    "id": user_obj["id"],
+                    "email": user_obj["email"],
+                    "display_name": user_obj.get("user_metadata", {}).get("display_name", "Usuário"),
+                    **user_profile
+                }
+
+                st.session_state["user"] = user_data
+                st.cache_data.clear()
+                st.session_state["refresh"] = True
+                st.rerun()
+            else:
+                st.error("❌ Não foi possível obter os dados do usuário.")
         else:
-            st.error("❌ Erro ao autenticar no Supabase.")
+            st.error("❌ Erro ao trocar o código por token de acesso.")
