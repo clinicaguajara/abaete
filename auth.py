@@ -220,15 +220,20 @@ def get_google_login_url():
     }
     return f"{SUPABASE_URL}/auth/v1/authorize?{urlencode(params)}"
 
+
 def sign_in_with_google():
     """
-    Realiza o login do usuário via Google e armazena na sessão.
-
-    - Se o usuário já estiver autenticado no Supabase, ele será vinculado à conta existente.
+    Processa o callback do Google OAuth e autentica o usuário no Supabase.
     """
-    query_params = st.query_params  
+    query_params = st.query_params
+
     if "access_token" in query_params:
         access_token = query_params["access_token"][0]
-        st.session_state["user"] = supabase_client.auth.get_user(access_token)
-        st.success("✅ Login realizado com sucesso!")
-        st.rerun()
+        user = supabase.auth.get_user(access_token)
+
+        if user:
+            st.session_state["user"] = user
+            st.success("✅ Login realizado com sucesso!")
+            st.rerun()
+        else:
+            st.error("❌ Erro ao autenticar.")
