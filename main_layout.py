@@ -24,7 +24,12 @@ def render_main_layout():
       - sign_up() para cadastro.
       - reset_password() para recuperação de senha.
     """
-    
+    # Se estiver processando, mostra spinner e esconde o layout.
+    if st.session_state.get("processing"):
+        with st.spinner("🔐 Autenticando..."):
+            st.empty()
+        return
+
     # Placeholder para manter o título estável durante recarregamentos.
     title_placeholder = st.empty()
     title_placeholder.markdown("# Abaeté 🪴")
