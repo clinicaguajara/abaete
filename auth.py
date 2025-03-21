@@ -226,7 +226,7 @@ def sign_in_with_google():
 
     - Se o usuário já estiver autenticado no Supabase, ele será vinculado à conta existente.
     """
-    query_params = st.query_params()
+    query_params = st.query_params  
     if "access_token" in query_params:
         access_token = query_params["access_token"][0]
         st.session_state["user"] = supabase_client.auth.get_user(access_token)
