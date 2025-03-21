@@ -6,8 +6,8 @@ from urllib.parse import urlencode
 # Obtém as credenciais a partir do Streamlit.
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-GOOGLE_CLIENT_ID = st.secrets["auth.google"]["CLIENT_ID"]
-GOOGLE_REDIRECT_URI = st.secrets["auth"]["REDIRECT_URI"]
+GOOGLE_CLIENT_ID = st.secrets["CLIENT_ID"]
+GOOGLE_REDIRECT_URI = st.secrets["REDIRECT_URI"]
 
 # Cria o client de autenticação do Supabase.
 # Esse client é utilizado para realizar operações de login, cadastro, recuperação de senha e logout.
