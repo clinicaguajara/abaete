@@ -1,8 +1,6 @@
 import streamlit as st
 from auth import sign_in, sign_up, reset_password, sign_in_with_google, get_google_login_url
 
-# 📌 Chama a função para processar login via Google se houver token na URL
-sign_in_with_google()
 
 # 🏗️ Função para renderizar o layout principal.
 def render_main_layout():
@@ -26,6 +24,9 @@ def render_main_layout():
       - sign_up() para cadastro.
       - reset_password() para recuperação de senha.
     """
+    # Chama a função para processar login via Google se houver token na URL
+    sign_in_with_google()
+    
     # Placeholder para manter o título estável durante recarregamentos.
     title_placeholder = st.empty()
     title_placeholder.markdown("# Abaeté 🪴")
