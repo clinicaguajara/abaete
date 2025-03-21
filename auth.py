@@ -223,17 +223,36 @@ def get_google_login_url():
 
 def sign_in_with_google():
     """
-    Processa o callback do Google OAuth e autentica o usuário no Supabase.
+    Processa o callback do Google OAuth e autentica o usuário no Supabase,
+    mesclando os dados do perfil da tabela `user_profile`.
     """
+    from utils.user_utils import get_user_info
     query_params = st.query_params
 
     if "access_token" in query_params:
         access_token = query_params["access_token"][0]
-        user = supabase.auth.get_user(access_token)
+        
+        # ✅ Obtém os dados do usuário autenticado no Supabase
+        response = supabase_client.auth.get_user(access_token)
 
-        if user:
-            st.session_state["user"] = user
-            st.success("✅ Login realizado com sucesso!")
+        if response and "user" in response:
+            user_obj = response["user"]
+            
+            # ✅ Obtém os dados do perfil do usuário na tabela `user_profile`
+            user_profile = get_user_info(user_obj["id"], full_profile=True)
+
+            # ✅ Mescla os dados do usuário com os dados do perfil
+            user_data = {
+                "id": user_obj["id"],
+                "email": user_obj["email"],
+                "display_name": user_obj.get("user_metadata", {}).get("display_name", "Usuário"),
+                **user_profile  # Mescla os dados do perfil
+            }
+
+            # ✅ Armazena o usuário na sessão
+            st.session_state["user"] = user_data
+            st.cache_data.clear()  # Limpa o cache
+            st.session_state["refresh"] = True  # Força atualização da interface
             st.rerun()
         else:
-            st.error("❌ Erro ao autenticar.")
+            st.error("❌ Erro ao autenticar no Supabase.")
