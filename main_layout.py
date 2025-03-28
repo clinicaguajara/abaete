@@ -45,7 +45,6 @@ def render_main_layout():
         - **Receber relatórios personalizados sobre o seu desenvolvimento.**
         
         🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.** 
-
         🔍 **Acompanhe o passo a passo da sua evolução clínica.**  
         """
     )

@@ -37,7 +37,7 @@ def load_css():
                 color: #836fff;
                 font-size: 32px;              /* Tamanho aumentado para mais destaque */
                 font-weight: bold;
-                text-shadow: 2px 2px 6px rgba(113, 89, 193, 0.8);
+                text-shadow: 2px 2px 6px #7159c1;
                 margin-bottom: 20px;
             }
         </style>
