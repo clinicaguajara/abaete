@@ -32,7 +32,7 @@ def render_main_layout():
 
     # Placeholder para manter o título estável durante recarregamentos.
     title_placeholder = st.empty()
-    title_placeholder.markdown("# Abaeté 🪴")
+    title_placeholder.markdown("# Abaeté 🧠")
     
     # Placeholder para o subtítulo.
     subtitle_placeholder = st.empty()
@@ -47,17 +47,16 @@ def render_main_layout():
     # Exibe a introdução com as principais funções.
     st.markdown(
         """
-        ##### 💻 **Transforme a sua prática clínica com tecnologia avançada:**
+        ##### 💻 **No Abaeté você pode:**
         
-        - **Crie uma conta profissional** e acesse um ambiente especializado para profissionais da saúde mental.
-        - **Cadastre pacientes e acompanhe sua trajetória clínica** com dados organizados em tempo real.
-        - **Aplique avaliações informatizadas** e obtenha resultados rápidos e padronizados.
-        - **Utilize nossas correções automatizadas** para garantir mais precisão na interpretação dos dados.
-        - **Monitore a evolução longitudinalmente** observando padrões ao longo do tempo.
+        - **Monitorar e avaliar suas metas e desempenho a longo prazo.
+        - **Compartilhar dados fundamentais com o seu terapeuta.
+        - **Realizar testes e avaliações automatizadas.
+        - **Receber relatórios personalizados sobre o seu desenovolvimento.
         
         🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.** 
         
-        🔍 **Eleve sua prática profissional e ofereça um acompanhamento mais eficaz e personalizado.**  
+        🔍 **Acompanhe o passo a passo da sua evolução clínica.**  
         """
     )
     
