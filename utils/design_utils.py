@@ -28,16 +28,15 @@ def load_css():
     """
     st.markdown(hide_elements_style, unsafe_allow_html=True)
 
-    # Insere o CSS customizado na página
     st.markdown(
         """
         <style>
             /* Classe para o título com sombra e efeito personalizado */
             .purple-title {
-                color: #836fff;
-                font-size: 32px;              /* Tamanho aumentado para mais destaque */
+                color: #663399; /* Roxo rebeccapurple, mais escuro e menos brilhante */
+                font-size: 32px; /* Tamanho aumentado para mais destaque */
                 font-weight: bold;
-                text-shadow: 2px 2px 6px #7159c1;
+                text-shadow: 2px 2px 6px rgba(102, 51, 153, 0.8); /* Sombra com tom roxo */
                 margin-bottom: 20px;
             }
         </style>

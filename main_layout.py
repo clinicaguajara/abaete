@@ -30,7 +30,7 @@ def render_main_layout():
             st.empty()
         return
   
-    st.markdown('<h1> Abaeté 🧠</h1>', unsafe_allow_html=True)
+    st.markdown('<h1> Abaeté 🧠</h1>')
 
     st.markdown('<h2 class="purple-title"> O sistema inteligente que cuida de você!</h2>', unsafe_allow_html=True)
 
