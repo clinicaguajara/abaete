@@ -28,4 +28,19 @@ def load_css():
     """
     st.markdown(hide_elements_style, unsafe_allow_html=True)
 
-    
+    # Insere o CSS customizado na página
+    st.markdown(
+        """
+        <style>
+            /* Classe para o título com sombra e efeito personalizado */
+            .purple-title {
+                color: #836fff;
+                font-size: 32px;              /* Tamanho aumentado para mais destaque */
+                font-weight: bold;
+                text-shadow: 2px 2px 6px rgba(113, 89, 193, 0.8);
+                margin-bottom: 20px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )

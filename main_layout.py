@@ -29,21 +29,11 @@ def render_main_layout():
         with st.spinner("🔐 Autenticando..."):
             st.empty()
         return
+  
+    st.markdown('<h1> Abaeté 🧠</h1>', unsafe_allow_html=True)
 
-    # Placeholder para manter o título estável durante recarregamentos.
-    title_placeholder = st.empty()
-    title_placeholder.markdown("# Abaeté 🧠")
-    
-    # Placeholder para o subtítulo.
-    subtitle_placeholder = st.empty()
-    subtitle_placeholder.markdown(
-        """
-        <h1 style='color: #7159c1; font-size: 28px; font-weight: bold;'>
-        O sistema inteligente que cuida de você!</h1>
-        """,
-        unsafe_allow_html=True
-    )
-    
+    st.markdown('<h2 class="purple-title"> O sistema inteligente que cuida de você!</h2>', unsafe_allow_html=True)
+
     # Exibe a introdução com as principais funções.
     st.markdown(
         """
