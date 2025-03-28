@@ -47,15 +47,14 @@ def render_main_layout():
     # Exibe a introdução com as principais funções.
     st.markdown(
         """
-        ##### 💻 **No Abaeté você pode:**
+        ##### 💻 **Com Abaeté você pode:**
         
-        - **Monitorar e avaliar suas metas e desempenho a longo prazo.
-        - **Compartilhar dados fundamentais com o seu terapeuta.
-        - **Realizar testes e avaliações automatizadas.
-        - **Receber relatórios personalizados sobre o seu desenovolvimento.
+        - **Monitorar e avaliar suas metas e desempenho a longo prazo.**
+        - **Compartilhar dados fundamentais com o seu terapeuta.**
+        - **Realizar testes e avaliações automatizadas.**
+        - **Receber relatórios personalizados sobre o seu desenovolvimento.**
         
         🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.** 
-        
         🔍 **Acompanhe o passo a passo da sua evolução clínica.**  
         """
     )
