@@ -1,69 +1,73 @@
 import streamlit as st
-from auth import sign_in, sign_up, reset_password, sign_in_with_google, get_google_login_url
-
+from auth import sign_in, sign_up, reset_password
 
 # 🏗️ Função para renderizar o layout principal.
 def render_main_layout():
-    """
-    Renderiza o layout principal da página de autenticação.
-    
-    Fluxo:
-      1. Exibe o título e o subtítulo utilizando placeholders para manter a interface estável.
-      2. Exibe a introdução com as principais funções.
-      3. Permite a escolha entre Login ou Cadastro, com os respectivos campos.
-      4. Processa a ação de login ou cadastro e exibe mensagens de feedback.
-    
-    Args:
-      None.
-    
-    Returns:
-      None.
-    
-    Calls:
-      - sign_in() para login.
-      - sign_up() para cadastro.
-      - reset_password() para recuperação de senha.
-    """
-    # Se estiver processando, mostra spinner e esconde o layout.
-    if st.session_state.get("processing"):
-        with st.spinner("🔐 Autenticando..."):
-            st.empty()
-        return
-  
-    st.markdown('<h1> Abaeté 🧠</h1>', unsafe_allow_html=True)
 
-    st.markdown('<h2> O sistema inteligente que cuida de você!</h2>', unsafe_allow_html=True)
+    # O título do sistema que aparece no cabeçalho.
+    st.markdown("# Academia Diagnóstica 🧠")
     
-    st.divider()
+    # Criamos um subtítulo chamativo e destacado.
+    st.markdown(
+        """
+        <h1 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
+        O sistema inteligente que cuida de você!</h1>
+        """,
+        unsafe_allow_html=True # Usando HTML para deixar o texto mais marcado.
+    )
+
+    # Introdução ao sistema e suas principais funções. Explicamos ao usuário as vantagens e aplicações.
+    st.markdown("""
+    ##### 💻 **Transforme a sua prática clínica com tecnologia avançada:**
     
-    # Escolha entre Login ou Cadastro.
+    - **Crie uma conta profissional** e acesse um ambiente especializado para profissionais da saúde mental.
+    - **Cadastre pacientes e acompanhe sua trajetória clínica** com dados organizados em tempo real.
+    - **Aplique avaliações informatizadas** e obtenha resultados rápidos e padronizados.
+    - **Utilize nossas correções automatizadas** para garantir mais precisão na interpretação dos dados.
+    - **Monitore a evolução longitudinalmente** observando padrões ao longo do tempo.
+    
+    🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.**  
+    🔍 **Eleve sua prática profissional e ofereça um acompanhamento mais eficaz e personalizado.**  
+    """)
+
+    st.divider()  # Uma linha divisória para organizar o conteúdo
+
+    # Escolha entre Login ou Cadastro com um botão interativo.
     option = st.radio("Escolha uma opção:", ["Login", "Cadastro"], horizontal=True)
 
-    # Campos para email e senha.
-    email = st.text_input("Email:", key="email_input")
-    password = st.text_input("Senha:", type="password", key="password_input")
+    # Campos para o email e senha do usuário.
+    email = st.text_input("Email", key="email_input")
+    password = st.text_input("Senha", type="password", key="password_input")
 
-    # Variáveis utilizadas apenas para Cadastro.
+    # Inicializamos variáveis que só serão usadas no Cadastro.
     display_name = None
     confirm_password = None
 
-    if option == "Cadastro":
-        confirm_password = st.text_input("Confirme a senha:", type="password", key="confirm_password_input")
-        display_name = st.text_input("Nome completo:", key="display_name_input")
+    # Se o usuário escolher "Cadastro"...
+    if option == "Cadastro": # Mostramos mais campos de preenchimento.
+        confirm_password = st.text_input("Confirme a Senha", type="password", key="confirm_password_input")
+        display_name = st.text_input("Nome Completo", key="display_name_input")
 
+    # Se o usuário escolher "Login"...
     if option == "Login" and "account_created" in st.session_state:
-        del st.session_state["account_created"]
+        del st.session_state["account_created"]  # Evita que a mensagem de "conta criada com sucesso" continue aparecendo em alguns casos.
 
+    # Assim, o texto do botão muda dependendo da ação escolhida.
     action_text = "Entrar" if option == "Login" else "🪄 Criar Conta"
+
+    # Criamos um espaço vazio para exibir mensagens de erro ou sucesso no mesmo lugar.
     message_placeholder = st.empty()
 
+    # Botão principal para "Login" ou "Cadastro".
     if st.button(action_text, key="authaction", use_container_width=True, disabled=st.session_state.get("processing", False)):
-        st.session_state["processing"] = True
+        st.session_state["processing"] = True  
+
         try:
             if not email or not password:
                 message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
             else:
-                # Processamento sem aviso visual, pois o spinner padrão foi desativado.
+                message_placeholder.info("🔄 Processando...")  
+                
                 if option == "Login":
                     user, message = sign_in(email, password)
                     if user:
@@ -80,24 +84,25 @@ def render_main_layout():
                     else:
                         user, message = sign_up(email, password, confirm_password, display_name)
                         if user:
-                            st.session_state["account_created"] = True
+                            st.session_state["account_created"] = True  
                             st.session_state["confirmation_message"] = "📩 Um e-mail de verificação foi enviado para a sua caixa de entrada."
                             st.rerun()
                         else:
                             message_placeholder.error(message)
         finally:
-            st.session_state["processing"] = False
+            st.session_state["processing"] = False  
 
-    # Botão para recuperação de senha (apenas para Login).
+    # 🔓 Botão para recuperação de senha (somente na opção Login)
     if option == "Login":
         if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True):
-            if email:
-                message = reset_password(email)
+            if email:  # O email deve estar preenchido para recuperação de senha
+                message = reset_password(email)  # Chama a função do auth.py
                 st.session_state["confirmation_message"] = message
                 st.rerun()
             else:
                 message_placeholder.warning("⚠️ Por favor, insira seu email antes de redefinir a senha.")
 
+    # ✅ Exibir mensagens de sucesso abaixo dos botões
     if "confirmation_message" in st.session_state:
         message_placeholder.success(st.session_state["confirmation_message"])
-        del st.session_state["confirmation_message"]
+        del st.session_state["confirmation_message"]  # Remove para evitar exibições repetidas

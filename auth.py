@@ -1,13 +1,10 @@
 import streamlit as st
 import supabase
-from urllib.parse import urlencode
 
 # 🔑 Configuração inicial do Supabase e autenticação OAuth.
 # Obtém as credenciais a partir do Streamlit.
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-GOOGLE_CLIENT_ID = st.secrets["CLIENT_ID"]
-GOOGLE_REDIRECT_URI = st.secrets["REDIRECT_URI"]
 
 
 # Cria o client de autenticação do Supabase.
