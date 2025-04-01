@@ -50,14 +50,14 @@
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #697950 !important;
+    border: 2px solid #a3bb7d !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #7b7467 !important;
+    box-shadow: 0px 0px 10px #40403e !important;
     outline: none !important;
 }
 
@@ -81,7 +81,7 @@
 .st-key-patientlink button:active{
     background-color: #40403e !important;
     border-color: #40403e  !important;
-    box-shadow: 0px 0px 15px #7b7467  !important;
+    box-shadow: 0px 0px 15px #40403e !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
