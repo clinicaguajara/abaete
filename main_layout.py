@@ -33,20 +33,6 @@ def render_main_layout():
     st.markdown('<h1> Abaeté 🧠</h1>', unsafe_allow_html=True)
 
     st.markdown('<h2> O sistema inteligente que cuida de você!</h2>', unsafe_allow_html=True)
-
-    # Exibe a introdução com as principais funções.
-    st.markdown(
-        """
-        ##### 💻 **Com Abaeté você pode:**
-        
-        - **Monitorar e avaliar suas metas e desempenho a longo prazo.**
-        - **Compartilhar dados fundamentais com o seu terapeuta.**
-        - **Realizar testes e avaliações automatizadas.**
-        - **Receber relatórios personalizados sobre o seu desenvolvimento.**
-        
-        🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.**   
-        """
-    )
     
     st.divider()
     
