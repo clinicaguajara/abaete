@@ -1,8 +1,8 @@
 [theme]
-primaryColor= "#007366" # Elementos interativos.
-backgroundColor= "#0e1117"  # Fundo escuro.
-secondaryBackgroundColor="#161a1f"  # Fundo da sidebar.
-textColor="#FFFFFF"  # Texto branco.
+primaryColor= "#90a274" # Elementos interativos.
+backgroundColor= "#FFFFFF"  # Fundo branco.
+secondaryBackgroundColor="#efedec"  # Fundo da sidebar.
+textColor="#40403e"  # Texto cinza.
 
 [ui]
 layout = "wide"  # Expande para ocupar a largura total.
