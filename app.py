@@ -10,7 +10,7 @@ from utils.professional_utils import is_professional_enabled
 # Define título, ícone e o layout central.
 st.set_page_config(
     page_title="Abaeté",
-    page_icon="🪴",
+    page_icon="🧠",
     layout="centered",
     initial_sidebar_state="collapsed"
 )

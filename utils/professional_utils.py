@@ -54,14 +54,6 @@ def enable_professional_area(auth_user_id, email, display_name):
 # 🔑 Função para renderizar o bloqueio da área profissional.
 def render_professional_enable_section(user):
     """Renderiza a seção de ativação da área profissional."""
-    
-    # Se já estiver processando, exibe uma mensagem e impede nova ação.
-    if st.session_state.get("processing", False):
-        st.info("Processando... Aguarde um momento.")
-        st.session_state["processing"] = False
-        st.session_state["refresh"] = True
-        st.rerun()
-        return
 
     # Campo de digitação da senha do profissional sempre visível.
     prof_key = st.text_input("Digite a senha do profissional:", key="prof_key_input")
