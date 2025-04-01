@@ -34,3 +34,10 @@ def load_css():
         """,
         unsafe_allow_html=True
     )
+
+    hide_default_spinner = """
+        <style>
+            div[role="status"] { display: none !important; }
+        </style>
+    """
+    st.markdown(hide_default_spinner, unsafe_allow_html=True)

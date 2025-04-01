@@ -17,7 +17,7 @@ def render_main_layout():
     """
     
     # Título do sistema
-    st.markdown("# Abaeté 🪴")
+    st.markdown("# Abaeté 🧠")
     
     # Subtítulo chamativo
     st.markdown(
