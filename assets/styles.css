@@ -50,14 +50,14 @@
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #a0b978 !important;
+    border: 2px solid #8da26b !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #40403e !important;
+    box-shadow: 0px 0px 10px #697950 !important;
     outline: none !important;
 }
 
