@@ -50,7 +50,7 @@
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #a3bb7d !important;
+    border: 2px solid #8da26b !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
@@ -68,7 +68,8 @@
 .st-key-resetpassword button:hover,
 .st-key-profile-save button:hover,
 .st-key-patientlink button:hover {
-    background-color: #40403e!important;
+    background-color: #697950!important;
+    border: 2px solid #697950 !important;
     transform: scale(1.1) !important;
 }
 
