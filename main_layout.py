@@ -90,9 +90,6 @@ def render_main_layout():
         finally:
             st.session_state["processing"] = False  
     
-    # Separador visual (opcional)
-    st.divider()
-    
     # Placeholder exclusivo para feedback da recuperação de senha
     reset_message = st.empty()
     
