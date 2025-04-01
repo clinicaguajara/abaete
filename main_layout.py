@@ -5,30 +5,16 @@ from auth import sign_in, sign_up, reset_password
 def render_main_layout():
 
     # O título do sistema que aparece no cabeçalho.
-    st.markdown("# Academia Diagnóstica 🧠")
+    st.markdown("# Abaeté 🧠")
     
     # Criamos um subtítulo chamativo e destacado.
     st.markdown(
         """
-        <h1 style='color: #FFA500; font-size: 28px; font-weight: bold;'>
-        O sistema inteligente que cuida de você!</h1>
+        <h2>
+        O sistema inteligente que cuida de você!</h2>
         """,
         unsafe_allow_html=True # Usando HTML para deixar o texto mais marcado.
     )
-
-    # Introdução ao sistema e suas principais funções. Explicamos ao usuário as vantagens e aplicações.
-    st.markdown("""
-    ##### 💻 **Transforme a sua prática clínica com tecnologia avançada:**
-    
-    - **Crie uma conta profissional** e acesse um ambiente especializado para profissionais da saúde mental.
-    - **Cadastre pacientes e acompanhe sua trajetória clínica** com dados organizados em tempo real.
-    - **Aplique avaliações informatizadas** e obtenha resultados rápidos e padronizados.
-    - **Utilize nossas correções automatizadas** para garantir mais precisão na interpretação dos dados.
-    - **Monitore a evolução longitudinalmente** observando padrões ao longo do tempo.
-    
-    🎯 **Tenha em mãos um sistema inteligente e baseado em evidências.**  
-    🔍 **Eleve sua prática profissional e ofereça um acompanhamento mais eficaz e personalizado.**  
-    """)
 
     st.divider()  # Uma linha divisória para organizar o conteúdo
 
@@ -36,8 +22,8 @@ def render_main_layout():
     option = st.radio("Escolha uma opção:", ["Login", "Cadastro"], horizontal=True)
 
     # Campos para o email e senha do usuário.
-    email = st.text_input("Email", key="email_input")
-    password = st.text_input("Senha", type="password", key="password_input")
+    email = st.text_input("Email:", key="email_input")
+    password = st.text_input("Senha:", type="password", key="password_input")
 
     # Inicializamos variáveis que só serão usadas no Cadastro.
     display_name = None
@@ -45,8 +31,8 @@ def render_main_layout():
 
     # Se o usuário escolher "Cadastro"...
     if option == "Cadastro": # Mostramos mais campos de preenchimento.
-        confirm_password = st.text_input("Confirme a Senha", type="password", key="confirm_password_input")
-        display_name = st.text_input("Nome Completo", key="display_name_input")
+        confirm_password = st.text_input("Confirme a senha:", type="password", key="confirm_password_input")
+        display_name = st.text_input("Nome completo:", key="display_name_input")
 
     # Se o usuário escolher "Login"...
     if option == "Login" and "account_created" in st.session_state:
@@ -66,7 +52,7 @@ def render_main_layout():
             if not email or not password:
                 message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
             else:
-                message_placeholder.info("🔄 Processando...")  
+                message_placeholder.info("Processando...")  
                 
                 if option == "Login":
                     user, message = sign_in(email, password)
