@@ -20,14 +20,6 @@ def load_css():
     if css_content:
         st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)  # Aplica o CSS na página.
 
-    # 🔹 Esconde mensagens de status padrão do Streamlit
-    hide_elements_style = """
-        <style>
-            div[role="status"] { display: none !important; }
-        </style>
-    """
-    st.markdown(hide_elements_style, unsafe_allow_html=True)
-
     st.markdown(
         """
         <style>
