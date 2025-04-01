@@ -112,7 +112,7 @@ def render_dashboard(user):
     
     # 8. Apresenta um selectbox para escolher qual seção exibir.
     opcao = st.selectbox(
-        "🔽 Selecione uma ação:",
+        "Selecione uma ação:",
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
 
@@ -176,7 +176,7 @@ def render_professional_dashboard(user):
     # 7. Seletor de funcionalidades do painel profissional.
     st.markdown("##### Painel Profissional")
     opcao_selecionada = st.selectbox(
-        "🔽 Selecione uma ação:",
+        "Selecione uma ação:",
         [
             "Convidar Paciente",
             "Visualizar Convites Pendentes",

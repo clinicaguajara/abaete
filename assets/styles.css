@@ -80,9 +80,9 @@
 .st-key-resetpassword button:active,
 .st-key-profile-save button:active,
 .st-key-patientlink button:active{
-    background-color: #40403e !important;
-    border-color: #40403e  !important;
-    box-shadow: 0px 0px 15px #40403e !important;
+    background-color: #697950 !important;
+    border-color: #697950  !important;
+    box-shadow: 0px 0px 15px #697950 !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
