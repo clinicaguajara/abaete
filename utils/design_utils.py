@@ -33,8 +33,8 @@ def load_css():
         <style>
             /* Classe para o título com sombra e efeito personalizado */
             .purple-title {
-                color: #e9872c !important; /* Roxo rebeccapurple, mais escuro e menos brilhante */
-                font-size: 32px !important; /* Tamanho aumentado para mais destaque */
+                color: #7159c1 !important; 
+                font-size: 32px !important; 
                 font-weight: bold !important;
                 margin-bottom: 20px !important;
             }

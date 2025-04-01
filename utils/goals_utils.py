@@ -421,7 +421,7 @@ def render_patient_goals(user_id):
     # Exibe o título "Minhas Metas" com estilo chamativo
     st.markdown(
         """
-        <h2 style='color: white; font-size: 36px; font-weight: bold;'>
+        <h2 class="purple-title">
         🎯 Minhas Metas
         </h2>
         """,
@@ -450,7 +450,7 @@ def render_patient_goals(user_id):
         if metas:
             st.markdown(
                 f"""
-                <h4 style='color: #FFA500; font-size: 24px; font-weight: bold; margin-top: 20px;'>
+                <h4 class="purple-title">
                 {prazo_labels[prazo]}
                 </h4>
                 """,

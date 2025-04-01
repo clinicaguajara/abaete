@@ -1,73 +1,40 @@
 /* Botão "Aceitar" (Verde Esmeralda Místico) */
-.st-key-accept button {
-    background-color: #008F7A !important; /* Verde profundo e tecnológico */
+.st-key-accept button,
+.st-key-reject button {
+    background-color: #7159c1 !important; /* Verde profundo e tecnológico */
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #007366 !important;
+    border: 2px solid #4c398b !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
     padding: 10px 20px !important;
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px rgba(0, 143, 122, 0.6) !important;
+    box-shadow: 0px 0px 10px #40403e !important;
 }
 
 /* Hover "Aceitar" */
-.st-key-accept button:hover {
-    background-color: #007366 !important;
+.st-key-accept button:hover,
+.st-key-reject button:hover {
+    background-color: #4c398b!important;
     transform: scale(1.05) !important;
-    box-shadow: 0px 0px 15px rgba(0, 115, 102, 0.8) !important;
+    box-shadow: 0px 0px 15px #40403e  !important;
 }
 
 /* Efeito ao clicar "Aceitar" */
-.st-key-accept button:active {
-    background-color: #005E52 !important;
-    border-color: #008F7A !important;
-    box-shadow: 0px 0px 20px rgba(0, 143, 122, 0.9) !important;
+.st-key-accept button:active,
+.st-key-reject button:active {
+    background-color: #7159c1  !important;
+    border-color: #4c398b !important;
+    box-shadow: 0px 0px 20px #40403e  !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
 
 /* Efeito pós-clique "Aceitar" */
-.st-key-accept button:focus {
-    animation: postClickGlow 1s ease-in-out;
-}
-
-/* Botão "Recusar" (Vermelho Rubi Encantado) */
-.st-key-reject button {
-    background-color: #C70039 !important; /* Vermelho intenso e místico */
-    color: white !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
-    border: 2px solid #9B002F !important;
-    border-radius: 8px !important;
-    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
-    padding: 10px 20px !important;
-    width: 100% !important;
-    text-align: center !important;
-    cursor: pointer !important;
-    box-shadow: 0px 0px 10px rgba(199, 0, 57, 0.6) !important;
-}
-
-/* Hover "Recusar" */
-.st-key-reject button:hover {
-    background-color: #9B002F !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0px 0px 15px rgba(155, 0, 47, 0.8) !important;
-}
-
-/* Efeito ao clicar "Recusar" */
-.st-key-reject button:active {
-    background-color: #750021 !important;
-    border-color: #C70039 !important;
-    box-shadow: 0px 0px 20px rgba(199, 0, 57, 0.9) !important;
-    transform: scale(0.8) !important;
-    color: white !important;
-}
-
-/* Efeito pós-clique "Recusar" */
+.st-key-accept button:focus,
 .st-key-reject button:focus {
     animation: postClickGlow 1s ease-in-out;
 }
@@ -83,14 +50,14 @@
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #8a9972 !important;
+    border: 2px solid #8da26b !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #697554 !important;
+    box-shadow: 0px 0px 10px #40403e !important;
     outline: none !important;
 }
 
@@ -101,7 +68,7 @@
 .st-key-resetpassword button:hover,
 .st-key-profile-save button:hover,
 .st-key-patientlink button:hover {
-    background-color: #5e47b0 !important;
+    background-color: #a8cc8f !important;
     transform: scale(1.1) !important;
 }
 
@@ -112,9 +79,9 @@
 .st-key-resetpassword button:active,
 .st-key-profile-save button:active,
 .st-key-patientlink button:active{
-    background-color: #5e47b0 !important;
-    border-color: #7159c1 !important;
-    box-shadow: 0px 0px 15px rgba(130, 94, 255, 0.7) !important;
+    background-color: #a8cc8f !important;
+    border-color: #a8cc8f !important;
+    box-shadow: 0px 0px 15px #40403e !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
@@ -127,15 +94,4 @@
 .st-key-profile-save button:focus,
 .st-key-patientlink button:focus{
     animation: postClickGlow 1s ease-in-out;
-}
-
-
-
-/* Classe para o título laranja com sombra roxa */
-.orange-title {
-    color: #7159c1;             /* Laranja */
-    font-size: 28px;           
-    font-weight: bold;
-    text-shadow: 2px 2px 6px rgba(113, 89, 193, 0.8); /* Sombra roxa (rgba(113, 89, 193, 0.8)) */
-    margin-bottom: 20px;        /* Espaço extra abaixo */
 }
