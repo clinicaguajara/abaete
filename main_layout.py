@@ -40,16 +40,16 @@ def render_main_layout():
     option = st.radio("Escolha uma opção:", ["Login", "Cadastro"], horizontal=True)
 
     # Campos para email e senha.
-    email = st.text_input("Email", key="email_input")
-    password = st.text_input("Senha", type="password", key="password_input")
+    email = st.text_input("Email:", key="email_input")
+    password = st.text_input("Senha:", type="password", key="password_input")
 
     # Variáveis utilizadas apenas para Cadastro.
     display_name = None
     confirm_password = None
 
     if option == "Cadastro":
-        confirm_password = st.text_input("Confirme a Senha", type="password", key="confirm_password_input")
-        display_name = st.text_input("Nome Completo", key="display_name_input")
+        confirm_password = st.text_input("Confirme a senha:", type="password", key="confirm_password_input")
+        display_name = st.text_input("Nome completo:", key="display_name_input")
 
     if option == "Login" and "account_created" in st.session_state:
         del st.session_state["account_created"]
@@ -95,8 +95,3 @@ def render_main_layout():
     if "confirmation_message" in st.session_state:
         message_placeholder.success(st.session_state["confirmation_message"])
         del st.session_state["confirmation_message"]
-
-    st.divider()
-
-    # 🔵 Adicionando login via Google
-    st.markdown(f"[🔵 Entrar com Google](<{get_google_login_url()}>)")
