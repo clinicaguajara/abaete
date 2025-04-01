@@ -27,7 +27,7 @@ def sign_in(email, password):
             2.2 Mescla as informações em user_data.
             2.3 Armazena user_data em st.session_state["user"].
             2.4 Limpa o cache e marca st.session_state["refresh"] como True para reinicializar a interface.
-            2.5 Força a reinicialização da interface.
+            2.5 Retorna.
         3. Se houver uma exceção no fluxo, explica o problema.
 
     Args:
@@ -65,7 +65,7 @@ def sign_in(email, password):
             st.session_state["user"] = user_data
             st.cache_data.clear() # 2.4 Limpa o cache e atualiza refresh.
             st.session_state["refresh"] = True
-            st.rerun() # 2.5 Força a reinicialização da interface imediatamente.
+            return user_data, None # 2.5 Retorna.
 
     # 3. Se houver uma exceção no fluxo...
     except Exception as e:
@@ -206,71 +206,3 @@ def sign_out():
     st.session_state["show_prof_input"] = False # 3. Atualiza show_prof_input.
     st.cache_data.clear() # 3. Limpa o cache.
     st.rerun()  # 4. Reinicia a interface para refletir o logout.
-
-
-def get_google_login_url():
-    """
-    Gera a URL para autenticação via Google no Supabase.
-
-    Returns:
-        str: URL de autenticação do Google.
-    """
-    params = {
-        "provider": "google",
-        "redirect_to": GOOGLE_REDIRECT_URI
-    }
-    return f"{SUPABASE_URL}/auth/v1/authorize?{urlencode(params)}"
-
-
-def sign_in_with_google():
-    """
-    Processa o callback do Google OAuth trocando o 'code' por um access_token,
-    e autentica o usuário no Supabase, mesclando com os dados da tabela `user_profile`.
-    """
-    from utils.user_utils import get_user_info
-    import requests
-
-    query_params = st.query_params
-
-    if "code" in query_params:
-        code = query_params["code"][0]
-
-        # ⚙️ Troca o code por access_token no Supabase
-        token_url = f"{SUPABASE_URL}/auth/v1/token"
-        response = requests.post(
-            token_url,
-            headers={"Content-Type": "application/json"},
-            json={
-                "grant_type": "authorization_code",
-                "code": code,
-                "redirect_uri": GOOGLE_REDIRECT_URI
-            }
-        )
-
-        if response.status_code == 200:
-            tokens = response.json()
-            access_token = tokens.get("access_token")
-
-            # ✅ Pega o usuário usando o token
-            user_response = supabase_client.auth.get_user(access_token)
-
-            if user_response and "user" in user_response:
-                user_obj = user_response["user"]
-
-                # 🔄 Consulta o perfil
-                user_profile = get_user_info(user_obj["id"], full_profile=True)
-
-                user_data = {
-                    "id": user_obj["id"],
-                    "email": user_obj["email"],
-                    "display_name": user_obj.get("user_metadata", {}).get("display_name", "Usuário"),
-                    **user_profile
-                }
-
-                st.session_state["user"] = user_data
-                st.cache_data.clear()
-                st.session_state["refresh"] = True
-            else:
-                st.error("❌ Não foi possível obter os dados do usuário.")
-        else:
-            st.error("❌ Erro ao trocar o código por token de acesso.")

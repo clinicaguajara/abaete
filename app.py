@@ -1,27 +1,16 @@
 import streamlit as st
-from auth import sign_in_with_google, get_user
+from auth import get_user
 from main_layout import render_main_layout
 from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
 
-
-# ✅ Captura os parâmetros da URL (se houver callback OAuth)
-query_params = st.query_params
-
-# ✅ Garante que o callback OAuth do Google seja processado antes de carregar a página
-if "code" in query_params or "access_token" in query_params:
-    st.write("🔄 Processando autenticação...")
-    sign_in_with_google()
-    st.rerun()  # 🔄 Recarrega a página principal após autenticar
-
-
 # 📬 Configuração inicial.
 # Define título, ícone e o layout central.
 st.set_page_config(
     page_title="Abaeté",
-    page_icon="🪴",
+    page_icon="🧠",
     layout="centered",
     initial_sidebar_state="collapsed"
 )

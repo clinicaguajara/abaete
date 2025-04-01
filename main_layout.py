@@ -65,7 +65,13 @@ def render_main_layout():
             else:
                 # Processamento sem aviso visual, pois o spinner padrão foi desativado.
                 if option == "Login":
-                    sign_in(email, password)
+                    user, message = sign_in(email, password)
+                    if user:
+                        st.session_state["user"] = user  
+                        st.session_state["refresh"] = True  
+                        st.rerun()  
+                    else:
+                        message_placeholder.error(f"{message}")
                 else:
                     if not display_name or not confirm_password:
                         message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
