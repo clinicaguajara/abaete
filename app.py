@@ -49,16 +49,19 @@ def handle_authenticated_user(user):
 
 
 # 🧭 Função principal que tudo controla.
+import time
+
 def main():
     initialize_session_state()
     load_css()
 
-    # Detecta se estamos em transição (login, cadastro, onboarding)
+    # Transição controlada após login/cadastro/onboarding
     if st.session_state.get("refresh", False):
         st.session_state["refresh"] = False  # Limpa o refresh
-        with st.spinner("Carregando seu ambiente..."):
-            st.empty()  # Cria algo visual, se quiser
-        return  # Impede o resto do código de rodar até próximo rerun
+        with st.spinner("Processando..."):
+            time.sleep(0.2)  # Tempo para o spinner renderizar
+            st.rerun()       # Agora sim: reroda o app com usuário carregado
+        return
 
     user = get_user()
 
@@ -66,7 +69,7 @@ def main():
         handle_authenticated_user(user)
     else:
         render_main_layout()
-        
+
 
 # ⏯️ Executa o código, sem mais demora
 if __name__ == "__main__":
