@@ -33,7 +33,7 @@ def initialize_session_state():
         st.session_state["refresh"] = False # Aguarde alguma interação do usuário antes de continuar.
 
 
-# 🛣️ Processa o fluxo de usuários autenticados
+# 🛣️ Processa o fluxo de usuários autenticados.
 def handle_authenticated_user(user):
     
     # Se o usuário ainda não possuir um gênero definido...
@@ -46,7 +46,7 @@ def handle_authenticated_user(user):
     
     # Caso contrário...
     else:
-        render_dashboard(user) # Renderiza o dashboard normal
+        render_dashboard(user) # Renderiza o dashboard normal.
 
 
 # 🧭 Função principal que tudo controla.
@@ -54,12 +54,12 @@ def main():
     initialize_session_state()
     load_css()
 
-    # Transição controlada após login/cadastro/onboarding
+    # Transição controlada após login/cadastro/onboarding.
     if st.session_state.get("refresh", False):
         
-        st.session_state["refresh"] = False  # Limpa o refresh
+        st.session_state["refresh"] = False  # Limpa o refresh.
         with st.spinner("Processando..."):
-            time.sleep(0.2)  # Tempo para o spinner renderizar
+            time.sleep(0.2)  # Tempo para o spinner renderizar.
             st.rerun()       
         return
 
@@ -71,6 +71,6 @@ def main():
         render_main_layout()
 
 
-# ⏯️ Executa o código, sem mais demora
+# ⏯️ Executa o código, sem mais demora.
 if __name__ == "__main__":
-    main() # Chama a função principal
+    main() # Chama a função principal.
