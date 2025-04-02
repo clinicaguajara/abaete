@@ -40,8 +40,7 @@ def render_main_layout():
     # Botão principal de autenticação (Login ou Cadastro)
     if st.button(action_text, key="authaction", use_container_width=True, disabled=st.session_state.get("processing", False)):
         st.session_state["processing"] = True
-        try:
-            with message_placeholder.container():    
+        try:  
             with st.spinner("Processando..."):
                 if not email or not password:
                     message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
