@@ -73,12 +73,19 @@ def render_main_layout():
     # Agora, abaixo do botão principal, exibe o botão de recuperação de senha (apenas no modo Login)
     if option == "Login":
         if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True, disabled=st.session_state.get("processing", False)):
-            if email:  # O email deve estar preenchido para recuperação de senha
-                message = reset_password(email)
-                st.session_state["confirmation_message"] = message
-                st.rerun()
-            else:
-                message_placeholder.warning("⚠️ Por favor, insira seu email antes de redefinir a senha.")
+            st.session_state["processing"] = True
+            try:
+                with message_placeholder.container():
+                    with st.spinner("Enviando instruções de recuperação..."):
+                        if email:  # O email deve estar preenchido para recuperação de senha
+                            message = reset_password(email)
+                            st.session_state["confirmation_message"] = message
+                            st.rerun()
+                        else:
+                            message_placeholder.warning("⚠️ Por favor, insira seu email antes de redefinir a senha.")
+            finally:
+                st.session_state["processing"] = False
+
         
     # Exibe mensagens de confirmação, se houver
     if "confirmation_message" in st.session_state:
