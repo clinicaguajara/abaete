@@ -12,7 +12,7 @@
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #40403e !important;
+    box-shadow: 0px 0px 10px #7b7467 !important;
 }
 
 /* Hover "Aceitar" */
@@ -20,7 +20,7 @@
 .st-key-reject button:hover {
     background-color: #4c398b!important;
     transform: scale(1.05) !important;
-    box-shadow: 0px 0px 15px #40403e  !important;
+    box-shadow: 0px 0px 15px #7b7467  !important;
 }
 
 /* Efeito ao clicar "Aceitar" */
@@ -28,7 +28,7 @@
 .st-key-reject button:active {
     background-color: #7159c1  !important;
     border-color: #4c398b !important;
-    box-shadow: 0px 0px 20px #40403e  !important;
+    box-shadow: 0px 0px 20px #7b7467  !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
@@ -57,7 +57,7 @@
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #40403e !important;
+    box-shadow: 0px 0px 10px #7b7467 !important;
     outline: none !important;
 }
 
@@ -82,7 +82,7 @@
 .st-key-patientlink button:active{
     background-color: #697950 !important;
     border-color: #697950  !important;
-    box-shadow: 0px 0px 15px #40403e !important;
+    box-shadow: 0px 0px 15px #7b7467 !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
