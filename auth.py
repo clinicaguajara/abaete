@@ -94,36 +94,8 @@ def sign_up(email, password, confirm_password, display_name):
 
 # 🕵️‍♂️ Função que busca o usuário que fez a conexão.
 def get_user():
-    # Se já está salvo no session_state, usa direto
-    if "user" in st.session_state:
-        return st.session_state["user"]
-
-    # Tenta recuperar a sessão ativa do Supabase
-    auth_response = supabase_client.auth.get_user()
-
-    # Se conseguir recuperar o usuário via token salvo no navegador...
-    if auth_response and auth_response.user:
-        from utils.user_utils import get_user_info
-    
-        user_obj = auth_response.user
-
-        # Busca os dados do perfil do banco de dados
-        user_profile = get_user_info(user_obj.id, full_profile=True)
-
-        # Monta o dicionário final do usuário
-        user_data = {
-            "id": user_obj.id,
-            "email": user_obj.email,
-            "display_name": user_obj.user_metadata.get("display_name", "Usuário"),
-            **user_profile
-        }
-
-        # Salva no session_state
-        st.session_state["user"] = user_data
-        return user_data
-
-    # Se não houver token válido, retorna None
-    return None
+    # Obtém e retorna o valor associado à chave "user" no st.session_state.
+    return st.session_state.get("user")
 
 
 # 🚪 Função para sair e limpar a sessão.
