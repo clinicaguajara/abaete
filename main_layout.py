@@ -39,34 +39,34 @@ def render_main_layout():
     
     # Botão principal de autenticação (Login ou Cadastro)
     if st.button(action_text, key="authaction", use_container_width=True, disabled=st.session_state.get("processing", False)):
-        st.session_state["processing"] = True  
+        st.session_state["processing"] = True
         try:
-            if not email or not password:
-                message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
-            else:
-                with message_placeholder.container():    
-                    with st.spinner("Processando..."):
-                        if option == "Login":
-                            user, message = sign_in(email, password)
+            with message_placeholder.container():    
+            with st.spinner("Processando..."):
+                if not email or not password:
+                    message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
+                else:
+                    if option == "Login":
+                        user, message = sign_in(email, password)
+                        if user:
+                            st.session_state["user"] = user  
+                            st.session_state["refresh"] = True  
+                            st.rerun()
+                        else:
+                            message_placeholder.error(f"{message}")
+                    else:
+                        if not display_name or not confirm_password:
+                            message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
+                        elif password != confirm_password:
+                            message_placeholder.error("❌ As senhas não coincidem. Tente novamente.")
+                        else:
+                            user, message = sign_up(email, password, confirm_password, display_name)
                             if user:
-                                st.session_state["user"] = user  
-                                st.session_state["refresh"] = True  
+                                st.session_state["account_created"] = True  
+                                st.session_state["confirmation_message"] = "📩 Um e-mail de verificação foi enviado para a sua caixa de entrada."
                                 st.rerun()
                             else:
-                                message_placeholder.error(f"{message}")
-                        else:
-                            if not display_name or not confirm_password:
-                                message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
-                            elif password != confirm_password:
-                                message_placeholder.error("❌ As senhas não coincidem. Tente novamente.")
-                            else:
-                                user, message = sign_up(email, password, confirm_password, display_name)
-                                if user:
-                                    st.session_state["account_created"] = True  
-                                    st.session_state["confirmation_message"] = "📩 Um e-mail de verificação foi enviado para a sua caixa de entrada."
-                                    st.rerun()
-                                else:
-                                    message_placeholder.error(message)
+                                message_placeholder.error(message)
         finally:
             st.session_state["processing"] = False  
     
