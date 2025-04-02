@@ -1,5 +1,5 @@
 import streamlit as st
-from supabase_config import supabase_client
+from auth import supabase_client
 
 # 💾 Função para cachear o estado da área profissional.
 @st.cache_data

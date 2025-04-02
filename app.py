@@ -2,7 +2,9 @@ import streamlit as st
 from auth import get_user
 from main_layout import render_main_layout
 from utils.design_utils import load_css
-from utils.user_utils import handle_authenticated_user
+from utils.professional_utils import is_professional_enabled
+from dashboard import render_dashboard, render_professional_dashboard
+from utils.profile_utils import render_onboarding_questionnaire
 
 # 📬 Configuração inicial
 # Define título, ícone e o layout central
@@ -30,6 +32,19 @@ def initialize_session_state():
         st.session_state["refresh"] = False # Aguarde alguma interação do usuário antes de continuar.
 
 
+# 🧩 Processa o fluxo de usuários autenticados
+def handle_authenticated_user(user):
+    
+    if not user.get("genero"):
+        render_onboarding_questionnaire(user["id"], user["email"])
+    
+    elif is_professional_enabled(user["id"]):
+        render_professional_dashboard(user)
+    
+    else:
+        render_dashboard(user)
+
+
 # 🧭 Função principal que tudo controla.
 def main():
     
@@ -38,7 +53,7 @@ def main():
     # Cria o visual.
     load_css()
     # Verifica quem está navegando
-    with st.spinner("Processando..."):
+    with st.spinner("Carregando..."):
         try:
             user = get_user()
         except Exception as e:

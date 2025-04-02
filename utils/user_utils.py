@@ -1,5 +1,5 @@
 import streamlit as st
-from supabase_config import supabase_client
+from auth import supabase_client
 from utils.professional_utils import is_professional_enabled
 from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire

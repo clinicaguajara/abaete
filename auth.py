@@ -1,5 +1,15 @@
 import streamlit as st
-from supabase_config import supabase_client
+import supabase
+
+# 🔑 Configuração inicial do Supabase e autenticação OAuth.
+# Obtém as credenciais a partir do Streamlit.
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
+
+# Cria o client de autenticação do Supabase.
+# Esse client é utilizado para realizar operações de login, cadastro, recuperação de senha e logout.
+supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # 🔐  Função que verifica o login e deixa o usuário passar.

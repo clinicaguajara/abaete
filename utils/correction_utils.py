@@ -1,5 +1,5 @@
 import streamlit as st
-from supabase_config import supabase_client
+from auth import supabase_client
 
 # ===============================
 # Dados Normativos para BIS‑11
