@@ -61,14 +61,14 @@ def render_professional_enable_section(user):
         if prof_key:
             if prof_key == "AUTOMATIZEJA":
                 st.session_state["processing"] = True
-                success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
-                
+                with st.spinner("Habilitando área do profissional..."):
+                    success, msg = enable_professional_area(user["id"], user["email"], user["display_name"])
                 if success:
-                    get_professional_data.clear()  # Limpa o cache.
-                    st.session_state["refresh"] = True  # Força atualização.
+                    get_professional_data.clear()
+                    st.session_state["refresh"] = True
                     st.rerun()
                 else:
-                    st.session_state["processing"] = False  # Libera o bloqueio em caso de erro.
+                    st.session_state["processing"] = False
                     st.error(msg)
             else:
                 st.error("❌ Chave incorreta!")

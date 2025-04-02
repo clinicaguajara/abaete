@@ -70,12 +70,13 @@ def render_onboarding_questionnaire(user_id, user_email):
     )
 
     if st.button("Salvar", key="profile-save", use_container_width=True):
-        # Verifica se o usuário está autenticado antes de salvar
         if not user_id:
             st.error("Erro: usuário não autenticado. Faça login novamente.")
             return
 
-        success, msg = create_user_profile(user_id, user_email, genero, data_nascimento)
+        with st.spinner("Processando..."):
+            success, msg = create_user_profile(user_id, user_email, genero, data_nascimento)
+
         if success:
             st.session_state["refresh"] = True
             st.rerun()
