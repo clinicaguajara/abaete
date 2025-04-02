@@ -5,7 +5,7 @@ from auth import sign_in, sign_up, reset_password
 def render_main_layout():
     
     # Título do sistema
-    st.markdown("# Abaeté 🪴")
+    st.markdown("# Abaeté 🧠")
     
     # Subtítulo com mensagem acolhedora
     st.markdown("<h2> O sistema inteligente que cuida de você!</h2>", unsafe_allow_html=True)
