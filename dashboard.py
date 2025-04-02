@@ -45,32 +45,31 @@ def render_dashboard(user):
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return # Retorna.
             
-    # Renderiza a sidebar com informações do usuário.
+    # Renderiza a sidebar com informações do usuário
     render_sidebar(user)
 
-    # Ajusta a saudação conforme o gênero do usuário.
+    # Ajusta a saudação conforme o gênero do usuário
     saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
 
-    # Obtém o primeiro nome do usuário para exibir na saudação.
+    # Obtém o primeiro nome do usuário para exibir na saudação
     first_name = user.get("display_name", "Usuário").split()[0] 
         
-    # Placeholder para manter o cabeçalho estável durante recarregamentos.
+    # Placeholder para manter o cabeçalho estável durante recarregamentos
     header_placeholder = st.empty()
     header_placeholder.header(f"{saudacao}, {first_name}!")  
     st.divider()
         
-    # Exibe os convites pendentes.
+    # Exibe os convites pendentes
     with st.spinner("Processando..."):
         render_patient_invitations(user)
 
-        
-    # Apresenta um selectbox para escolher qual seção exibir.
+    # Apresenta um selectbox para escolher qual seção exibir
     opcao = st.selectbox(
         "Selecione uma ação:",
         ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
     )
 
-    # Renderiza a seção escolhida.
+    # Renderiza a seção escolhida
     if opcao == "Minhas Metas":
         render_patient_goals(user["id"])
     elif opcao == "Testes Psicométricos":
@@ -83,22 +82,22 @@ def render_dashboard(user):
 def render_professional_dashboard(user):
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
-        return # 1. Retorna.
+        return # 1. Retorna
 
-    # 2. Renderiza a sidebar.
+    # 2. Renderiza a sidebar
     render_sidebar(user)
 
-    # 4. Obtém o título do profissional.
+    # 4. Obtém o título do profissional
     professional_title_first_name = get_professional_title(user)
 
-    # 5. Ajusta a saudação conforme o gênero do profissional.
+    # 5. Ajusta a saudação conforme o gênero do profissional
     saudacao_base = "Bem-vindo"
     saudacao = adjust_gender_ending(saudacao_base, user.get("genero", "M"))
 
-    # 6. Exibe a saudação personalizada com o primeiro nome.
+    # 6. Exibe a saudação personalizada com o primeiro nome
     st.subheader(f"{saudacao}, {professional_title_first_name}!")
 
-    # 7. Seletor de funcionalidades do painel profissional.
+    # 7. Seletor de funcionalidades do painel profissional
     st.markdown("##### Painel Profissional")
     opcao_selecionada = st.selectbox(
         "Selecione uma ação:",
@@ -111,7 +110,7 @@ def render_professional_dashboard(user):
         key="action_select"
     )
 
-    # 8. Executa a ação escolhida.
+    # 8. Executa a ação escolhida
     if opcao_selecionada == "Convidar Paciente":
        render_invite_patient_section(user)
 
