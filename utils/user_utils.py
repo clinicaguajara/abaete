@@ -1,7 +1,6 @@
 import streamlit as st
 from auth import supabase_client
 from utils.professional_utils import is_professional_enabled
-from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 
 
@@ -84,16 +83,3 @@ def get_user_info(identifier, by_email=False, full_profile=False):
 
     # 1. Executa a função cacheada.
     return fetch_user_info(identifier, by_email, full_profile)
-
-
-# 🧩 Processa o fluxo de usuários autenticados
-def handle_authenticated_user(user):
-    
-    if not user.get("genero"):
-        render_onboarding_questionnaire(user["id"], user["email"])
-    
-    elif is_professional_enabled(user["id"]):
-        render_professional_dashboard(user)
-    
-    else:
-        render_dashboard(user)

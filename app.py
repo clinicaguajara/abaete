@@ -1,9 +1,9 @@
 import streamlit as st
 from auth import get_user
+from dashboard import render_dashboard, render_professional_dashboard
 from main_layout import render_main_layout
 from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
-from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
 
 # 📬 Configuração inicial
