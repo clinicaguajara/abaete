@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 from auth import get_user
 from dashboard import render_dashboard, render_professional_dashboard
 from main_layout import render_main_layout
@@ -32,7 +33,7 @@ def initialize_session_state():
         st.session_state["refresh"] = False # Aguarde alguma interação do usuário antes de continuar.
 
 
-# 🧩 Processa o fluxo de usuários autenticados
+# 🛣️ Processa o fluxo de usuários autenticados
 def handle_authenticated_user(user):
     
     # Se o usuário ainda não possuir um gênero definido...
@@ -49,18 +50,17 @@ def handle_authenticated_user(user):
 
 
 # 🧭 Função principal que tudo controla.
-import time
-
 def main():
     initialize_session_state()
     load_css()
 
     # Transição controlada após login/cadastro/onboarding
     if st.session_state.get("refresh", False):
+        
         st.session_state["refresh"] = False  # Limpa o refresh
         with st.spinner("Processando..."):
             time.sleep(0.2)  # Tempo para o spinner renderizar
-            st.rerun()       # Agora sim: reroda o app com usuário carregado
+            st.rerun()       
         return
 
     user = get_user()

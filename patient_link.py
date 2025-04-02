@@ -81,22 +81,7 @@ def reject_invitation(professional_id: str, patient_id: str):
 
 # ⏳ Função para listar convites pendentes.
 def list_pending_invitations(professional_id: str):
-    """
-    Retorna todos os convites pendentes para um profissional.
-
-    Fluxo:
-      1. Consulta a tabela "professional_patient_link" filtrando por professional_id e status "pending".
-      2. Retorna a lista de convites pendentes.
-
-    Args:
-        professional_id (str): ID do profissional.
-
-    Returns:
-        list[dict]: Lista de convites pendentes.
-
-    Calls:
-        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
-    """
+    
     response = supabase_client.from_("professional_patient_link") \
         .select("id, patient_id, status, created_at") \
         .eq("professional_id", professional_id) \
@@ -108,22 +93,7 @@ def list_pending_invitations(professional_id: str):
 
 # 📜 Função para listar convites de um paciente.
 def list_invitations_for_patient(patient_id: str):
-    """
-    Retorna todos os convites recebidos por um paciente.
-
-    Fluxo:
-      1. Consulta a tabela "professional_patient_link" filtrando por patient_id.
-      2. Retorna a lista de convites (pendentes ou não).
-
-    Args:
-        patient_id (str): ID do paciente.
-
-    Returns:
-        list[dict]: Lista de convites associados ao paciente.
-
-    Calls:
-        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
-    """
+    
     response = supabase_client.from_("professional_patient_link") \
         .select("*") \
         .eq("patient_id", patient_id) \
@@ -136,22 +106,7 @@ def list_invitations_for_patient(patient_id: str):
 
 # 📜 Função para listar convites enviados por um profissional.
 def list_invitations_for_professional(professional_id: str):
-    """
-    Retorna todos os convites enviados por um profissional.
-
-    Fluxo:
-      1. Consulta a tabela "professional_patient_link" filtrando por professional_id.
-      2. Retorna a lista completa de convites.
-
-    Args:
-        professional_id (str): ID do profissional.
-
-    Returns:
-        list[dict]: Lista de convites enviados pelo profissional.
-
-    Calls:
-        - supabase_client.from_("professional_patient_link").select()/execute() [do Supabase]
-    """
+    
     response = supabase_client.from_("professional_patient_link") \
         .select("*") \
         .eq("professional_id", professional_id) \
@@ -164,95 +119,72 @@ def list_invitations_for_professional(professional_id: str):
 
 # 🖥️ Renderiza os convites pendentes para o paciente aceitar ou recusar.
 def render_patient_invitations(user):
-    """
-    Renderiza os convites pendentes para o paciente.
-
-    Fluxo:
-      1. Inicializa chaves no session_state para controle do processamento do convite e do placeholder.
-      2. Se o convite já foi processado (aceito ou recusado), esvazia o placeholder e não renderiza nada.
-      3. Busca os convites recebidos para o paciente a partir do ID do usuário.
-      4. Filtra apenas os convites com status "pending".
-      5. Se houver convites pendentes, seleciona o primeiro convite.
-      6. Utiliza um placeholder armazenado no session_state para exibir os detalhes do convite.
-      7. Exibe informações do profissional que enviou o convite e a data de envio.
-      8. Organiza botões para o paciente aceitar ou recusar o convite, desabilitando-os imediatamente após o clique.
-      9. Após a ação, atualiza o session_state para indicar que o convite foi processado, limpa o cache e esvazia o placeholder.
     
-    Args:
-      user (dict): Dicionário contendo os dados do usuário autenticado, incluindo seu ID.
-    
-    Returns:
-      None: A função renderiza a interface diretamente no Streamlit.
-    
-    Calls:
-      - list_invitations_for_patient() para obter os convites.
-      - get_user_info() para obter os dados do profissional.
-      - get_professional_title() para formatar o nome do profissional.
-      - format_date() para formatar a data de envio.
-      - accept_invitation() e reject_invitation() para atualizar o status do convite.
-    """
-    # 1. Inicializa as chaves no session_state, se ainda não estiverem definidas.
+    # Inicializa as chaves no session_state, se ainda não estiverem definidas.
     if "invitation_processed" not in st.session_state:
         st.session_state.invitation_processed = False
     if "invitation_placeholder" not in st.session_state:
         st.session_state.invitation_placeholder = st.empty()
 
-    # 2. Se o convite já foi processado, esvazia o placeholder e não renderiza nada.
+    # Se o convite já foi processado, esvazia o placeholder e não renderiza nada
     if st.session_state.invitation_processed:
         st.session_state.invitation_placeholder.empty()
         return
 
-    # 3. Obtém os convites recebidos para o paciente através do ID do usuário.
+    # Obtém os convites recebidos para o paciente através do ID do usuário
     invitations = list_invitations_for_patient(user["id"])
     if not invitations:
-        return  # Se não houver convites, finaliza a função.
+        return  # Se não houver convites, finaliza a função
 
-    # 4. Filtra somente os convites com status "pending" (pendentes).
+    # Filtra somente os convites com status "pending" (pendentes)
     pending_invitations = [inv for inv in invitations if inv["status"] == "pending"]
     if not pending_invitations:
-        return  # Se não houver convites pendentes, finaliza a função.
+        return  # Se não houver convites pendentes, finaliza a função
 
-    # 5. Seleciona o primeiro convite pendente.
+    # Seleciona o primeiro convite pendente
     inv = pending_invitations[0]
 
-    # 6. Utiliza o placeholder armazenado no session_state para exibir os detalhes do convite.
+    # Utiliza o placeholder armazenado no session_state para exibir os detalhes do convite
     with st.session_state.invitation_placeholder.container():
-        # 7. Obtém as informações do profissional que enviou o convite.
-        professional_profile = get_user_info(inv["professional_id"], full_profile=True)
-        if professional_profile:
-            # Formata o nome do profissional utilizando a função get_professional_title().
-            professional_name = get_professional_title(professional_profile)
-            st.markdown(f"##### {professional_name} deseja se vincular a você.")
+        
+        with st.spinner("Processando..."):
+            # Obtém as informações do profissional que enviou o convite
+            professional_profile = get_user_info(inv["professional_id"], full_profile=True)
+        
+            if professional_profile:
+                # Formata o nome do profissional utilizando a função get_professional_title()
+                professional_name = get_professional_title(professional_profile)
+                st.markdown(f"##### {professional_name} deseja se vincular a você.")
 
-        # Formata a data de envio do convite.
-        dia, mes, ano = format_date(inv["created_at"])
-        formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
-        st.write(formatted_date)
+            # Formata a data de envio do convite
+            dia, mes, ano = format_date(inv["created_at"])
+            formatted_date = f"**Data de Envio:** {dia}/{mes}/{ano}" if dia else "Data inválida"
+            st.write(formatted_date)
 
-        # 8. Organiza os botões de ação em duas colunas, desabilitando-os se o convite já foi processado.
-        col1, col2 = st.columns(2)
-        with col1:
-            # Botão para aceitar o convite com parâmetro disabled.
-            accept_clicked = st.button("Aceitar", key="accept", disabled=st.session_state.invitation_processed)
-            if accept_clicked:
-                # Atualiza o status do convite para "accepted".
-                accept_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()  # Limpa o cache para garantir a atualização dos dados.
-                st.session_state.invitation_processed = True  # Marca o convite como processado.
-        with col2:
-            # Botão para recusar o convite com parâmetro disabled.
-            reject_clicked = st.button("Recusar", key="reject", disabled=st.session_state.invitation_processed)
-            if reject_clicked:
-                # Atualiza o status do convite para "rejected".
-                reject_invitation(inv["professional_id"], inv["patient_id"])
-                st.cache_data.clear()  # Limpa o cache.
-                st.session_state.invitation_processed = True  # Marca o convite como processado.
+            # Organiza os botões de ação em duas colunas, desabilitando-os se o convite já foi processado
+            col1, col2 = st.columns(2)
+            with col1:
+                # Botão para aceitar o convite com parâmetro disabled
+                accept_clicked = st.button("Aceitar", key="accept", disabled=st.session_state.invitation_processed)
+                if accept_clicked:
+                    # Atualiza o status do convite para "accepted"
+                    accept_invitation(inv["professional_id"], inv["patient_id"])
+                    st.cache_data.clear()  # Limpa o cache para garantir a atualização dos dados
+                    st.session_state.invitation_processed = True  # Marca o convite como processado
+            with col2:
+                # Botão para recusar o convite com parâmetro disabled
+                reject_clicked = st.button("Recusar", key="reject", disabled=st.session_state.invitation_processed)
+                if reject_clicked:
+                    # Atualiza o status do convite para "rejected"
+                    reject_invitation(inv["professional_id"], inv["patient_id"])
+                    st.cache_data.clear()  # Limpa o cache.
+                    st.session_state.invitation_processed = True  # Marca o convite como processado
 
-    # 9. Se o convite foi processado, esvazia o placeholder para remover os botões e informações.
+    # Se o convite foi processado, esvazia o placeholder para remover os botões e informações
     if st.session_state.invitation_processed:
         st.session_state.invitation_placeholder.empty()
 
-# 🖥️ Renderiza a sessão do profissional para se vincular a novos pacientes.
+# 🖥️ Renderiza a sessão do profissional para se vincular a novos pacientes
 def render_invite_patient_section(user):
 
     st.subheader("📩 Convidar Paciente")

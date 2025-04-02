@@ -29,24 +29,7 @@ def adjust_gender_ending(text: str, genero: str) -> str:
 
 
 def get_professional_title(professional_profile):
-    """
-    Retorna o nome do profissional com o título apropriado baseado no gênero.
-
-    Fluxo:
-        1. Obtém o `display_name` do profissional.
-        2. Obtém o `genero` do profissional.
-        3. Define o título adequado:
-            - "Dra." para gênero "F"
-            - "Drx." para gênero "N"
-            - "Dr." para gênero "M" ou padrão
-        4. Retorna a string formatada com título + nome.
-
-    Args:
-        professional_profile (dict): Dicionário contendo pelo menos "display_name" e "genero".
-
-    Returns:
-        str: Nome formatado com o título adequado (ex: "Dra. Estrela").
-    """
+    
     professional_name = professional_profile.get("display_name", "Profissional")
     gender_professional = professional_profile.get("genero", "M")  # Padrão é "M"
 

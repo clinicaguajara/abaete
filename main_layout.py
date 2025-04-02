@@ -36,8 +36,6 @@ def render_main_layout():
     
     # Exibe uma mensagem (placeholder) para feedback
     message_placeholder = st.empty()
-    
-
 
     if st.session_state.get("processing", False):
         with st.container():
@@ -55,8 +53,6 @@ def render_main_layout():
                             if option == "Login":
                                 user, message = sign_in(email, password)
                                 if user:
-                                    st.session_state["user"] = user  
-                                    st.session_state["refresh"] = True  
                                     st.rerun()
                                 else:
                                     message_placeholder.error(f"{message}")
@@ -82,7 +78,7 @@ def render_main_layout():
             st.session_state["processing"] = True
             try:
                 with message_placeholder.container():
-                    with st.spinner("Enviando instruções de recuperação..."):
+                    with st.spinner("Processando..."):
                         if email:  # O email deve estar preenchido para recuperação de senha
                             message = reset_password(email)
                             st.session_state["confirmation_message"] = message

@@ -37,7 +37,6 @@ def sign_in(email, password):
 
             # Armazena o usuário na sessão.
             st.session_state["user"] = user_data
-            st.cache_data.clear() # Limpa o cache e atualiza refresh.
             st.session_state["refresh"] = True
             return user_data, None # Retorna.
 
