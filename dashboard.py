@@ -59,70 +59,43 @@ def render_sidebar(user):
 
 # 🖥️ Renderiza a dashboard do paciente...
 def render_dashboard(user):
-    """
-    Renderiza a dashboard do paciente, mostrando convites, metas, escalas e relatórios.
-    
-    Fluxo:
-        1. Verifica se o usuário está autenticado. Se não, retorna.
-        2. Renderiza a sidebar com informações do usuário.
-        3. Obtém o perfil completo do usuário.
-        4. Ajusta a saudação conforme o gênero do usuário.
-        5. Obtém o primeiro nome do usuário para exibir na saudação. A
-        6. Exibe o cabeçalho do dashboard utilizando um placeholder.
-        7. Exibe convites pendentes.
-        8. Exibe um selectbox para escolher a seção a ser exibida.
-        9. Renderiza a seção escolhida: "Minhas Metas", "Testes Psicométricos" ou "Relatórios".
-    
-    Args:
-        user (dict): Dicionário contendo os dados do usuário autenticado.
+    with st.spinner("Processando..."):
 
-    Returns:
-        None.
+        # Se o usuário não estiver autenticado...
+        if not user or "id" not in user:
+            st.warning("⚠️ Você precisa estar logado para acessar esta página.")
+            return # Retorna.
+            
+        # Renderiza a sidebar com informações do usuário.
+        render_sidebar(user)
 
-    Calls:
-        - get_user() 
-        - adjust_gender_ending()
-        - render_sidebar() 
-        - render_patient_invitations() 
-        - render_patient_goals()
-        - render_patient_scales()
-        - render_scale_correction_section()
-    """
-    # 1. Se o usuário não estiver autenticado...
-    if not user or "id" not in user:
-        st.warning("⚠️ Você precisa estar logado para acessar esta página.")
-        return # 1. Retorna.
+        # Ajusta a saudação conforme o gênero do usuário.
+        saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
+
+        # Obtém o primeiro nome do usuário para exibir na saudação.
+        first_name = user.get("display_name", "Usuário").split()[0] 
         
-    # 2. Renderiza a sidebar com informações do usuário.
-    render_sidebar(user)
+        # Placeholder para manter o cabeçalho estável durante recarregamentos.
+        header_placeholder = st.empty()
+        header_placeholder.header(f"{saudacao}, {first_name}!")  
+        st.divider()
+        
+        # Exibe os convites pendentes.
+        render_patient_invitations(user)
+        
+        # Apresenta um selectbox para escolher qual seção exibir.
+        opcao = st.selectbox(
+            "Selecione uma ação:",
+            ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
+        )
 
-    # 4. Ajusta a saudação conforme o gênero do usuário.
-    saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
-
-    # 5. Obtém o primeiro nome do usuário para exibir na saudação.
-    first_name = user.get("display_name", "Usuário").split()[0] 
-    
-    # 6. Placeholder para manter o cabeçalho estável durante recarregamentos.
-    header_placeholder = st.empty()
-    header_placeholder.header(f"{saudacao}, {first_name}!")  
-    st.divider()
-    
-    # 7. Exibe os convites pendentes.
-    render_patient_invitations(user)
-    
-    # 8. Apresenta um selectbox para escolher qual seção exibir.
-    opcao = st.selectbox(
-        "Selecione uma ação:",
-        ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
-    )
-
-    # 9. Renderiza a seção escolhida.
-    if opcao == "Minhas Metas":
-        render_patient_goals(user["id"])
-    elif opcao == "Testes Psicométricos":
-        render_patient_scales(user["id"])
-    elif opcao == "Relatórios":
-        render_scale_correction_section(user["id"])
+        # Renderiza a seção escolhida.
+        if opcao == "Minhas Metas":
+            render_patient_goals(user["id"])
+        elif opcao == "Testes Psicométricos":
+            render_patient_scales(user["id"])
+        elif opcao == "Relatórios":
+            render_scale_correction_section(user["id"])
 
 
 # 🖥️ Renderiza a dashboard do profissional...
