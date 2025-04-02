@@ -50,19 +50,23 @@ def handle_authenticated_user(user):
 
 # 🧭 Função principal que tudo controla.
 def main():
-    
-    # Inicializa a sessão
     initialize_session_state()
-    # Cria o visual.
     load_css()
-    # Verifica quem está navegando
+
+    # Detecta se estamos em transição (login, cadastro, onboarding)
+    if st.session_state.get("refresh", False):
+        st.session_state["refresh"] = False  # Limpa o refresh
+        with st.spinner("Carregando seu ambiente..."):
+            st.empty()  # Cria algo visual, se quiser
+        return  # Impede o resto do código de rodar até próximo rerun
+
     user = get_user()
-    
-    # Se houver um ID logado na sessão...
+
     if user and "id" in user:
         handle_authenticated_user(user)
     else:
         render_main_layout()
+        
 
 # ⏯️ Executa o código, sem mais demora
 if __name__ == "__main__":
