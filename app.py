@@ -53,17 +53,16 @@ def handle_authenticated_user(user):
 def main():
     initialize_session_state()
     load_css()
+    user = get_user()
 
     # Transição controlada após login/cadastro/onboarding.
-    if st.session_state.get("refresh", False):
+    if st.session_state.get("refresh", False) and not user:
         
         st.session_state["refresh"] = False  # Limpa o refresh.
         with st.spinner("Processando..."):
             time.sleep(0.2)  # Tempo para o spinner renderizar.
             st.rerun()       
         return
-
-    user = get_user()
 
     if user and "id" in user:
         handle_authenticated_user(user)
