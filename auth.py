@@ -46,7 +46,7 @@ def sign_in(email, password):
         
     # Se houver uma exceção no fluxo...
     except Exception as e:
-        st.error(f"❌ Erro ao logar: {str(e)}") # 3. Explica o problema
+        return None, f"❌ Erro ao logar: {str(e)}" # Explica o problema
 
 
 # 🔓 Função para a senha recuperar.
