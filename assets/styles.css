@@ -46,11 +46,11 @@
 .st-key-resetpassword button,
 .st-key-profile-save button,
 .st-key-patientlink button {
-    background-color: #697950 !important;
+    background-color: #8da26b !important;
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #697950 !important;
+    border: 2px solid #8da26b !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
@@ -68,8 +68,8 @@
 .st-key-resetpassword button:hover,
 .st-key-profile-save button:hover,
 .st-key-patientlink button:hover {
-    background-color: #a8cc8f !important;
-    border: 2px solid #a8cc8f !important;
+    background-color: #697950 !important;
+    border: 2px solid #697950 !important;
     transform: scale(1.08) !important;
 }
 
@@ -80,10 +80,10 @@
 .st-key-resetpassword button:active,
 .st-key-profile-save button:active,
 .st-key-patientlink button:active{
-    background-color: #a8cc8f !important;
-    border-color: #a8cc8f  !important;
+    background-color: #697950 !important;
+    border-color: #697950  !important;
     box-shadow: 0px 0px 15px #7b7467 !important;
-    transform: scale(0.9) !important;
+    transform: scale(0.95) !important;
     color: white !important;
 }
 

@@ -6,8 +6,8 @@ from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
 from utils.profile_utils import render_onboarding_questionnaire
 
-# 📬 Configuração inicial
-# Define título, ícone e o layout central
+# 📬 Configuração inicial.
+# Define título, ícone e o layout central.
 st.set_page_config(
     page_title="Abaeté",
     page_icon="🪴",
@@ -16,12 +16,12 @@ st.set_page_config(
 )
 
 
-# 🌐 Função para inicializar a sessão e evitar erros de navegação
+# 🌐 Função para inicializar a sessão e evitar erros de navegação.
 def initialize_session_state():
     
     # Se a sessão ainda não estiver definida...
     if "user" not in st.session_state:
-        st.session_state["user"] = None  # O usuário é inicializado como não autenticado
+        st.session_state["user"] = None  # O usuário é inicializado como não autenticado.
    
     # Se nada foi processado...
     if "processing" not in st.session_state:
@@ -35,14 +35,17 @@ def initialize_session_state():
 # 🧩 Processa o fluxo de usuários autenticados
 def handle_authenticated_user(user):
     
+    # Se o usuário ainda não possuir um gênero definido...
     if not user.get("genero"):
-        render_onboarding_questionnaire(user["id"], user["email"])
+        render_onboarding_questionnaire(user["id"], user["email"]) # Renderiza o questionário de boas vindas
     
+    # Se o usuário for um profissional...
     elif is_professional_enabled(user["id"]):
-        render_professional_dashboard(user)
+        render_professional_dashboard(user) # Renderiza o dashboard especial
     
+    # Caso contrário...
     else:
-        render_dashboard(user)
+        render_dashboard(user) # Renderiza o dashboard normal
 
 
 # 🧭 Função principal que tudo controla.
