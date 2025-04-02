@@ -39,18 +39,18 @@
     animation: postClickGlow 1s ease-in-out;
 }
 
-/* Botões Roxos (Login, Criar Conta, Logout, Habilitar Profissional, Recuperar Senha) */
+/* Botões Verdes (Login, Criar Conta, Logout, Habilitar Profissional, Recuperar Senha) */
 .st-key-logout button,
 .st-key-professional button,
 .st-key-authaction button,
 .st-key-resetpassword button,
 .st-key-profile-save button,
 .st-key-patientlink button {
-    background-color: #8da26b !important;
+    background-color: #697950 !important;
     color: white !important;
     font-size: 16px !important;
     font-weight: bold !important;
-    border: 2px solid #8da26b !important;
+    border: 2px solid #697950 !important;
     border-radius: 8px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out !important;
     padding: 10px 20px !important;
@@ -61,16 +61,16 @@
     outline: none !important;
 }
 
-/* Hover Roxo */
+/* Hover Verde */
 .st-key-logout button:hover,
 .st-key-professional button:hover,
 .st-key-authaction button:hover,
 .st-key-resetpassword button:hover,
 .st-key-profile-save button:hover,
 .st-key-patientlink button:hover {
-    background-color: #697950!important;
-    border: 2px solid #697950 !important;
-    transform: scale(1.1) !important;
+    background-color: #a8cc8f !important;
+    border: 2px solid #a8cc8f !important;
+    transform: scale(1.08) !important;
 }
 
 /* Efeito ao clicar */
@@ -80,10 +80,10 @@
 .st-key-resetpassword button:active,
 .st-key-profile-save button:active,
 .st-key-patientlink button:active{
-    background-color: #697950 !important;
-    border-color: #697950  !important;
+    background-color: #a8cc8f !important;
+    border-color: #a8cc8f  !important;
     box-shadow: 0px 0px 15px #7b7467 !important;
-    transform: scale(0.8) !important;
+    transform: scale(0.9) !important;
     color: white !important;
 }
 
