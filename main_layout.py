@@ -67,20 +67,20 @@ def render_main_layout():
                                     st.rerun()
                                 else:
                                     message_placeholder.error(message)
-            finally:
-                st.session_state["processing"] = False  
+        finally:
+            st.session_state["processing"] = False  
         
-        # Agora, abaixo do botão principal, exibe o botão de recuperação de senha (apenas no modo Login)
-        if option == "Login":
-            if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True):
-                if email:  # O email deve estar preenchido para recuperação de senha
-                    message = reset_password(email)
-                    st.session_state["confirmation_message"] = message
-                    st.rerun()
-                else:
-                    message_placeholder.warning("⚠️ Por favor, insira seu email antes de redefinir a senha.")
+    # Agora, abaixo do botão principal, exibe o botão de recuperação de senha (apenas no modo Login)
+    if option == "Login":
+        if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True):
+            if email:  # O email deve estar preenchido para recuperação de senha
+                message = reset_password(email)
+                st.session_state["confirmation_message"] = message
+                st.rerun()
+            else:
+                message_placeholder.warning("⚠️ Por favor, insira seu email antes de redefinir a senha.")
         
-        # Exibe mensagens de confirmação, se houver
-        if "confirmation_message" in st.session_state:
-            message_placeholder.success(st.session_state["confirmation_message"])
-            del st.session_state["confirmation_message"]
+    # Exibe mensagens de confirmação, se houver
+    if "confirmation_message" in st.session_state:
+        message_placeholder.success(st.session_state["confirmation_message"])
+        del st.session_state["confirmation_message"]
