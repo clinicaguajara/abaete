@@ -42,7 +42,6 @@ def sign_in(email, password):
         
         # Se a autenticação não for bem sucedida...
         else:
-            st.session_state["refresh"] = True
             return None, "❌ Credenciais inválidas." # Retorna um aviso
         
     # Se houver uma exceção no fluxo...
