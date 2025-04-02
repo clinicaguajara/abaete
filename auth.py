@@ -37,9 +37,9 @@ def sign_in(email, password):
 
             # Armazena o usuário na sessão.
             st.session_state["user"] = user_data
-            st.cache_data.clear() # 2.4 Limpa o cache e atualiza refresh.
+            st.cache_data.clear() # Limpa o cache e atualiza refresh.
             st.session_state["refresh"] = True
-            return user_data, None # 2.5 Retorna.
+            return user_data, None # Retorna.
 
     # Se houver uma exceção no fluxo...
     except Exception as e:

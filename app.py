@@ -53,15 +53,9 @@ def main():
     # Cria o visual.
     load_css()
     # Verifica quem está navegando
-    with st.spinner("Carregando..."):
-        try:
-            user = get_user()
-        except Exception as e:
-            st.error("Erro ao obter informações do usuário. Tente novamente mais tarde.")
-            st.stop() 
+    user = get_user()
     
     # Se houver um ID logado na sessão...
-    
     if user and "id" in user:
         handle_authenticated_user(user)
     else:
