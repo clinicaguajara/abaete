@@ -57,7 +57,7 @@
     width: 100% !important;
     text-align: center !important;
     cursor: pointer !important;
-    box-shadow: 0px 0px 10px #697950 !important;
+    box-shadow: 0px 0px 10px #40403e !important;
     outline: none !important;
 }
 
@@ -82,7 +82,7 @@
 .st-key-patientlink button:active{
     background-color: #697950 !important;
     border-color: #697950  !important;
-    box-shadow: 0px 0px 15px #697950 !important;
+    box-shadow: 0px 0px 15px #40403e !important;
     transform: scale(0.8) !important;
     color: white !important;
 }
