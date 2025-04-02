@@ -1,13 +1,5 @@
 import streamlit as st
 from supabase_config import supabase_client
-from utils.professional_utils import is_professional_enabled
-from dashboard import render_dashboard, render_professional_dashboard
-from utils.profile_utils import render_onboarding_questionnaire
-
-
-# Cria o client de autenticação do Supabase.
-# Esse client é utilizado para realizar operações de login, cadastro, recuperação de senha e logout.
-supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # 🔐  Função que verifica o login e deixa o usuário passar.
@@ -94,19 +86,6 @@ def sign_up(email, password, confirm_password, display_name):
 def get_user():
     # Obtém e retorna o valor associado à chave "user" no st.session_state.
     return st.session_state.get("user")
-
-
-# 🧩 Processa o fluxo de usuários autenticados
-def handle_authenticated_user(user):
-    
-    if not user.get("genero"):
-        render_onboarding_questionnaire(user["id"], user["email"])
-    
-    elif is_professional_enabled(user["id"]):
-        render_professional_dashboard(user)
-    
-    else:
-        render_dashboard(user)
 
 
 # 🚪 Função para sair e limpar a sessão.

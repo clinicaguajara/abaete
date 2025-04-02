@@ -1,5 +1,8 @@
 import streamlit as st
 from supabase_config import supabase_client
+from utils.professional_utils import is_professional_enabled
+from dashboard import render_dashboard, render_professional_dashboard
+from utils.profile_utils import render_onboarding_questionnaire
 
 
 # 💾 Função para cachear o perfil do usuário e evitar buscas repetitivas.
@@ -81,3 +84,16 @@ def get_user_info(identifier, by_email=False, full_profile=False):
 
     # 1. Executa a função cacheada.
     return fetch_user_info(identifier, by_email, full_profile)
+
+
+# 🧩 Processa o fluxo de usuários autenticados
+def handle_authenticated_user(user):
+    
+    if not user.get("genero"):
+        render_onboarding_questionnaire(user["id"], user["email"])
+    
+    elif is_professional_enabled(user["id"]):
+        render_professional_dashboard(user)
+    
+    else:
+        render_dashboard(user)

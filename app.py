@@ -1,7 +1,8 @@
 import streamlit as st
-from auth import get_user, handle_authenticated_user
+from auth import get_user
 from main_layout import render_main_layout
 from utils.design_utils import load_css
+from utils.user_utils import handle_authenticated_user
 
 # 📬 Configuração inicial
 # Define título, ícone e o layout central
