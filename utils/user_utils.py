@@ -1,5 +1,5 @@
 import streamlit as st
-from auth import supabase_client
+from supabase_config import supabase_client
 
 
 # 💾 Função para cachear o perfil do usuário e evitar buscas repetitivas.

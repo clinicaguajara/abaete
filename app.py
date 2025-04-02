@@ -37,7 +37,7 @@ def main():
     # Cria o visual.
     load_css()
     # Verifica quem está navegando
-    with st.spinner("Carregando..."):
+    with st.spinner("Processando..."):
         try:
             user = get_user()
         except Exception as e:

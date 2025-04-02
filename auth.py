@@ -1,13 +1,8 @@
 import streamlit as st
-import supabase
+from supabase_config import supabase_client
 from utils.professional_utils import is_professional_enabled
 from dashboard import render_dashboard, render_professional_dashboard
 from utils.profile_utils import render_onboarding_questionnaire
-
-# 🔑 Configuração inicial do Supabase e autenticação OAuth.
-# Obtém as credenciais a partir do Streamlit.
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 
 # Cria o client de autenticação do Supabase.

@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 from datetime import date
-from auth import supabase_client
+from supabase_config import supabase_client
 from utils.user_utils import get_user_info
 from utils.goals_utils import get_linked_patients
 

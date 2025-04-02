@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 from datetime import date, datetime, timedelta
-from auth import supabase_client
+from supabase_config import supabase_client
 from utils.user_utils import get_user_info
 from utils.date_utils import format_date
 
