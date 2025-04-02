@@ -44,7 +44,7 @@ def render_main_layout():
             if not email or not password:
                 message_placeholder.warning("⚠️ Por favor, complete o formulário antes de continuar e não utilize o preenchimento automático.")
             else:
-                with spinner_placeholder.container():    
+                with message_placeholder.container():    
                     with st.spinner("Processando..."):
                         if option == "Login":
                             user, message = sign_in(email, password)
