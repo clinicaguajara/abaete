@@ -10,27 +10,7 @@ from utils.correction_utils import render_scale_correction_section
 
 # 🖥️ Função para renderiza a sidebar.
 def render_sidebar(user):
-    """
-    Renderiza a barra lateral do usuário autenticado.
-
-    Fluxo:
-        1. Obtém os dados do usuário autenticado.
-        2. Exibe informações básicas como nome e e-mail.
-        3. Adiciona um botão de logout.
-        4. Se for um profissional, verifica se a área profissional está habilitada.
-        5. Se a área profissional não estiver habilitada, exibe a opção para ativação.
-
-    Args:
-        user (dict): Dicionário contendo os dados do usuário autenticado.
-
-    Returns:
-        None.
-
-    Calls:
-        - sign_out()
-        - is_professional_enabled()
-        - render_professional_enable_section()
-    """
+    
     with st.sidebar:
         
         # 1. Se o usuário não estiver autenticado...
@@ -59,6 +39,7 @@ def render_sidebar(user):
 
 # 🖥️ Renderiza a dashboard do paciente...
 def render_dashboard(user):
+    
     # Se o usuário não estiver autenticado...
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
@@ -79,7 +60,9 @@ def render_dashboard(user):
     st.divider()
         
     # Exibe os convites pendentes.
-    render_patient_invitations(user)
+    with st.spinner("Processando..."):
+        render_patient_invitations(user)
+
         
     # Apresenta um selectbox para escolher qual seção exibir.
     opcao = st.selectbox(
