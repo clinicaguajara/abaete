@@ -59,76 +59,45 @@ def render_sidebar(user):
 
 # 🖥️ Renderiza a dashboard do paciente...
 def render_dashboard(user):
-    with st.spinner("Processando..."):
-
-        # Se o usuário não estiver autenticado...
-        if not user or "id" not in user:
-            st.warning("⚠️ Você precisa estar logado para acessar esta página.")
-            return # Retorna.
+    # Se o usuário não estiver autenticado...
+    if not user or "id" not in user:
+        st.warning("⚠️ Você precisa estar logado para acessar esta página.")
+        return # Retorna.
             
-        # Renderiza a sidebar com informações do usuário.
-        render_sidebar(user)
+    # Renderiza a sidebar com informações do usuário.
+    render_sidebar(user)
 
-        # Ajusta a saudação conforme o gênero do usuário.
-        saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
+    # Ajusta a saudação conforme o gênero do usuário.
+    saudacao = adjust_gender_ending("Bem-vindo", user.get("genero", "M"))
 
-        # Obtém o primeiro nome do usuário para exibir na saudação.
-        first_name = user.get("display_name", "Usuário").split()[0] 
+    # Obtém o primeiro nome do usuário para exibir na saudação.
+    first_name = user.get("display_name", "Usuário").split()[0] 
         
-        # Placeholder para manter o cabeçalho estável durante recarregamentos.
-        header_placeholder = st.empty()
-        header_placeholder.header(f"{saudacao}, {first_name}!")  
-        st.divider()
+    # Placeholder para manter o cabeçalho estável durante recarregamentos.
+    header_placeholder = st.empty()
+    header_placeholder.header(f"{saudacao}, {first_name}!")  
+    st.divider()
         
-        # Exibe os convites pendentes.
-        render_patient_invitations(user)
+    # Exibe os convites pendentes.
+    render_patient_invitations(user)
         
-        # Apresenta um selectbox para escolher qual seção exibir.
-        opcao = st.selectbox(
-            "Selecione uma ação:",
-            ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
-        )
+    # Apresenta um selectbox para escolher qual seção exibir.
+    opcao = st.selectbox(
+        "Selecione uma ação:",
+        ["Minhas Metas", "Testes Psicométricos", "Relatórios"]
+    )
 
-        # Renderiza a seção escolhida.
-        if opcao == "Minhas Metas":
-            render_patient_goals(user["id"])
-        elif opcao == "Testes Psicométricos":
-            render_patient_scales(user["id"])
-        elif opcao == "Relatórios":
-            render_scale_correction_section(user["id"])
+    # Renderiza a seção escolhida.
+    if opcao == "Minhas Metas":
+        render_patient_goals(user["id"])
+    elif opcao == "Testes Psicométricos":
+        render_patient_scales(user["id"])
+    elif opcao == "Relatórios":
+        render_scale_correction_section(user["id"])
 
 
 # 🖥️ Renderiza a dashboard do profissional...
 def render_professional_dashboard(user):
-    """
-    Renderiza a dashboard para profissionais habilitados.
-
-    Fluxo:
-        1. Verifica se o usuário está autenticado. Se não, retorna.
-        2. Renderiza a sidebar com informações do usuário.
-        3. Obtém as informações completas do profissional.
-        4. Obtém o título do profissional junto com o seu primeiro nome.
-        5. Ajusta a saudação conforme o gênero do profissional.
-        6. Exibe a saudação personalizada.
-        7. Exibe um seletor de ações para o profissional.
-        8. Executa a ação escolhida.
-
-    Args:
-        user (dict): Dicionário contendo os dados do usuário autenticado.
-
-    Returns:
-        None.
-
-    Calls:
-        - render_sidebar()
-        - get_professional_title()
-        - adjust_gender_ending()
-        - create_patient_invitation()
-        - render_pending_invitations()
-        - render_add_goal_section()
-        - render_add_scale_section()
-    """
-    # 1. Se o usuário não estiver autenticado...
     if not user or "id" not in user:
         st.warning("⚠️ Você precisa estar logado para acessar esta página.")
         return # 1. Retorna.

@@ -19,7 +19,7 @@ def render_main_layout():
     email = st.text_input("Email", key="email_input")
     password = st.text_input("Senha", type="password", key="password_input")
     
-    # Variáveis utilizadas apenas para Cadastro.
+    # Variáveis utilizadas apenas para Cadastro
     display_name = None
     confirm_password = None
 
@@ -72,7 +72,7 @@ def render_main_layout():
         
     # Agora, abaixo do botão principal, exibe o botão de recuperação de senha (apenas no modo Login)
     if option == "Login":
-        if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True):
+        if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True, disabled=st.session_state.get("processing", False)):
             if email:  # O email deve estar preenchido para recuperação de senha
                 message = reset_password(email)
                 st.session_state["confirmation_message"] = message
