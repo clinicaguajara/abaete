@@ -252,7 +252,7 @@ def render_patient_invitations(user):
     if st.session_state.invitation_processed:
         st.session_state.invitation_placeholder.empty()
 
-
+# 🖥️ Renderiza a sessão do profissional para se vincular a novos pacientes.
 def render_invite_patient_section(user):
 
     st.subheader("📩 Convidar Paciente")

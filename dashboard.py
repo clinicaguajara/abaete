@@ -1,6 +1,6 @@
 import streamlit as st
 from auth import sign_out
-from patient_link import render_pending_invitations, render_patient_invitations, create_patient_invitation
+from patient_link import render_pending_invitations, render_patient_invitations, render_invite_patient_section
 from utils.gender_utils import adjust_gender_ending, get_professional_title
 from utils.professional_utils import render_professional_enable_section, is_professional_enabled
 from utils.goals_utils import render_patient_goals, render_add_goal_section 
@@ -130,18 +130,8 @@ def render_professional_dashboard(user):
 
     # 8. Executa a ação escolhida.
     if opcao_selecionada == "Convidar Paciente":
-        st.markdown("##### 📩 Convidar Paciente")
-        patient_email = st.text_input("Digite o email do paciente:", key="patient_email_input")
-        if st.button("Enviar Convite", key="patientlink", use_container_width=True):
-            if patient_email:
-                success, msg = create_patient_invitation(user["id"], patient_email)
-                if success:
-                    st.success("✅ Convite enviado com sucesso!")
-                else:
-                    st.error(f"Erro: {msg}")
-            else:
-                st.warning("⚠️ Por favor, insira o email do paciente.")
-    
+       render_invite_patient_section(user)
+
     elif opcao_selecionada == "Visualizar Convites Pendentes":
         render_pending_invitations(user["id"])
     
