@@ -17,29 +17,30 @@ def sign_in(email, password):
     
     from utils.user_utils import get_user_info
     try:
-        # Tenta logar com email e senha.
-        response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
-       
-        # Se conseguir autenticar, processa os dados do usuário no Supabase Auth.
-        if response and hasattr(response, "user") and response.user: 
-            user_obj = response.user
-            
-            # Obtém os dados completos do perfil do usuário na tabela user_profile.
-            user_profile = get_user_info(user_obj.id, full_profile=True)
+        with st.spinner("Processando..."):
+            # Tenta logar com email e senha.
+            response = supabase_client.auth.sign_in_with_password({"email": email, "password": password})
+        
+            # Se conseguir autenticar, processa os dados do usuário no Supabase Auth.
+            if response and hasattr(response, "user") and response.user: 
+                user_obj = response.user
+                
+                # Obtém os dados completos do perfil do usuário na tabela user_profile.
+                user_profile = get_user_info(user_obj.id, full_profile=True)
 
-            # Mescla as informações em um dicionário.
-            user_data = {
-                "id": user_obj.id,
-                "email": user_obj.email,
-                "display_name": user_obj.user_metadata.get("display_name", "Usuário"),
-                **user_profile  # Mescla os dados do perfil
-            }
+                # Mescla as informações em um dicionário.
+                user_data = {
+                    "id": user_obj.id,
+                    "email": user_obj.email,
+                    "display_name": user_obj.user_metadata.get("display_name", "Usuário"),
+                    **user_profile  # Mescla os dados do perfil
+                }
 
-            # Armazena o usuário na sessão.
-            st.session_state["user"] = user_data
-            st.cache_data.clear() # Limpa o cache e atualiza refresh.
-            st.session_state["refresh"] = True
-            return user_data, None # Retorna.
+                # Armazena o usuário na sessão.
+                st.session_state["user"] = user_data
+                st.cache_data.clear() # Limpa o cache e atualiza refresh.
+                st.session_state["refresh"] = True
+                return user_data, None # Retorna.
 
     # Se houver uma exceção no fluxo...
     except Exception as e:
