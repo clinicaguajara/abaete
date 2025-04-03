@@ -25,7 +25,7 @@ def initialize_session_state():
         "auth_action": None,
         "invitation_processed": False,
         "account_created": False,
-        "confirmation_message": None
+        "confirmation_message": False
     }
     for key, value in default_keys.items():
         if key not in st.session_state:
