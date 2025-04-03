@@ -18,18 +18,18 @@ st.set_page_config(
 
 # 🌐 Função para inicializar a sessão e evitar erros de navegação.
 def initialize_session_state():
-    default_keys = {
-        "user": None,
-        "processing": False,
-        "refresh": False,
-        "auth_action": None,
-        "invitation_processed": False,
-        "account_created": False,
-        "confirmation_message": False
-    }
-    for key, value in default_keys.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
+    
+    # Se a sessão ainda não estiver definida...
+    if "user" not in st.session_state:
+        st.session_state["user"] = None  # O usuário é inicializado como não autenticado.
+   
+    # Se nada foi processado...
+    if "processing" not in st.session_state:
+        st.session_state["processing"] = False # Aguarde alguma interação do usuário.
+   
+    # Se a interface do aplicativo ainda não foi atualizada...
+    if "refresh" not in st.session_state:
+        st.session_state["refresh"] = False # Aguarde alguma interação do usuário antes de continuar.
 
 
 # 🛣️ Processa o fluxo de usuários autenticados.

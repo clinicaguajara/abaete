@@ -27,7 +27,7 @@ def render_main_layout():
     action_text = "Entrar" if option == "Login" else "🪄 Criar Conta"
     message_placeholder = st.empty()
 
-    # 🔐 Botão principal de ação
+    # Botão principal de ação
     if st.button(action_text, key="authaction", use_container_width=True):
         with message_placeholder.container():
             with st.spinner("Processando..."):
@@ -58,7 +58,7 @@ def render_main_layout():
                         except Exception as e:
                             message_placeholder.error(f"Erro ao criar conta: {str(e)}")
 
-    # 🔐 Recuperação de senha
+    # Recuperação de senha
     if option == "Login":
         if st.button("🔓 Recuperar Senha", key="resetpassword", use_container_width=True):
             if email:
@@ -70,7 +70,7 @@ def render_main_layout():
             else:
                 message_placeholder.warning("⚠️ Por favor, insira seu email.")
 
-    # 💬 Mensagens de confirmação
+    # Mensagens de confirmação
     if "confirmation_message" in st.session_state:
         message_placeholder.success(st.session_state["confirmation_message"])
         del st.session_state["confirmation_message"]
