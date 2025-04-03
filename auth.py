@@ -39,27 +39,23 @@ def sign_in(email, password):
             st.session_state["user"] = user_data
             st.session_state["refresh"] = True
             return user_data, None # Retorna.
-        
-        # Se a autenticação não for bem sucedida...
-        else:
-            return None, "❌ Credenciais inválidas." # Retorna um aviso
-        
+
     # Se houver uma exceção no fluxo...
     except Exception as e:
-        return None, f"❌ Erro ao logar: {str(e)}" # Explica o problema
+        st.error(f"❌ Erro ao logar: {str(e)}") # 3. Explica o problema.
 
 
 # 🔓 Função para a senha recuperar.
 def reset_password(email):
     
     try:
-        # Recebe o email e chama o client do Supabase para redefinição de senha
+        # Recebe o email e chama o client do Supabase para redefinição de senha.
         supabase_client.auth.reset_password_for_email(
             email,
             options={"redirect_to": "https://resetpassword-3fou6u.flutterflow.app/resetPasswordPage"}
         )
 
-        # 2. Retorna uma mensagem de confirmação
+        # 2. Retorna uma mensagem de confirmação.
         return f"📩 Um email de recuperação foi enviado para {email}." 
 
     # Se houver um exceção...
@@ -75,7 +71,7 @@ def sign_up(email, password, confirm_password, display_name):
         return None, "❌ As senhas não coincidem!" # 1. Retorna um erro.
     
     try:
-        # Cria a conta no Supabase
+        # Cria a conta no Supabase.
         response = supabase_client.auth.sign_up({
             "email": email,
             "password": password,
@@ -88,11 +84,11 @@ def sign_up(email, password, confirm_password, display_name):
             return response.user, "📩 Um e-mail de confirmação foi enviado. Verifique sua caixa de entrada." 
 
         # Caso contrário... 
-        return None, "⚠️ Não foi possível criar a conta. Tente novamente." # Retorna none e uma mensagem de erro
+        return None, "⚠️ Não foi possível criar a conta. Tente novamente." # 4.1 Retorna none e uma mensagem de erro.
 
     # Se houver ume exceção...
     except Exception as e:
-        return None, f"❌ Erro ao criar conta: {str(e)}" # Explica o problema
+        return None, f"❌ Erro ao criar conta: {str(e)}" # 5. Explica o problema.
 
 
 # 🕵️‍♂️ Função que busca o usuário que fez a conexão.

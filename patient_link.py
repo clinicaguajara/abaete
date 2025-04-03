@@ -239,4 +239,3 @@ def render_pending_invitations(professional_id):
         st.write(f"📅 **Data de Envio:** {formatted_date}")
         st.write(f"✉️ **E-mail:** {patient_email}")
         st.markdown("---")
-
