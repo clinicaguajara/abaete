@@ -29,13 +29,19 @@ def render_main_layout():
         with message_placeholder.container():
             with st.spinner("Processando..."):
                 if option == "Login" and st.session_state.get("auth_action") == "login":
-                    user, message = sign_in(email, password)
-                    if user:
-                        st.rerun()
-                    else:
+                    try:
+                        user, message = sign_in(email, password)
+                        if user:
+                            st.rerun()
+                        else:
+                            st.session_state["processing"] = False
+                            st.session_state["auth_action"] = None
+                            message_placeholder.error(message)
+                    except Exception as e:
                         st.session_state["processing"] = False
                         st.session_state["auth_action"] = None
-                        message_placeholder.error(message)
+                        message_placeholder.error(f"Erro inesperado: {str(e)}")
+
                 elif option == "Cadastro" and st.session_state.get("auth_action") == "signup":
                     if not display_name or not confirm_password:
                         st.session_state["processing"] = False
@@ -44,17 +50,22 @@ def render_main_layout():
                         st.session_state["processing"] = False
                         message_placeholder.error("❌ As senhas não coincidem.")
                     else:
-                        user, message = sign_up(email, password, confirm_password, display_name)
-                        if user:
-                            st.session_state["account_created"] = True
-                            st.session_state["confirmation_message"] = "📩 Um e-mail de verificação foi enviado."
-                            st.rerun()
-                        else:
+                        try:
+                            user, message = sign_up(email, password, confirm_password, display_name)
+                            if user:
+                                st.session_state["account_created"] = True
+                                st.session_state["confirmation_message"] = "📩 Um e-mail de verificação foi enviado."
+                                st.rerun()
+                            else:
+                                st.session_state["processing"] = False
+                                message_placeholder.error(message)
+                        except Exception as e:
                             st.session_state["processing"] = False
-                            message_placeholder.error(message)
-        return  # Impede o botão de ser renderizado durante o processamento
+                            message_placeholder.error(f"Erro ao criar conta: {str(e)}")
+        return
 
-    # 🔘 Botão principal de ação
+
+    # Botão principal de ação
     if st.button(action_text, key="authaction", use_container_width=True):
         st.session_state["processing"] = True
         st.session_state["auth_action"] = "login" if option == "Login" else "signup"

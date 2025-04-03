@@ -7,8 +7,7 @@ from utils.design_utils import load_css
 from utils.professional_utils import is_professional_enabled
 from utils.profile_utils import render_onboarding_questionnaire
 
-# 📬 Configuração inicial.
-# Define título, ícone e o layout central.
+# 📬 Configurações iniciais.
 st.set_page_config(
     page_title="Abaeté",
     page_icon="🪴",
@@ -19,18 +18,18 @@ st.set_page_config(
 
 # 🌐 Função para inicializar a sessão e evitar erros de navegação.
 def initialize_session_state():
-    
-    # Se a sessão ainda não estiver definida...
-    if "user" not in st.session_state:
-        st.session_state["user"] = None  # O usuário é inicializado como não autenticado.
-   
-    # Se nada foi processado...
-    if "processing" not in st.session_state:
-        st.session_state["processing"] = False # Aguarde alguma interação do usuário.
-   
-    # Se a interface do aplicativo ainda não foi atualizada...
-    if "refresh" not in st.session_state:
-        st.session_state["refresh"] = False # Aguarde alguma interação do usuário antes de continuar.
+    default_keys = {
+        "user": None,
+        "processing": False,
+        "refresh": False,
+        "auth_action": None,
+        "invitation_processed": False,
+        "account_created": False,
+        "confirmation_message": None
+    }
+    for key, value in default_keys.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
 
 # 🛣️ Processa o fluxo de usuários autenticados.
