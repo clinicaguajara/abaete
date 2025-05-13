@@ -1,0 +1,11 @@
+# Ignorar arquivos de cache e ambientes virtuais
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.streamlit/secrets.toml
+
+# Arquivos temporários de sistema
+.DS_Store
+Thumbs.db
+logs/app.log

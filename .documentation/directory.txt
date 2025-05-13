@@ -1,0 +1,35 @@
+
+🌵 Abaeté 2.0 /
+│
+├──── 🏠 1_Página_Inicial.py 
+│
+├──── 📁 pages/                 
+│      ├── 2_Minhas_Metas.py
+│      └── 3_Avaliações.py
+│
+├──── 📁 frameworks/ 
+│      └── sm.py
+│      
+├──── 📁utils/
+│      ├── logs.py
+│      ├── design.py
+│      ├── gender.py
+│      ├── session.py
+│      ├── access_control.py 
+│      └── constants.py
+│ 
+├──── 📁 services/    
+│      ├── backend.py
+│      ├── user_profile.py
+│      ├── professional_profile.py
+│      ├── professional_patient_link.py
+│      └── auth.py
+│      
+├──── 📁components/
+│      ├── auth_interface.py
+│      ├── dashboard_interface.py
+│      └── onboarding.py  
+│     
+└──── 📁.streamlit/
+       ├── config.toml
+       └── secrets.toml  

@@ -1,0 +1,43 @@
+
+
+[1_Página_Inicial.py] ── importa ──> [utils.logs] ── configure_logging ──> logging global
+      │
+      ├─ importa ──> [utils.design.py]
+      │                          ├─ load_css_file(): lê CSS com cache
+      │                          └─ load_css(): injeta estilos
+      │
+      ├─ importa ──> [frameworks/sm.py] ── define ─> classe StateMachine
+      │                          │
+      │                          ├─ to(): transita o estado e pode forçar rerun
+      │                          ├─ set_variable(): salva dados no session_state
+      │                          └─ get_variable(): recupera dados vinculados ao estado
+      │
+      ├─ importa ─> [utils.constants.states] ── define ─> AuthStates(Enum)
+      │                          └─ FORM, LOADING, AUTHENTICATED, LOGGED_OUT
+      │
+      ├─ instancia ─> StateMachine('auth_state', AuthStates.FORM)
+      │                          ├─ se current != AUTHENTICATED → render_auth_interface()
+      │                          └─ se current == AUTHENTICATED → segue para onboarding
+      │
+      ├─ carrega ──> [services/user_profile.py]
+      │                          └─ load_user_profile_once(user_id, auth_machine)
+      │                                        └─ fetch_records('user_profile')
+      │
+      ├─ importa ──> [components/onboarding.py]
+      │                          └─ render_onboarding_questionnaire()
+      │                                  ├─ recebe user_id e user_profile
+      │                                  ├─ mostra apenas campos ausentes
+      │                                  ├─ salva perfil com save_user_profile()
+      │                                  └─ atualiza session_state e chama st.rerun()
+      │
+      └─ importa ──> [components/auth_interface.py]
+                                 │
+                                 └─ render_auth_interface()
+                                        │
+                                        ├─ instancia: StateMachine('auth_redirect', True)
+                                        ├─ rerun se necessário para estabilizar layout
+                                        ├─ instancia: StateMachine('auth_state', AuthStates.FORM)
+                                        ├─ renderiza st.tabs(["Entrar", "Cadastrar", "Reset"])
+                                        ├─ usa AuthStates.LOADING para transição provisória
+                                        ├─ em caso de sucesso: .to(AuthStates.AUTHENTICATED)
+                                        └─ armazena email e id com .set_variable()

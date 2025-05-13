@@ -1,0 +1,16 @@
+
+HISTORY (VENV)
+
+# 1. Cria a pasta venv.
+python -m venv .venv 
+
+# 2. Selecione o interpretador Python do venv. 
+ctrl + shift + p
+Python: Select Interpreter
+Python 3.13.2 ('.venv': venv) .\venv\Scripts\python.exe
+
+# 3. Ativa o ambiente virtual.
+.\.venv\Scripts\Activate
+
+# 4. Instala as dependências do projeto.
+pip install -r requirements.txt

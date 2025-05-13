@@ -1,0 +1,276 @@
+/* ==========================================================
+   BOTÕES ROXO PÚRPURA MISTERIOSA
+   ==========================================================
+   ⚪ Text:   white
+   🟪 Fundo:  #7159c1
+   🟪 Borda:  #4c398b
+   🟫 Glow:   #7b7467
+   ========================================================== */
+
+.st-key-logout button {
+    color: white !important;
+    background-color: #4D5B41 !important;
+    border: 2px solid #353f2d!important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+/* HOVER */
+.st-key-logout button:hover {
+    transform: scale(1.03) !important;
+    box-shadow: 0px 3px 6px #7b7467 !important;
+}
+
+/* ATIVO */
+.st-key-logout button:active {
+   transform: scale(0.97) !important;
+}
+
+
+/* ==========================================================
+   BOTÕES VERDE ESMERALDA MÍSTICO
+   ==========================================================
+   ⚪ Text:   white
+   🟩 Fundo:  #008F7A
+   🟩 Borda:  #007366
+   🟫 Glow:   #7b7467
+  ========================================================== */
+
+.st-key-accept button {
+    background-color: #008F7A !important;
+    color: white !important;
+    border: 2px solid #007366 !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+/* HOVER */
+.st-key-accept button:hover {
+    transform: scale(1.03) !important;
+    box-shadow: 0px 3px 6px #7b7467 !important;
+}
+
+/* ATIVO */
+.st-key-accept button:active {
+    transform: scale(0.97) !important;
+}
+
+
+/* ==========================================================
+   BOTÕES VERMELHO RUBI ENCANTADO
+   ==========================================================
+   🟥 Fundo:  #C70039
+   🟥 Borda:  #9B002F
+   🟫 Glow:   #7b7467
+   ========================================================== */
+
+.st-key-reject button {
+    background-color: #C70039 !important;
+    color: white !important;
+    border: 2px solid #9B002F !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+/* HOVER */
+.st-key-reject button:hover {
+    transform: scale(1.03) !important;
+    box-shadow: 0px 3px 6px #7b7467 !important;
+}
+
+/* ATIVO */
+.st-key-reject button:active {
+    transform: scale(0.97) !important;
+}
+
+
+/* ==========================================================
+   EXPANDERS / CABEÇALHO (FECHADO)
+   ==========================================================
+   ⚪ Texto: white
+   🟪 Fundo: #7159c1
+   🟪 Borda: #4c398b
+   🟫 Glow:  #7b7467
+   ========================================================== */
+
+details:not([open]) summary {
+  color: #40403e !important;
+  background-color: #efedec !important;
+  border: none !important;
+  border-radius: 8px !important;
+  transition: background-color 0.3s ease-in-out, transform 0.4s ease-in-out !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+}
+
+/* HOVER */
+details:not([open]) summary:hover {
+   transform: scale(1.03) !important;
+   color: white !important;
+   background-color: #4D5B41 !important;
+   border: 2px solid #353f2d!important;
+   border-radius: 8px !important;
+   box-shadow: 0px 4px 8px #7b7467 !important;
+   overflow: hidden !important;
+}
+
+
+/* EFEITO INTERATIVO (hover) */
+summary:hover svg {
+  fill: white !important;
+}
+
+
+/* ATIVO */
+details:not([open]) summary:active {
+   transform: scale(1) !important;
+}
+
+
+/* ==========================================================
+   EXPANDERS / CABEÇALHO (ABERTO)
+   ==========================================================
+   ⚪ Texto: white
+   🟪 Fundo: #7159c1
+   🟪 Borda: #4c398b
+   🟫 Glow:  #7b7467
+   ❌ Sem borda duplicada (usa borda de <details[open]>)
+   ========================================================== */
+
+/* Cabeçalho do expander (aberto) */
+details[open] summary {
+  background-color: #4D5B41 !important;
+  color: white !important; 
+  border: none !important;
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+  border-top: 2px solid #353f2d !important;
+  border-left: 2px solid #353f2d !important;
+  border-right: 2px solid #353f2d !important;
+  cursor: pointer !important;
+}
+
+/* ==========================================================
+   EXPANDERS / CORPO (ABERTO)
+   ==========================================================
+   🟪 Borda: #4c398b
+   ========================================================== */
+
+details[open] > *:not(summary) {
+  border: 2px solid #353f2d !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  transition: background-color 0.4s ease-in-out, transform 0.4s ease-in-out !important;
+  overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   EXPANDER / BOTÕES
+   ==========================================================
+   ⚪ Texto: white
+   🟪 Fundo: #7159c1
+   🟪 Borda: #4c398b
+   🟫 Glow:  #7b7467
+   ========================================================== */
+
+[data-testid="stExpander"] button {
+      color: white !important;
+      background-color: #4D5B41 !important;
+      border: 2px solid #353f2d!important;
+      border-radius: 8px !important;
+      padding: 10px 20px !important;
+      transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out !important;
+      cursor: pointer !important;
+  }
+
+/* HOVER */
+[data-testid="stExpander"] button:hover {
+      transform: scale(1.02) !important;
+      box-shadow: 0px 2px 6px #7b7467 !important;
+  }
+
+/* ATIVO */
+[data-testid="stExpander"] button:active {
+      transform: scale(0.98) !important;
+  }
+
+  
+/* ==========================================================
+   FORMS / BOTÕES
+   ==========================================================
+   ⚪ Texto: white
+   🟪 Fundo: #7159c1
+   🟪 Borda: #4c398b
+   🟫 Glow:  #7b7467
+   ========================================================== */
+
+div[data-testid="stFormSubmitButton"] button {
+  color: white !important;
+  background-color: #4D5B41 !important;
+  border: 2px solid #353f2d!important;
+  border-radius: 8px !important;
+  padding: 10px 20px !important;
+  transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out !important;
+  padding: 10px 20px !important;
+  cursor: pointer !important;
+}
+
+/* HOVER */
+div[data-testid="stFormSubmitButton"] button:hover {
+  transform: scale(1.02) !important;
+  box-shadow: 0px 2px 8px #7b7467 !important;
+}
+
+/* ATIVO */
+div[data-testid="stFormSubmitButton"] button:active {
+  transform: scale(0.98) !important;
+}
+
+
+
+/* ==========================================================
+   AJUSTES E EXCEÇÕES
+   ========================================================== */
+
+/* 🧮 Botões de incremento/decremento (number_input) */
+[data-testid="stNumberInput"] button {
+  all: unset !important;
+  background: #efedec !important;
+  color: inherit !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: none !important;
+  box-shadow: none !important;
+  transition: none !important;
+  cursor: pointer !important;
+}
+
+/* 🔧 Justificação global para todo conteúdo de texto do app */
+html, body, p, div, span, label {
+  text-align: justify !important;
+  line-height: 1.6 !important;
+}
+
+/* NÃO justificar títulos */
+h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+  text-align: left !important;
+}
+
+/* Esconde barras de rolagem, mas mantém a funcionalidade */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Firefox */
+html {
+  scrollbar-width: none;
+}
