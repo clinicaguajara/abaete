@@ -48,7 +48,7 @@ def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None
         
         if redirect.current:
             redirect.to(False, True) # desativa flag.
-            
+        
         # Imprime o título da página independentemente do papel do usuário.
         render_goals_header()
 
@@ -199,6 +199,8 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
         with tabs[1]:
             st.write("Monitoring of patients’ goals will be available here soon.")
 
+        st.markdown("<div style='height: 200px;'></div>", unsafe_allow_html=True)
+
         return None, None
 
     except Exception as e:
@@ -333,6 +335,8 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
                             render_goal_progress_chart(goal_id, auth_machine)
                         estimate_completion_time(goal_id, auth_machine)
                         st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown("<div style='height: 200px;'></div>", unsafe_allow_html=True)
 
         return None, None
 

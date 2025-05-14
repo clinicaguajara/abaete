@@ -61,6 +61,9 @@ def render_goal_progress_chart(goal_id: str, auth_machine: StateMachine) -> None
     # 📏 Altura ajustada para manter proporção 3:6 (ex: 300px de altura)
     fig.update_layout(height=350)
 
+    # ⬅ Oculta apenas o label "Esforço" do eixo Y
+    fig.update_yaxes(title_text=None)
+
     st.plotly_chart(fig, use_container_width=True)
 
 
