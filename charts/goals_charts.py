@@ -59,7 +59,7 @@ def render_goal_progress_chart(goal_id: str, auth_machine: StateMachine) -> None
     fig.update_traces(line_color="#1E3D59")
 
     # 📏 Altura ajustada para manter proporção 3:6 (ex: 300px de altura)
-    fig.update_layout(height=450)
+    fig.update_layout(height=350)
 
     st.plotly_chart(fig, use_container_width=True)
 

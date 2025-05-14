@@ -169,12 +169,15 @@ def render_header(title="Abaeté", logo_path="assets/logo.png"):
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-        <div style='display: flex; align-items: center; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem;'>
             <img src='data:image/png;base64,{encoded_logo}' width='50' />
             <h1 style='
-                font-size: 40px;
+                font-size: 45px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
+                line-height: 1.2;
+                margin: 0;
+                padding: 0;
             '>{title}</h1>
         </div>
     """, unsafe_allow_html=True)
@@ -187,12 +190,15 @@ def render_goals_header(title="Minhas Metas", logo_path="assets/logo.png"):
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-        <div style='display: flex; align-items: center; margin-bottom: 1.2rem;'>
+        <div style='display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;'>
             <img src='data:image/png;base64,{encoded_logo}' width='50' />
             <h1 style='
                 font-size: 40px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
+                line-height: 1.2;
+                margin: 0;
+                padding: 0;
             '>{title}</h1>
         </div>
     """, unsafe_allow_html=True)
