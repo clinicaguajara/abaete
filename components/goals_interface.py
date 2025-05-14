@@ -327,8 +327,10 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
                                         st.rerun()
                                     else:
                                         feedback.error("Erro ao registrar progresso. Tente novamente.")
-
-                        render_goal_progress_chart(goal_id, auth_machine)
+                        
+                        col1, col2 = st.columns([200, 1])
+                        with col1:
+                            render_goal_progress_chart(goal_id, auth_machine)
                         estimate_completion_time(goal_id, auth_machine)
                         st.markdown("<br>", unsafe_allow_html=True)
 

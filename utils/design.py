@@ -103,7 +103,7 @@ def load_css():
             <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
             <style>
             h1 {
-                font-size: 50px;
+                font-size: 40px;
                 font-family: "Marcellus", serif !important;
                 font-weight: 100 !important;
             }
@@ -170,9 +170,9 @@ def render_header(title="Abaeté", logo_path="assets/logo.png"):
 
     st.markdown(f"""
         <div style='display: flex; align-items: center; margin-bottom: 1rem;'>
-            <img src='data:image/png;base64,{encoded_logo}' width='70' />
+            <img src='data:image/png;base64,{encoded_logo}' width='50' />
             <h1 style='
-                font-size: 50px;
+                font-size: 40px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
             '>{title}</h1>
@@ -188,9 +188,9 @@ def render_goals_header(title="Minhas Metas", logo_path="assets/logo.png"):
 
     st.markdown(f"""
         <div style='display: flex; align-items: center; margin-bottom: 1.2rem;'>
-            <img src='data:image/png;base64,{encoded_logo}' width='70' />
+            <img src='data:image/png;base64,{encoded_logo}' width='50' />
             <h1 style='
-                font-size: 50px;
+                font-size: 40px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
             '>{title}</h1>

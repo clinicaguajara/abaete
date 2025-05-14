@@ -130,7 +130,7 @@ def render_header_by_role(auth_machine: StateMachine) -> None:
         primeiro_nome = nome_completo.split(" ")[0] if nome_completo else "Usuário"
         genero = user.get("gender", "M")
         helloworld = adjust_gender_ending("Bem-vindo", genero)
-        st.markdown(f"### {helloworld}, {primeiro_nome}!")
+        st.markdown(f"#### {helloworld}, {primeiro_nome}!")
 
     # Caso nenhum dado esteja disponível →
     else:
