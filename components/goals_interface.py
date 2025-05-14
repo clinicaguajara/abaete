@@ -53,7 +53,7 @@ def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None
         render_goals_header()
 
         st.markdown("""
-        <div class="justificado">
+        <div style='text-align: justify;'>
         A divisão de objetivos em metas de curto, médio e longo prazo é uma estratégia sustentável que torna o desenvolvimento pessoal mais concreto e alcançável.  
         Cada pequena conquista alimenta um ciclo positivo de esforço e recompensa, fortalecendo a motivação e a consistência necessárias para avançar em direção a metas mais complexas e distantes.
         </div>
@@ -135,9 +135,9 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
             # Formulário para cadastrar nova meta.
             with st.form("form_create_goal"):
                 patient_name = st.selectbox("Paciente", patient_names)
-                description = st.text_area("Descrição da meta", placeholder="E.g., Praticar mindfulness diariamente.")
+                description = st.text_area("Descrição", placeholder="E.g., Praticar mindfulness diariamente.")
                 timeframe = st.selectbox("Qual é o prazo de conclusão da meta?", ["Curto", "Médio", "Longo"])
-                effort_type = st.selectbox("Natureza do esforço", ["Acadêmico", "Profissional", "Físico", "Emocional", "Social"])
+                effort_type = st.selectbox("Tipo de meta", ["Acadêmica", "Profissional", "Saúde & Bem-estar", "Intrapessoal", "Relacional"])
 
                 # Slider visual invertido: 1 (high priority) à direita.
                 display_priorities = [5, 4, 3, 2, 1]
@@ -289,7 +289,7 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
 
                         effort_type = (meta.get("effort_type") or "—").lower()
                         priority = meta.get("priority_level", "—")
-                        st.write(f"**Meta de natureza {effort_type} e nível de prioridade #{priority}**")
+                        st.write(f"**Meta do tipo {effort_type} e nível de prioridade #{priority}**")
 
                         if registrado_hoje:
                             st.info("Parabéns, você concluiu essa meta hoje!")
@@ -309,7 +309,7 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
                                 mood = next(score for score, label in mood_labels.items() if label == mood_label)
 
                                 duration = st.number_input(
-                                    "Quantos minutos você se dedicou à meta?",
+                                    "Tempo de dedicação, em minutos",
                                     min_value=0, max_value=1440, value=60, step=5,
                                     key=f"dur_{goal_id}"
                                 )

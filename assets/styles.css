@@ -107,6 +107,7 @@ details:not([open]) summary {
   transition: background-color 0.3s ease-in-out, transform 0.4s ease-in-out !important;
   cursor: pointer !important;
   overflow: hidden !important;
+  text-align: left !important;
 }
 
 /* HOVER */
@@ -154,6 +155,7 @@ details[open] summary {
   border-left: 2px solid #353f2d !important;
   border-right: 2px solid #353f2d !important;
   cursor: pointer !important;
+  text-align: left !important;
 }
 
 /* ==========================================================
@@ -251,17 +253,6 @@ div[data-testid="stFormSubmitButton"] button:active {
   box-shadow: none !important;
   transition: none !important;
   cursor: pointer !important;
-}
-
-/* 🔧 Justificação global para todo conteúdo de texto do app */
-html, body, p, div, span, label {
-  text-align: justify !important;
-  line-height: 1.6 !important;
-}
-
-/* NÃO justificar títulos */
-h1, h2, h3, h4, h5, h6, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-  text-align: left !important;
 }
 
 /* Esconde barras de rolagem, mas mantém a funcionalidade */

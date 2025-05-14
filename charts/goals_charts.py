@@ -104,11 +104,18 @@ def estimate_completion_time(goal_id: str, auth_machine: StateMachine) -> None:
     faltam = max(30 - total_esforcos, 0)
     estimativa_final = round(media_dias_por_esforco * faltam)
 
-    st.write("**Projeção de conclusão da meta**")
-    st.write(f"Atualmente, você completou 🏆 **{total_esforcos} de 30 esforços**. "
-             f"Passaram-se **{total_dias} dias** desde o início da meta. "
-             f"Você se dedicou ativamente uma vez a cada **{media_dias_por_esforco:.2f} dias**. "
-             f"Se mantiver esse ritmo, você atingirá seu objetivo em aproximadamente **{estimativa_final} dias**.")
+    st.markdown(f"""
+        <div style='text-align: justify;'>
+            <p><strong>Projeção de conclusão da meta</strong></p>
+            <p>
+                Atualmente, você completou 🏆 <strong>{total_esforcos} de 30 objetivos</strong>. 
+                Passaram-se <strong>{total_dias} dias</strong> desde o início da meta. 
+                Você se dedicou ativamente uma vez a cada <strong>{media_dias_por_esforco:.2f} dias</strong>. 
+                Se mantiver esse ritmo, você atingirá seu objetivo em aproximadamente <strong>{estimativa_final} dias</strong>.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
 
 
 # ⏱️ PROGRESSO ACUMULADO EM MINUTOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

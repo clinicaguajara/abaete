@@ -87,8 +87,8 @@ def render_onboarding_questionnaire(auth_machine: StateMachine, user_profile: di
             - str | None: Mensagem de erro em caso de falha.
     """
     try:
-        st.title("Estamos quase lá! 📋")
-        st.subheader("Gostaríamos de saber mais sobre você...")
+        st.markdown("<h3>Gostaríamos de saber mais sobre você...</h3>", unsafe_allow_html=True)
+
         st.markdown("<br>", unsafe_allow_html=True)
 
         respostas = {}
@@ -132,7 +132,7 @@ def render_onboarding_questionnaire(auth_machine: StateMachine, user_profile: di
                 if TCLE:
                     st.divider()
                     st.markdown(TCLE, unsafe_allow_html=True)
-                st.info("🪶 Termo de Consentimento Livre e Esclarecido (TCLE)")
+                st.info("🪶 Termo de Consentimento")
                 respostas["consent"] = st.checkbox(
                     "**Autorizo a utilização dos meus dados para fins de pesquisa.**"
                 )

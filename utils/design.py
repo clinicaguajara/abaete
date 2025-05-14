@@ -120,11 +120,10 @@ def load_css():
             </style>
         """, unsafe_allow_html=True)
         st.markdown("""
-            <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&display=swap" rel="stylesheet">
             <style>
             p, span, label, li, a {
                 font-size: 14px;
-                font-family: "Epilogue", sans-serif !important;
+                font-family: 'Source Sans Pro', sans-serif !important;
                 margin: 10 !important;
                 font-weight: 100 !important;
             }
@@ -145,7 +144,6 @@ def load_css():
                 padding-top: 0rem !important;
                 padding-bottom: 2rem !important;
             }
-
             /* Remove qualquer alinhamento vertical automático (fixo no topo) */
             section.main > div {
                 display: flex;
@@ -155,6 +153,14 @@ def load_css():
             }
             </style>
         """, unsafe_allow_html=True)
+        st.markdown("""
+            <style>
+            [data-testid="stHeaderActionElements"] {
+                display: none !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
 
 
 @st.cache_data
@@ -169,10 +175,10 @@ def render_header(title="Abaeté", logo_path="assets/logo.png"):
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-        <div style='display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem;'>
-            <img src='data:image/png;base64,{encoded_logo}' width='50' />
+        <div style='display: flex; align-items: center; gap: 0.2rem; margin-bottom: 1.2rem;'>
+            <img src='data:image/png;base64,{encoded_logo}' width='55' />
             <h1 style='
-                font-size: 45px;
+                font-size: 50px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
                 line-height: 1.2;
@@ -183,7 +189,7 @@ def render_header(title="Abaeté", logo_path="assets/logo.png"):
     """, unsafe_allow_html=True)
 
 
-def render_goals_header(title="Minhas Metas", logo_path="assets/logo.png"):
+def render_goals_header(title="Metas", logo_path="assets/logo2.png"):
     encoded_logo = get_base64_logo(logo_path)
     st.markdown("""
         <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
@@ -191,9 +197,9 @@ def render_goals_header(title="Minhas Metas", logo_path="assets/logo.png"):
 
     st.markdown(f"""
         <div style='display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;'>
-            <img src='data:image/png;base64,{encoded_logo}' width='50' />
+            <img src='data:image/png;base64,{encoded_logo}' width='55' />
             <h1 style='
-                font-size: 40px;
+                font-size: 50px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
                 line-height: 1.2;
