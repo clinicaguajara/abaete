@@ -41,6 +41,7 @@ def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None
     """
     
     try:
+        
         logger.info("GOALS → Acessando página de metas.")
         # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
@@ -98,6 +99,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
         Tuple[None, str | None]: 
             - None: Em caso de execução bem-sucedida.
             - str | None: Mensagem de erro em caso de falha.
+
     """
     
     # Tenta realizar a operação principal...
@@ -230,7 +232,7 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
         links = auth_machine.get_variable("patient_links", default=[])
 
         if len(links) == 0:
-            st.warning("Nenhum profissional vinculado ao seu perfil.")
+            st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
             return None, None
 
         if len(links) > 1:
@@ -256,7 +258,7 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
                 timeframe_map[tf].append(meta)
 
         # Abas de prazo
-        abas = st.tabs(["Curto Prazo", "Médio Prazo", "Longo Prazo"])
+        abas = st.tabs(["Curto", "Médio", "Longo prazo"])
         prazos = ["curto", "medio", "longo"]
 
         for i, prazo in enumerate(prazos):

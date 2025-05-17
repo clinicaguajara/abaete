@@ -9,7 +9,7 @@ from utils.gender import render_header_by_role
 from services.professional_patient_link import load_links_for_professional, save_professional_patient_link, fetch_patient_info_by_email, load_links_for_patient, accept_link, reject_link
 from utils.role import is_professional_user
 from utils.session import FeedbackState
-from utils.design import render_header
+from utils.design import render_abaete_header
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ from utils.design import render_header
 logger = logging.getLogger(__name__)
 
 
-# 📺 FUNÇÃO PARA A RENDERIZAR A HOMEPAGE DO APLICATIVO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📺 FUNÇÃO PARA A RENDERIZAR A HOMEPAGE DO APLICATIVO ──────────────────────────────────────────────────────────
 
 def render_dashboard(auth_machine: StateMachine) -> tuple[None, str | None]:
     """
@@ -36,31 +36,27 @@ def render_dashboard(auth_machine: StateMachine) -> tuple[None, str | None]:
         Tuple[None, str | None]:
             - None: Em caso de execução bem-sucedida.
             - str | None: Mensagem de erro em caso de falha.
+            
     """
-    
-    # Tenta realizar a operação principal...
-    try:
-        logger.info("DASHBOARD → Acessando a página inicial")
-        # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-        render_header()
+    # ESTABILIZAÇÃO PROATIVA DA INTERFACE ──────────────────────────────────────────────────────────────────────────────
 
-        # Recupera o perfil do profissional.
-        role = is_professional_user(auth_machine)
+    redirect = StateMachine("auth_redirect", True)
+    if redirect.current:
+        logger.info(f"Estabilização proativa da interface (dashboard_interface)")
+        redirect.to(False, True)  # ⬅ Desliga a flag.
 
-        # Se for profissional...
-        if role:
-            _render_professional_homepage(auth_machine)  # ⬅ Tabs exclusivas para profissionais
-        
-        # Caso contrário...
-        else:
-            _render_patient_homepage(auth_machine)  # ⬅ Tabs exclusivas para pacientes
+    # INTERFACE CONFORME PAPEL DO USUÁRIO ──────────────────────────────────────────────────────────────────────────────
 
-        return None, None
+    render_abaete_header()
+    role = is_professional_user(auth_machine)
 
-    except Exception as e:
-        
-        return None, str(e)
+    if role:
+        _render_professional_homepage(auth_machine)
+    else:
+        _render_patient_homepage(auth_machine)
+
+    return None, None
 
 
 # 📺 FUNÇÃO AUXILIAR PARA RENDERIZAR A DASHBOARD DO PROFISSIONAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -70,7 +66,7 @@ def _render_professional_homepage(auth_machine: StateMachine) -> tuple[None, str
     <docstrings> Renderiza as abas da interface destinadas a usuários profissionais.
 
     Args:
-        None
+        None.
 
     Calls:
         st.tabs(): Componente de abas para navegação | definida em streamlit.
@@ -80,24 +76,24 @@ def _render_professional_homepage(auth_machine: StateMachine) -> tuple[None, str
         Tuple[None, str | None]:
             - None: Em caso de sucesso.
             - str | None: Mensagem de erro em caso de falha.
-    
+
     """
+
+    # Define as abas disponíveis.
+    tabs = st.tabs(["Pacientes", "Agenda", "Planejamento"])
     
-    try:
-        # Define as abas visíveis.
-        tabs = st.tabs(["Pacientes", "Agenda", "Planejamento"])
+    # Aba de vínculos.
+    with tabs[0]:
+        _render_professional_link_interface(auth_machine)
+    
+    with tabs[1]:
+        st.write("Acompanhamento de escalas e metas...")
+    
+    with tabs[2]:
+        st.write("Status da assinatura e fatura...")
+    
+    return None, None
 
-        with tabs[0]:
-            _render_professional_link_interface(auth_machine)
-        with tabs[1]:
-            st.write("Acompanhamento de escalas e metas...")
-        with tabs[2]:
-            st.write("Status da assinatura e fatura...")
-
-        return None, None
-
-    except Exception as e:
-        return None, str(e)
 
 
 # 📺 FUNÇÃO AUXILIAR PARA RENDERIZAR A DASHBOARD DO PACIENTE ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -119,9 +115,9 @@ def _render_patient_homepage(auth_machine: StateMachine) -> tuple[None, str | No
             - str | None: Mensagem de erro em caso de falha.
     """
     
-    # Garante que os vínculos estejam carregados
+    # Se patient_links não for uma variável auxiliar de auth_machine...
     if not auth_machine.get_variable("patient_links"):
-        patient_id = auth_machine.get_variable("user_id")
+        patient_id = auth_machine.get_variable("user_id")   
         load_links_for_patient(patient_id, auth_machine)
 
     # Tenta realizar a operação principal.
@@ -161,12 +157,13 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
         None.
     """
     
+    # Cria uma instancia da máquina de autenticação.
     feedback_machine = auth_machine.get_variable("feedback", default=FeedbackState.NONE.value)
 
-    # Recupera ID do profissional
+    # Recupera ID do profissional autenticado.
     professional_id = auth_machine.get_variable("user_id")
 
-    # Carrega vínculos, se necessário
+    # Se patient_links não for uma variável auxiliar de auth_machine...
     if not auth_machine.get_variable("professional_patient_links"):
         load_links_for_professional(professional_id, auth_machine)
 
@@ -177,10 +174,10 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
 
     # Junta vínculos aceitos e pendentes, adicionando a descrição de status.
     todos = [
-        {"Nome do Paciente": l.get("patient_name", "—"), "Status": "✅ Ativo"}
+        {"Nome do Paciente": l.get("patient_name", "—"), "Status": "Ativo"}
         for l in ativos
     ] + [
-        {"Nome do Paciente": l.get("patient_name", "—"), "Status": "⏳ Pendente"}
+        {"Nome do Paciente": l.get("patient_name", "—"), "Status": "Pendente"}
         for l in pendentes
     ]
 

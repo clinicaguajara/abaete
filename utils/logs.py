@@ -78,27 +78,38 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 
-# 📒 DECORATOR PARA RASTREAR EXECUÇÕES ENTRE PÁGINAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📒 DECORADOR PARA RASTREAR EXECUÇÕES ENTRE PÁGINAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def log_page_entry(page_name: str):
     """
     <docstrings> Decorador para logar a entrada em uma página do app.
 
     Args:
-        page_name (str): Nome lógico da página (ex: 'Página Inicial').
+        page_name (str): Nome da página (ex: 'Página Inicial').
 
     Returns:
         Callable: Função decoradora.
+
     """
     def decorator(func):
+        
+        # Função interna que intercepta a chamada original que recebe uma função como argumento.
         def wrapper(*args, **kwargs):
-            logger.info(f" 🛤️  Entrando na página: {page_name}")
+
+            # Registra no log que a página foi acessada
+            logger.info(f" 🛤️  Executando {page_name}.py")
+            
+             # Executa a função original, repassando todos os argumentos.
             return func(*args, **kwargs)
+        
+        # Retorna a função wrapper para substituir a função original.
         return wrapper
+    
+    # Retorna o decorado.
     return decorator
 
 
-# 📒 DECORATOR PARA RASTREAR OPERAÇÕES DE BANCO DE DADOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📒 DECORADOR PARA RASTREAR OPERAÇÕES DE BANCO DE DADOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 P = ParamSpec('P')
 R = TypeVar('R')
@@ -122,7 +133,9 @@ def track_db_operation(
 
     Returns:
         Callable: Função decoradora que aplica o wrapper tipado.
+
     """
+    
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:

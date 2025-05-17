@@ -3,9 +3,9 @@
 
 import streamlit as st
 
-from supabase       import create_client, Client
-from utils.logs     import track_db_operation, logger
-
+from supabase             import create_client, Client
+from utils.logs           import track_db_operation, logger
+from postgrest.exceptions import APIError
 
 # 🔑 FUNÇÃO CACHEADA PARA ESTABELECER A CONEXÃO COM O SUPABASE ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -103,12 +103,29 @@ def fetch_records(
     
     # Para cada par coluna:valor fornecido nos filtros...
     for col, val in filters.items():
-        query = query.eq(col, val)          # ⬅ Adiciona um critério de igualdade à query.
+        query = query.eq(col, val) # ⬅ Adiciona um critério de igualdade à query.
 
     # Se apenas um resultado for solicitado...
     if single:
-        response = query.single().execute() # ⬅ Adiciona .single() à query e executa.
-        return response.data or {}          # ⬅ Retorna o resultado da busca ou dicionário vazio como fallback (Single = True).
+        
+        # Tenta executar a operação principal...
+        try:
+            response = query.single().execute() # ⬅ Adiciona .single() à query e executa.
+            return response.data or {}          # ⬅ Retorna o resultado da busca ou dicionário vazio como fallback.
+        
+        # Na exceção...
+        except APIError as e:
+            
+            # Recebe a mensagem de erro.
+            message = getattr(e, "message", "") or str(e)
+            
+            # Se uma dessas strings estiver contida na mensagem de erro...
+            if "JSON object requested" in message or "multiple rows returned" in message:
+                logger.debug(f"FETCH → Nenhum registro retornado de '{table_name}' com filtros {filters}") # ⬅ Loga uma mensagem informativa no lugar da exceção.
+                return {}                                                                                  # ⬅ Retorna um dicionário vazio como fallback de execução.
+            
+            # Relança a exceção original, propagando-a para quem chamou a função.
+            raise 
     
     # Executa a query.
     response = query.execute()

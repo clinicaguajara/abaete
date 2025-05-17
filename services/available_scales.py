@@ -22,8 +22,11 @@ def load_available_scales(auth_machine: StateMachine) -> None:
         logger.debug(): Registra progresso da operação | instanciado por logger.
 
     Returns:
-        None
+        None.
+
     """
+    
+    # Tenta executar a ação principal...
     try:
         logger.debug("AVAILABLE_SCALES → Carregando escalas base do sistema")
         escalas = fetch_records("available_scales")

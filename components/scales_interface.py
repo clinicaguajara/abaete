@@ -5,7 +5,7 @@ from frameworks.sm import StateMachine
 from utils.role import is_professional_user
 from services.professional_patient_link import load_links_for_professional
 from datetime import date
-from utils.design import render_header
+from utils.design import render_abaete_header
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +13,15 @@ logger = logging.getLogger(__name__)
 def render_scales_interface(auth_machine: StateMachine) -> tuple[None, str | None]:
     """
     <docstrings> Renderiza a interface da aba "Escalas Psicossociais" com abas separadas para profissional e paciente.
+    
     """
+    
     try:
         logger.info("SCALES → Acessando página de escalas.")
         redirect = StateMachine("auth_redirect", True)
         if redirect.current:
             redirect.to(False, True)
-        render_header()
+        render_abaete_header()
 
         if is_professional_user(auth_machine):
             return render_professional_scales(auth_machine)
@@ -123,7 +125,7 @@ def render_scales(auth_machine: StateMachine) -> tuple[None, str | None]:
 
         links = auth_machine.get_variable("patient_links", default=[])
         if len(links) == 0:
-            st.warning("⚠️ Nenhum vínculo encontrado.")
+            st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
             return None, None
         if len(links) > 1:
             st.info("ℹ️ Suporte a múltiplos vínculos será implementado futuramente.")

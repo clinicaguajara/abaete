@@ -1,15 +1,15 @@
 /* ==========================================================
-   BOTÕES ROXO PÚRPURA MISTERIOSA
+   BOTÕES VERDE ANTIGO
    ==========================================================
    ⚪ Text:   white
-   🟪 Fundo:  #7159c1
-   🟪 Borda:  #4c398b
-   🟫 Glow:   #7b7467
+   🟩 Fundo:  #4D5B41
+   🟩 Borda:  #353f2d
+   🟫 Glow:   #4F4A47
    ========================================================== */
 
 .st-key-logout button {
     color: white !important;
-    background-color: #4D5B41 !important;
+    background-color: #5b6d4b !important;
     border: 2px solid #353f2d!important;
     border-radius: 8px !important;
     padding: 10px 20px !important;
@@ -20,7 +20,7 @@
 /* HOVER */
 .st-key-logout button:hover {
     transform: scale(1.03) !important;
-    box-shadow: 0px 3px 6px #7b7467 !important;
+    box-shadow: 0px 3px 6px #4F4A47 !important;
 }
 
 /* ATIVO */
@@ -30,18 +30,18 @@
 
 
 /* ==========================================================
-   BOTÕES VERDE ESMERALDA MÍSTICO
+   BOTÕES AZUL NOTURNO
    ==========================================================
    ⚪ Text:   white
-   🟩 Fundo:  #008F7A
-   🟩 Borda:  #007366
-   🟫 Glow:   #7b7467
+   🟦 Fundo:  #1E3D59
+   🟦 Borda:  #007366
+   🟫 Glow:   #4F4A47
   ========================================================== */
 
 .st-key-accept button {
-    background-color: #008F7A !important;
+    background-color: #1E3D59 !important;
     color: white !important;
-    border: 2px solid #007366 !important;
+    border: 2px solid #182d3f!important;
     border-radius: 8px !important;
     padding: 10px 20px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
@@ -51,7 +51,7 @@
 /* HOVER */
 .st-key-accept button:hover {
     transform: scale(1.03) !important;
-    box-shadow: 0px 3px 6px #7b7467 !important;
+    box-shadow: 0px 3px 6px #4F4A47 !important;
 }
 
 /* ATIVO */
@@ -61,17 +61,18 @@
 
 
 /* ==========================================================
-   BOTÕES VERMELHO RUBI ENCANTADO
+   BOTÕES ARGILA QUENTE
    ==========================================================
-   🟥 Fundo:  #C70039
-   🟥 Borda:  #9B002F
-   🟫 Glow:   #7b7467
+   ⚪ Text:   white
+   🟥 Fundo:  #A3472D
+   🟥 Borda:  #753a29 
+   🟫 Glow:   #4F4A47
    ========================================================== */
 
 .st-key-reject button {
-    background-color: #C70039 !important;
+    background-color: #A3472D !important;
     color: white !important;
-    border: 2px solid #9B002F !important;
+    border: 2px solid #753a29  !important;
     border-radius: 8px !important;
     padding: 10px 20px !important;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
@@ -81,7 +82,7 @@
 /* HOVER */
 .st-key-reject button:hover {
     transform: scale(1.03) !important;
-    box-shadow: 0px 3px 6px #7b7467 !important;
+    box-shadow: 0px 3px 6px #4F4A47 !important;
 }
 
 /* ATIVO */
@@ -94,9 +95,9 @@
    EXPANDERS / CABEÇALHO (FECHADO)
    ==========================================================
    ⚪ Texto: white
-   🟪 Fundo: #7159c1
-   🟪 Borda: #4c398b
-   🟫 Glow:  #7b7467
+   🟩 Fundo: #4D5B41
+   🟩 Borda: #353f2d
+   🟫 Glow:  #4F4A47
    ========================================================== */
 
 details:not([open]) summary {
@@ -117,7 +118,7 @@ details:not([open]) summary:hover {
    background-color: #4D5B41 !important;
    border: 2px solid #353f2d!important;
    border-radius: 8px !important;
-   box-shadow: 0px 4px 8px #7b7467 !important;
+   box-shadow: 0px 4px 8px #4F4A47 !important;
    overflow: hidden !important;
 }
 
@@ -138,9 +139,8 @@ details:not([open]) summary:active {
    EXPANDERS / CABEÇALHO (ABERTO)
    ==========================================================
    ⚪ Texto: white
-   🟪 Fundo: #7159c1
-   🟪 Borda: #4c398b
-   🟫 Glow:  #7b7467
+   🟩 Fundo: #4D5B41
+   🟩 Borda: #353f2d
    ❌ Sem borda duplicada (usa borda de <details[open]>)
    ========================================================== */
 
@@ -161,7 +161,7 @@ details[open] summary {
 /* ==========================================================
    EXPANDERS / CORPO (ABERTO)
    ==========================================================
-   🟪 Borda: #4c398b
+   🟩 Borda: #353f2d
    ========================================================== */
 
 details[open] > *:not(summary) {
@@ -179,9 +179,9 @@ details[open] > *:not(summary) {
    EXPANDER / BOTÕES
    ==========================================================
    ⚪ Texto: white
-   🟪 Fundo: #7159c1
-   🟪 Borda: #4c398b
-   🟫 Glow:  #7b7467
+   🟩 Fundo: #4D5B41
+   🟩 Borda: #353f2d
+   🟫 Glow:  #4F4A47
    ========================================================== */
 
 [data-testid="stExpander"] button {
@@ -197,7 +197,7 @@ details[open] > *:not(summary) {
 /* HOVER */
 [data-testid="stExpander"] button:hover {
       transform: scale(1.02) !important;
-      box-shadow: 0px 2px 6px #7b7467 !important;
+      box-shadow: 0px 2px 6px #4F4A47 !important;
   }
 
 /* ATIVO */
@@ -210,9 +210,9 @@ details[open] > *:not(summary) {
    FORMS / BOTÕES
    ==========================================================
    ⚪ Texto: white
-   🟪 Fundo: #7159c1
-   🟪 Borda: #4c398b
-   🟫 Glow:  #7b7467
+   🟩 Fundo: #4D5B41
+   🟩 Borda: #353f2d
+   🟫 Glow:  #4F4A47
    ========================================================== */
 
 div[data-testid="stFormSubmitButton"] button {
@@ -229,7 +229,7 @@ div[data-testid="stFormSubmitButton"] button {
 /* HOVER */
 div[data-testid="stFormSubmitButton"] button:hover {
   transform: scale(1.02) !important;
-  box-shadow: 0px 2px 8px #7b7467 !important;
+  box-shadow: 0px 2px 8px #4F4A47 !important;
 }
 
 /* ATIVO */
@@ -264,4 +264,52 @@ div[data-testid="stFormSubmitButton"] button:active {
 /* Firefox */
 html {
   scrollbar-width: none;
+}
+
+button[aria-label="Show password text"] {
+    display: none !important;
+}
+
+div[data-testid="InputInstructions"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+}
+
+h1 {
+    font-size: 40px;
+    font-family: "Marcellus", serif !important;
+    font-weight: 100 !important;
+}
+
+h2, h3 {
+    font-family: "Epilogue", sans-serif !important;
+    font-weight: 10 !important;
+}
+
+p, span, label, li, a {
+    font-size: 14px;
+    font-family: 'Source Sans Pro', sans-serif !important;
+    font-weight: 100 !important;
+}
+
+div[data-testid="stMarkdownContainer"] p {
+    font-size: 16px !important;
+    font-family: 'Source Sans Pro', sans-serif !important;
+}
+
+.block-container {
+    padding-top: 0.9rem !important;
+    padding-bottom: 2rem !important;
+}
+
+section.main > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100vh;
+}
+
+[data-testid="stHeaderActionElements"] {
+    display: none !important;
 }

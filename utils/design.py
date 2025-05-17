@@ -82,85 +82,11 @@ def load_css():
 
     # Se o conteúdo for encontrado...
     if css_content:
-        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)   # ⬅ Aplica o CSS na página.
-        st.markdown("""
-            <style>
-            button[aria-label="Show password text"] {
-                display: none !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-            div[data-testid="InputInstructions"] {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
-            <style>
-            h1 {
-                font-size: 40px;
-                font-family: "Marcellus", serif !important;
-                font-weight: 100 !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&display=swap" rel="stylesheet">
-            <style>
-            h2, h3{
-                font-family: "Epilogue", sans-serif !important;
-                margin: 0 !important;
-                font-weight: 10 !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-            p, span, label, li, a {
-                font-size: 14px;
-                font-family: 'Source Sans Pro', sans-serif !important;
-                margin: 10 !important;
-                font-weight: 100 !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-            div[data-testid="stMarkdownContainer"] p {
-                font-size: 16px !important;
-                font-family: 'Source Sans Pro', sans-serif !important;
-            }
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True) # ⬅ Aplica o CSS na página.
 
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-            /* Remove o espaçamento vertical central automático */
-            .block-container {
-                padding-top: 0rem !important;
-                padding-bottom: 2rem !important;
-            }
-            /* Remove qualquer alinhamento vertical automático (fixo no topo) */
-            section.main > div {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                min-height: 100vh;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        st.markdown("""
-            <style>
-            [data-testid="stHeaderActionElements"] {
-                display: none !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-
+    # Fontes externas (mantidas aqui por dependerem de carregamento da web)
+    st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
+    st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
 
 
 @st.cache_data
@@ -168,7 +94,8 @@ def get_base64_logo(path="assets/logo.png") -> str:
     with open(path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
-def render_header(title="Abaeté", logo_path="assets/logo.png"):
+
+def render_abaete_header(title="Abaeté", logo_path="assets/logo.png"):
     encoded_logo = get_base64_logo(logo_path)
     st.markdown("""
         <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
@@ -178,10 +105,10 @@ def render_header(title="Abaeté", logo_path="assets/logo.png"):
         <div style='display: flex; align-items: center; gap: 0.2rem; margin-bottom: 1.2rem;'>
             <img src='data:image/png;base64,{encoded_logo}' width='55' />
             <h1 style='
-                font-size: 50px;
+                font-size: 45px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
-                line-height: 1.2;
+                line-height: 0;
                 margin: 0;
                 padding: 0;
             '>{title}</h1>
@@ -196,7 +123,7 @@ def render_goals_header(title="Metas", logo_path="assets/logo2.png"):
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-        <div style='display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem;'>
+        <div style='display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;'>
             <img src='data:image/png;base64,{encoded_logo}' width='55' />
             <h1 style='
                 font-size: 50px;

@@ -37,7 +37,7 @@ def main():
     auth_machine = StateMachine("auth_state", AuthStates.FORM.value)
 
     if auth_machine.current != AuthStates.AUTHENTICATED.value:
-        render_auth_interface()
+        render_auth_interface(auth_machine)
         st.stop()
 
 
@@ -47,7 +47,7 @@ def main():
     user_id = auth_machine.get_variable("user_id")
 
     # Carrega os dados do perfil do usuário via UUID (apenas uma vez).
-    if auth_machine.get_variable("user_profile") is None:
+    if user_id and auth_machine.get_variable("user_profile") is None:
         load_user_profile(user_id, auth_machine)
 
 
