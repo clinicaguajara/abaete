@@ -2,14 +2,14 @@
    BOTÕES VERDE ANTIGO
    ==========================================================
    ⚪ Text:   white
-   🟩 Fundo:  #4D5B41
+   🟩 Fundo:  #5b6d4b
    🟩 Borda:  #353f2d
    🟫 Glow:   #4F4A47
    ========================================================== */
 
 .st-key-logout button {
     color: white !important;
-    background-color: #5b6d4b !important;
+    background-color: #5b6d4b!important;
     border: 2px solid #353f2d!important;
     border-radius: 8px !important;
     padding: 10px 20px !important;
@@ -25,7 +25,7 @@
 
 /* ATIVO */
 .st-key-logout button:active {
-   transform: scale(0.97) !important;
+   transform: scale(0.95) !important;
 }
 
 
@@ -95,7 +95,7 @@
    EXPANDERS / CABEÇALHO (FECHADO)
    ==========================================================
    ⚪ Texto: white
-   🟩 Fundo: #4D5B41
+   🟩 Fundo: #5b6d4b
    🟩 Borda: #353f2d
    🟫 Glow:  #4F4A47
    ========================================================== */
@@ -115,7 +115,7 @@ details:not([open]) summary {
 details:not([open]) summary:hover {
    transform: scale(1.03) !important;
    color: white !important;
-   background-color: #4D5B41 !important;
+   background-color: #5b6d4b !important;
    border: 2px solid #353f2d!important;
    border-radius: 8px !important;
    box-shadow: 0px 4px 8px #4F4A47 !important;
@@ -139,14 +139,14 @@ details:not([open]) summary:active {
    EXPANDERS / CABEÇALHO (ABERTO)
    ==========================================================
    ⚪ Texto: white
-   🟩 Fundo: #4D5B41
+   🟩 Fundo: #5b6d4b
    🟩 Borda: #353f2d
    ❌ Sem borda duplicada (usa borda de <details[open]>)
    ========================================================== */
 
 /* Cabeçalho do expander (aberto) */
 details[open] summary {
-  background-color: #4D5B41 !important;
+  background-color: #5b6d4b !important;
   color: white !important; 
   border: none !important;
   border-top-left-radius: 8px !important;
@@ -179,14 +179,14 @@ details[open] > *:not(summary) {
    EXPANDER / BOTÕES
    ==========================================================
    ⚪ Texto: white
-   🟩 Fundo: #4D5B41
+   🟩 Fundo: #5b6d4b
    🟩 Borda: #353f2d
    🟫 Glow:  #4F4A47
    ========================================================== */
 
 [data-testid="stExpander"] button {
       color: white !important;
-      background-color: #4D5B41 !important;
+      background-color: #5b6d4b !important;
       border: 2px solid #353f2d!important;
       border-radius: 8px !important;
       padding: 10px 20px !important;
@@ -210,25 +210,24 @@ details[open] > *:not(summary) {
    FORMS / BOTÕES
    ==========================================================
    ⚪ Texto: white
-   🟩 Fundo: #4D5B41
+   🟩 Fundo: #5b6d4b
    🟩 Borda: #353f2d
    🟫 Glow:  #4F4A47
    ========================================================== */
 
 div[data-testid="stFormSubmitButton"] button {
   color: white !important;
-  background-color: #4D5B41 !important;
+  background-color: #5b6d4b !important;
   border: 2px solid #353f2d!important;
   border-radius: 8px !important;
   padding: 10px 20px !important;
-  transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out !important;
-  padding: 10px 20px !important;
+  transition: transform 0.4s ease-in-out, background-color 0.3s ease-in-out !important;
   cursor: pointer !important;
 }
 
 /* HOVER */
 div[data-testid="stFormSubmitButton"] button:hover {
-  transform: scale(1.02) !important;
+  transform: scale(1.01) !important;
   box-shadow: 0px 2px 8px #4F4A47 !important;
 }
 
@@ -299,7 +298,7 @@ div[data-testid="stMarkdownContainer"] p {
 }
 
 .block-container {
-    padding-top: 0.9rem !important;
+    padding-top: 1.5rem !important;
     padding-bottom: 2rem !important;
 }
 
@@ -312,4 +311,34 @@ section.main > div {
 
 [data-testid="stHeaderActionElements"] {
     display: none !important;
+}
+
+/* 🔧 Remove a logo do Streamlit */
+footer, .stDeployButton {
+  display: none !important;
+}
+
+/* 🔧 Remove o menu de três pontos (hambúrguer de opções no canto superior direito) 
+button[kind="headerMenu"] {
+  display: none !important;
+}
+
+/* 🔧 Remove a mensagem "Made with Streamlit" no rodapé */
+footer {
+  visibility: hidden !important;
+}
+
+/* 🔧 Remove o ícone de link para o GitHub (quando ativo) */
+[data-testid="stHeader"] > div:nth-child(3) {
+  display: none !important;
+}
+
+/* 🔧 Remove todo o cabeçalho com controles
+[data-testid="stHeader"] {
+  display: none !important;
+}
+
+/* 🔧 Remove aviso de atualização automática do Streamlit */
+[data-testid="stStatusWidget"] {
+  display: none !important;
 }

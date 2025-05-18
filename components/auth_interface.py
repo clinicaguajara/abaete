@@ -34,7 +34,7 @@ def render_auth_interface(auth_machine: StateMachine):
         None.
         
     """
-
+    
     # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
     # Cria uma instancia da máquina de redirecionamento.
@@ -44,9 +44,9 @@ def render_auth_interface(auth_machine: StateMachine):
         logger.info("Estabilização proativa da interface de autenticação.")
         redirect.to(False, True) # desativa flag.
     
-    
-    # INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    # INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    
     logger.info("Desenhando a interface de autenticação.")
     render_abaete_header()
 

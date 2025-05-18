@@ -1,4 +1,4 @@
-🌵 Abaeté v2.0.2
+🌵 Abaeté / Clínica Guajará
 
 Abaeté é o novo aplicativo de saúde mental da Clínica Guajará, desenvolvido com carinho para oferecer uma jornada acolhedora, intuitiva e centrada no bem-estar de cada pessoa usuária.
 

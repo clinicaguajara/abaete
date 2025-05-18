@@ -88,6 +88,20 @@ def load_css():
     st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
     st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
 
+    st.markdown("""
+    <style>
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="stVerticalBlock"] {
+        background-color: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 @st.cache_data
 def get_base64_logo(path="assets/logo.png") -> str:
@@ -105,7 +119,7 @@ def render_abaete_header(title="Abaeté", logo_path="assets/logo.png"):
         <div style='display: flex; align-items: center; gap: 0.2rem; margin-bottom: 1.2rem;'>
             <img src='data:image/png;base64,{encoded_logo}' width='55' />
             <h1 style='
-                font-size: 45px;
+                font-size: 48px;
                 font-weight: 100;
                 font-family: "Marcellus", serif;
                 line-height: 0;
@@ -135,6 +149,30 @@ def render_goals_header(title="Metas", logo_path="assets/logo2.png"):
             '>{title}</h1>
         </div>
     """, unsafe_allow_html=True)
+
+
+def render_scales_header(title="Testes", logo_path="assets/logo3.png"):
+    encoded_logo = get_base64_logo(logo_path)
+    st.markdown("""
+        <link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+        <div style='display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem;'>
+            <img src='data:image/png;base64,{encoded_logo}' width='65' />
+            <h1 style='
+                font-size: 50px;
+                font-weight: 100;
+                font-family: "Marcellus", serif;
+                line-height: 1.2;
+                margin: 0;
+                padding: 0;
+            '>{title}</h1>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+
 
 
 

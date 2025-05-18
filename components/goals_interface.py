@@ -42,21 +42,24 @@ def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None
     
     try:
         
-        logger.info("GOALS → Acessando página de metas.")
         # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
         redirect = StateMachine("auth_redirect", True)
         
-        if redirect.current:
+        if redirect.current: 
+            logger.info(f"Estabilização proativa da interface (dashboard_interface)")
             redirect.to(False, True) # desativa flag.
+
+        # INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
         
+        logger.info("Desenhando a interface de metas.")
+
         # Imprime o título da página independentemente do papel do usuário.
         render_goals_header()
 
         st.markdown("""
         <div style='text-align: justify;'>
-        A divisão de objetivos em metas de curto, médio e longo prazo é uma estratégia sustentável que torna o desenvolvimento pessoal mais concreto e alcançável.  
-        Cada pequena conquista alimenta um ciclo positivo de esforço e recompensa, fortalecendo a motivação e a consistência necessárias para avançar em direção a metas mais complexas e distantes.
+        As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar objetivos mais claros e acompanhar os pequenos avanços ao longo do tempo. Cada meta é construída em diálogo, respeitando o contexto, o ritmo e as possibilidades de quem participa. É um recurso de apoio — estruturado, acessível e sensível.
         </div>
         """, unsafe_allow_html=True)
 
@@ -127,7 +130,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
 
             # Caso não haja pacientes vinculados.
             if not accepted_links:
-                st.info("Você não tem pacientes vinculados.")
+                st.info("⚠️ Nenhum paciente vinculado.")
                 return None, None
 
             # Mapeia nomes → link_id.
@@ -210,8 +213,6 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
 
 
 
-# 📺 TABS PARA PACIENTES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
 def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]:
     """
     <docstrings> Renderiza a seção de metas voltada a pacientes com formulário de progresso e histórico diário.
@@ -231,12 +232,22 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
             load_links_for_patient(patient_id, auth_machine)
         links = auth_machine.get_variable("patient_links", default=[])
 
+        # Abas de prazo
+        abas = st.tabs(["Curto", "Médio", "Longo prazo"])
+        prazos = ["curto", "medio", "longo"]
+
+        # Se não houver vínculos, exibir aviso dentro de todas as abas.
         if len(links) == 0:
-            st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
+            for aba in abas:
+                with aba:
+                    st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
             return None, None
 
+        # Caso múltiplos vínculos (não implementado ainda)
         if len(links) > 1:
-            st.info("ℹ️ Essa funcionalidade será implementada no futuro (vários vínculos detectados).")
+            for aba in abas:
+                with aba:
+                    st.info("ℹ️ Essa funcionalidade será implementada no futuro (vários vínculos detectados).")
             return None, None
 
         # Vínculo único
@@ -256,10 +267,6 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
             tf = meta.get("timeframe", "").lower()
             if tf in timeframe_map:
                 timeframe_map[tf].append(meta)
-
-        # Abas de prazo
-        abas = st.tabs(["Curto", "Médio", "Longo prazo"])
-        prazos = ["curto", "medio", "longo"]
 
         for i, prazo in enumerate(prazos):
             with abas[i]:
@@ -295,8 +302,6 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
 
                         if registrado_hoje:
                             st.info("Parabéns, você concluiu essa meta hoje!")
-
-                        
                         else:
                             with st.form(f"form_{goal_id}"):
                                 mood_labels = {
@@ -316,7 +321,7 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
                                     key=f"dur_{goal_id}"
                                 )
 
-                                feedback =st.empty()
+                                feedback = st.empty()
                                 if st.form_submit_button("Concluir", use_container_width=True):
                                     payload = {
                                         "goal_id": goal_id,
@@ -345,3 +350,4 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
     except Exception as e:
         logger.exception(f"GOALS → Erro ao renderizar metas do paciente: {e}")
         return None, str(e)
+

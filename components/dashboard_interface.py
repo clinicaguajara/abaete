@@ -4,12 +4,12 @@
 import logging
 import streamlit as st
 
-from frameworks.sm import StateMachine
-from utils.gender import render_header_by_role
+from frameworks.sm                      import StateMachine
+from utils.session                      import FeedbackState
+from utils.role                         import is_professional_user
 from services.professional_patient_link import load_links_for_professional, save_professional_patient_link, fetch_patient_info_by_email, load_links_for_patient, accept_link, reject_link
-from utils.role import is_professional_user
-from utils.session import FeedbackState
-from utils.design import render_abaete_header
+from utils.design                       import render_abaete_header
+from utils.gender                       import render_header_by_role
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -46,9 +46,11 @@ def render_dashboard(auth_machine: StateMachine) -> tuple[None, str | None]:
         logger.info(f"Estabilização proativa da interface (dashboard_interface)")
         redirect.to(False, True)  # ⬅ Desliga a flag.
 
+
     # INTERFACE CONFORME PAPEL DO USUÁRIO ──────────────────────────────────────────────────────────────────────────────
 
     render_abaete_header()
+
     role = is_professional_user(auth_machine)
 
     if role:
@@ -84,6 +86,7 @@ def _render_professional_homepage(auth_machine: StateMachine) -> tuple[None, str
     
     # Aba de vínculos.
     with tabs[0]:
+        render_header_by_role(auth_machine)
         _render_professional_link_interface(auth_machine)
     
     with tabs[1]:
@@ -129,6 +132,8 @@ def _render_patient_homepage(auth_machine: StateMachine) -> tuple[None, str | No
         with tabs[0]:
             # Cabeçalho com base no perfil do usuário.
             render_header_by_role(auth_machine) 
+            st.markdown("Cada jornada é única — <strong>como a sua</strong>. <br>"
+                 "Use seu tempo, no seu ritmo.", unsafe_allow_html=True)
             render_received_invites(auth_machine)
             st.image("assets/homepage.png", use_container_width=True)
 
@@ -189,9 +194,8 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
         st.markdown("#### Vínculos ativos")
         st.table(todos_ordenados)
     else:
-        st.info("Nenhum vínculo ativo ou pendente no momento.")
+        st.info("⚠️ Nenhum paciente vinculado.")
 
-    st.divider()
     st.markdown("#### Enviar convites de vinculação")
 
     with st.form("form_vinculo_paciente"):

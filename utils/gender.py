@@ -122,7 +122,7 @@ def render_header_by_role(auth_machine: StateMachine) -> None:
         genero = user.get("gender", "M")
         helloworld = adjust_gender_ending("Bem-vindo", genero)
         header = get_professional_title(prof, user)
-        st.markdown(f"## {helloworld}, {header}!")
+        st.markdown(f"#### {helloworld}, {header}!")
 
     # Usuário comum (paciente) →
     elif user:
