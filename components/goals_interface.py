@@ -59,7 +59,7 @@ def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None
 
         st.markdown("""
         <div style='text-align: justify;'>
-        As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar objetivos mais claros e acompanhar os pequenos avanços ao longo do tempo. Cada meta é construída em diálogo, respeitando o contexto, o ritmo e as possibilidades de quem participa. É um recurso de apoio — estruturado, acessível e sensível.
+        As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar <strong>objetivos</strong> mais claros e acompanhar os pequenos avanços ao longo do tempo. É um recurso de apoio — estruturado, compreensivo e autorregulado.
         </div>
         """, unsafe_allow_html=True)
 

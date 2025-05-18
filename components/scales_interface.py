@@ -45,8 +45,11 @@ def render_scales_interface(auth_machine: StateMachine) -> tuple[None, str | Non
     
     # Cabeçalho
     render_scales_header()
-    st.write("As avaliações psicométricas no Abaeté não são apenas instrumentos de medida — são pontos de encontro entre a escuta e a precisão. Compreendemos que cada resposta carrega um ritmo, uma raiz, uma história. Por isso, tratamos cada processo com o cuidado de quem reconhece que crescer também é se reconhecer. Aqui, avaliar é um gesto de atenção: firme na metodologia, suave na presença.")
-    
+    st.markdown("""
+        <div style='text-align: justify;'>
+        As avaliações psicométricas no Abaeté não são apenas instrumentos de medida — são pontos de encontro entre a escuta e a precisão. Compreendemos que cada resposta carrega um ritmo, uma raiz, uma história. Por isso, reconhecemos a complexidade da situação que requer um <strong>diagnóstico</strong>.
+        </div>
+        """, unsafe_allow_html=True)
     # Roteamento por perfil de usuário
     if is_professional_user(auth_machine):
         return render_professional_scales(auth_machine)
