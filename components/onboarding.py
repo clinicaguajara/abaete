@@ -5,12 +5,14 @@ import streamlit as st
 
 from datetime               import date, timedelta
 from frameworks.sm          import StateMachine
+from utils.session          import VerifyStates
 from services.user_profile  import save_user_profile, load_user_profile
 from utils.constants        import SALARIO_MINIMO, TCLE
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+# Cria ou recupera uma instância do objeto Logger com o nome do módulo atual.
 logger = logging.getLogger(__name__)
 
 
@@ -35,27 +37,32 @@ def render_onboarding_if_needed(auth_machine: StateMachine, user_profile: dict) 
             - str | None: Mensagem de erro em caso de falha.
     """
     
-    # Tenta executar a ação principal...
     try:
+        onboarding_machine = StateMachine("onboarding_state", VerifyStates.VERIFY.value, enable_logging=True)
 
-        logger.debug("ONBOARDING → Iniciando verificação de dados ausentes.")
-
-        # Caso o perfil esteja vazio...
         if not user_profile:
-            logger.debug("ONBOARDING → Formulário completo.")
-            render_onboarding_questionnaire(auth_machine, {})  # ⬅ Exibe formulário completo
+            logger.debug("ONBOARDING → Formulário completo (perfil vazio).")
+            onboarding_machine.init_once(
+                render_onboarding_questionnaire,
+                auth_machine,
+                user_profile,
+                done_state=VerifyStates.VERIFIED.value
+            )
             st.stop()
 
-        # Verifica se há campos faltantes
         campos_faltantes = any(
             user_profile.get(k) in (None, "")
             for k in ["gender", "birthdate", "race", "income_range", "disabilities", "consent"]
         )
 
-        # Se algum campo estiver faltando...
         if campos_faltantes:
-            logger.debug("ONBOARDING → Formulário apenas com dados ausentes.")
-            render_onboarding_questionnaire(auth_machine, user_profile)  # ⬅ Exibe formulário com campos restantes
+            logger.debug("ONBOARDING → Formulário com dados ausentes.")
+            onboarding_machine.init_once(
+                render_onboarding_questionnaire,
+                auth_machine,
+                user_profile,
+                done_state = VerifyStates.VERIFIED.value
+            )
             st.stop()
 
         return None, None
@@ -87,13 +94,15 @@ def render_onboarding_questionnaire(auth_machine: StateMachine, user_profile: di
             - str | None: Mensagem de erro em caso de falha.
     """
     try:
-        st.markdown("<h3>Gostaríamos de saber mais sobre você...</h3>", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<h4>Antes de continuar, gostaríamos de saber mais sobre você...</h4>", unsafe_allow_html=True)
 
         respostas = {}
 
         with st.form("form_onboarding"):
+            
+            if user_profile.get("display_name") is None:
+                nome = st.text_input("Nome completo", placeholder="Ex: Anna O.")
+                respostas["display_name"] = nome
 
             if user_profile.get("gender") is None:
                 genero = st.selectbox("Gênero", ["Masculino", "Feminino", "Não-binário"])

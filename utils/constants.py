@@ -13,3 +13,5 @@ Agradecemos por estar conosco e pelo interesse em participar deste ambiente volt
 Sua participação é totalmente voluntária. Você poderá recusar este consentimento agora ou revogá-lo futuramente, a qualquer momento, sem qualquer prejuízo no acesso e uso das funcionalidades da plataforma. Todas as práticas adotadas neste projeto seguem as diretrizes éticas estabelecidas para pesquisas com seres humanos, conforme a Resolução nº 510/2016 do Conselho Nacional de Saúde (CNS). Ao marcar a opção de consentimento abaixo, você declara ter compreendido todas as informações apresentadas e autoriza a utilização dos dados.
 </div>
 """
+
+REDIRECT_TO = "https://resetpassword-3fou6u.flutterflow.app/resetPasswordPage"

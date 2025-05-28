@@ -1,13 +1,18 @@
 # 📦 IMPORTAÇÕES ────────────────────────────────────────────────────────────────────────
 
 import logging
-from services.backend import fetch_records, upsert_record
-from frameworks.sm import StateMachine
+
+from datetime           import date
+from services.backend   import fetch_records, upsert_record
+from frameworks.sm      import StateMachine
+
+
+# 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 logger = logging.getLogger(__name__)
 
 
-# 🔎 FUNÇÃO PARA CARREGAR ESCALAS ATRIBUÍDAS ─────────────────────────────────────────────
+# 🔎 FUNÇÃO PARA CARREGAR ESCALAS ATRIBUÍDAS ────────────────────────────────────────────────────────────────────────────────────
 
 def load_scales_by_link_id(link_id: str, auth_machine: StateMachine) -> None:
     """
@@ -29,87 +34,104 @@ def load_scales_by_link_id(link_id: str, auth_machine: StateMachine) -> None:
 
     escalas = fetch_records(
         table_name="scales",
-        filters={"link_id": link_id}
+        filters={"link_id": link_id, "status": "active"}
     )
 
     logger.debug(f"SCALES → {len(escalas)} escala(s) carregada(s) para o link {link_id}")
 
     auth_machine.set_variable("assigned_scales", escalas)
+    
+    return escalas
 
+# 💾 FUNÇÃO PARA SALVAR UMA ESCALA ATRIBUÍDA ────────────────────────────────────────────────────────────────────────────────────
 
-# 💾 FUNÇÃO PARA SALVAR UMA ESCALA ATRIBUÍDA ─────────────────────────────────────────────
-
-# 📦 IMPORTAÇÕES ─────────────────────────────────────────────────────────────────────────────
-
-import logging
-from services.backend import fetch_records, upsert_record
-
-logger = logging.getLogger(__name__)
-
-
-# 🔎 FUNÇÃO PARA CARREGAR ESCALAS ATRIBUÍDAS ─────────────────────────────────────────────
-
-def load_scales_by_link_id(link_id: str, auth_machine) -> None:
+def save_scale_assignment(data: dict) -> str | bool:
     """
-    <docstrings> Carrega todas as escalas atribuídas a um vínculo profissional-paciente.
+    <docstrings> Salva atribuição de escala, evitando duplicações no mesmo dia.
 
     Args:
-        link_id (str): UUID do vínculo.
-        auth_machine (StateMachine): Máquina de estados onde os dados serão armazenados.
+        data (dict): Dados da atribuição da escala.
 
     Returns:
-        None
+        str | bool:
+            - "created": se foi criada nova atribuição.
+            - "duplicate_today": se já existe uma atribuição para o mesmo dia.
+            - False: se ocorreu erro.
     """
-    logger.debug(f"SCALES → Buscando escalas atribuídas ao link {link_id}")
 
-    escalas = fetch_records(
-        table_name="scales",
-        filters={"link_id": link_id}
-    )
-
-    logger.debug(f"SCALES → {len(escalas)} escala(s) carregada(s) para o link {link_id}")
-
-    auth_machine.set_variable("assigned_scales", escalas)
-
-
-# 💾 FUNÇÃO PARA SALVAR UMA ESCALA ATRIBUÍDA ─────────────────────────────────────────────
-
-def save_scale_assignment(data: dict) -> bool:
-    """
-    <docstrings> Atribui uma escala a um vínculo apenas se ainda não houver essa combinação registrada.
-
-    Args:
-        data (dict): Dados da atribuição (scale_id, scale_name, link_id).
-
-    Returns:
-        bool: True se a atribuição foi salva com sucesso. False se já existia ou ocorreu erro.
-    """
     try:
-        scale_id = data["scale_id"]
-        link_id = data["link_id"]
-
-        # Verifica se já existe essa atribuição
-        existente = fetch_records(
+        # Verifica se já existe uma atribuição ATIVA da mesma escala para o mesmo vínculo no mesmo dia
+        registros = fetch_records(
             table_name="scales",
-            filters={"scale_id": scale_id, "link_id": link_id},
-            single=True
+            filters={
+                "available_scale_id": data["available_scale_id"],
+                "link_id": data["link_id"]
+            }
         )
 
-        if existente:
-            logger.warning(f"SCALES → Escala {scale_id} já atribuída ao vínculo {link_id}.")
-            return False
+        hoje = str(date.today())
+        for r in registros:
+            criado_em = r.get("created_at", "")[:10]  # apenas a parte YYYY-MM-DD
+            if criado_em == hoje and r.get("status") == "active":
+                logger.warning(f"SCALES → Escala já atribuída hoje ao vínculo {data['link_id']}")
+                return "duplicate_today"
 
-        logger.debug(f"SCALES → Tentando salvar atribuição de escala: {data}")
-
-        result = upsert_record(
+        # Se não houver duplicata para hoje, cria novo registro
+        resultado = upsert_record(
             table_name="scales",
             payload=data,
-            returning=True  # ← sem on_conflict, pois id será novo
+            on_conflict="id",
+            returning=True
         )
-
-        logger.debug(f"SCALES → Resultado do upsert: {result}")
-        return bool(result)
+        return "created" if resultado else False
 
     except Exception as e:
         logger.exception(f"SCALES → Erro ao salvar atribuição: {e}")
         return False
+
+
+# 💾 FUNÇÃO PARA ATUALIZAR O REGISTO DE UMA ESCALA ────────────────────────────────────────────────────────────────────────────────────
+
+def update_scale_status(scale_id: str, status: str) -> bool:
+    """Atualiza o campo `status` na tabela `scales`."""
+    return bool(upsert_record(
+        table_name="scales",
+        payload={"id": scale_id, "status": status},
+        on_conflict="id",
+        returning=True
+    ))
+
+
+# 📥 FUNÇÃO PARA CARREGAR ESCALAS ATIVAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+def load_assigned_scales(
+    link_id: str,
+    auth_machine: StateMachine
+) -> list[dict]:
+    """
+    <docstrings> Carrega e retorna escalas ativas atribuídas a um vínculo.
+
+    Args:
+        link_id (str): UUID do vínculo paciente-profissional.
+        auth_machine (StateMachine): Máquina de estados para armazenar resultado.
+
+    Calls:
+        fetch_records(): Busca registros na tabela `scales` | definida em services.backend.
+        logger.debug(): Log de depuração | instanciado por logger.
+        auth_machine.set_variable(): Persiste 'assigned_scales' no session_state | instanciado por StateMachine.
+
+    Returns:
+        list[dict]: Lista de escalas com status ‘active’. Vazia em caso de erro.
+    """
+    
+    logger.debug(f"SCALES → Carregando escalas ativas para link {link_id}")
+    
+    try:
+        escalas = load_scales_by_link_id(link_id, auth_machine) or []
+        # opcional: reafirma no state, mas já foi feito no load_scales_by_link_id
+        auth_machine.set_variable("assigned_scales", escalas)
+        return escalas  # retorna lista
+    
+    except Exception as e:
+        
+        logger.exception(f"SCALES → Falha ao carregar escalas: {e}") # log de erro
+        return []   

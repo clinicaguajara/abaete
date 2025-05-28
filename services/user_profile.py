@@ -32,7 +32,7 @@ def load_user_profile(user_id: str, auth_machine: StateMachine) -> None:
     """
 
     # Loga a tentativa de carregamento do perfil.
-    logger.debug(f"USER_PROFILE → Carregando perfil de {user_id}")
+    logger.debug(f"🔍 USER_PROFILE → Carregando perfil de {user_id}")
 
     # Executa a busca por um único perfil vinculado ao auth_user_id.
     profile = fetch_records(
@@ -85,7 +85,7 @@ def save_user_profile(auth_machine: StateMachine, data: dict) -> bool:
     }
 
     # Loga a tentativa de salvar os dados.
-    logger.debug(f"USER_PROFILE → Tentando salvar perfil para {user_id}: {data}")
+    logger.debug(f"💾 USER_PROFILE → Tentando salvar perfil para {user_id}: {data}")
 
     # Executa o upsert no Supabase.
     result = upsert_record(

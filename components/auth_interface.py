@@ -1,22 +1,23 @@
-# 📦 IMPORTAÇÕES ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-import logging
+# 📦 IMPORTAÇÕES NECESSÁRIAS ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 import streamlit as st
+import logging
 
-from utils.design  import render_abaete_header
-from frameworks.sm import StateMachine
-from services.auth import auth_sign_in, auth_sign_up, auth_reset_password
-from utils.session import AuthStates
+from frameworks.sm   import StateMachine
+from utils.session   import AuthStates, RedirectStates
+from services.auth   import auth_sign_in, auth_sign_up, auth_reset_password
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+# Cria ou recupera uma instância do objeto Logger com o nome do módulo atual.
 logger = logging.getLogger(__name__)
 
 
 # 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_auth_interface(auth_machine: StateMachine):
+def render_auth_interface(auth_machine: StateMachine) -> None:
     """
     <docstrings> Componente reativo de autenticação com abas de login, cadastro e reset.
 
@@ -35,54 +36,64 @@ def render_auth_interface(auth_machine: StateMachine):
         
     """
     
-    # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🛰️ ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    # Cria uma instancia da máquina de redirecionamento.
-    redirect = StateMachine("auth_redirect", True)
+    # Cria a máquina de redirecionamento (dafult: redirect).
+    auth_redirect_machine = StateMachine("auth_redirect", RedirectStates.REDIRECT.value, enable_logging=True)
     
-    if redirect.current:
-        logger.info("Estabilização proativa da interface de autenticação.")
-        redirect.to(False, True) # desativa flag.
+    # Se a máquina de redirecionamento estiver ligada...
+    if auth_redirect_machine.current:
+        auth_redirect_machine.to(RedirectStates.REDIRECTED.value, True) # ⬅ Desativa flag e força a reincialização da interface.
     
 
-    # INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-    
-    logger.info("Desenhando a interface de autenticação.")
-    render_abaete_header()
+    # 🔐 INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    # Define as abas da interface de autenticação.
     tabs = st.tabs(["Entrar", "Cadastrar", "Esqueci minha senha"])
 
 
-    # ABA PARA LOGIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🔑 ABA DE LOGIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
+    # Desenha a aba de login.
     with tabs[0]:
 
+        # Desenha o formulário de login.
         with st.form("login_form"):
             email = st.text_input("Email", key="login_email")
             password = st.text_input("Senha", type="password", key="login_password")
             feedback = st.empty()
             sign_in_button = st.form_submit_button("Entrar", use_container_width=True)
 
+        # Se o botão de login for apertado...
         if sign_in_button:
+            
+            # Se o email ou senha não estiverem preenchidos...
             if not email or not password:
                 feedback.warning("⚠️ Email ou senha inválidos.")
+            
+            # Caso contrário...
             else:
-                auth_machine.to(AuthStates.LOADING.value, rerun=False)
-                user = auth_sign_in(email, password)
+                auth_machine.to(AuthStates.LOADING.value, rerun=False) # ⬅ Transiciona a máquina de autenticação.
+                user = auth_sign_in(email, password)                   # ⬅ Autenticação via Supabase.
+                
+                # Se houver usuário autenticado...
                 if user:
-                    auth_machine.set_variable("user_email", user.email)
-                    auth_machine.set_variable("user_id", user.id)
-                    auth_machine.set_variable("user_display_name", user.user_metadata.get("display_name"))
-                    logger.info(f"{user.email} logado com sucesso.")
-                    auth_machine.to(AuthStates.AUTHENTICATED.value)
+                    auth_machine.set_variable("user_email", user.email)                                     # ⬅ Recupera o email do usuário autenticado.
+                    auth_machine.set_variable("user_id", user.id)                                           # ⬅ Recupera o UUID do usuário autenticado.
+                    auth_machine.set_variable("user_display_name", user.user_metadata.get("display_name"))  # ⬅ Recupera o nome completo do usuário autenticado.
+                    auth_machine.to(AuthStates.AUTHENTICATED.value)                                         # ⬅ Transiciona a máquina de autenticação.
+                
+                # Caso contrário...
                 else:
-                    feedback.error("⛔ Erro de autenticação, tente novamente.")
+                    feedback.error("⛔ Erro de autenticação, tente novamente.") # ⬅ Feedback visual.
 
 
-    # ABA PARA CADASTRO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 📋 ABA DE CADASTRO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
+    # Desenha a aba de cadastro.
     with tabs[1]:
 
+        # Desenha o formulário de cadastro.
         with st.form("signup_form"):
             nome = st.text_input("Nome completo", key="signup_nome")
             email = st.text_input("Email para cadastro", key="signup_email")
@@ -91,36 +102,57 @@ def render_auth_interface(auth_machine: StateMachine):
             feedback = st.empty()
             sign_up_button = st.form_submit_button("Cadastrar", use_container_width=True)
 
+        # Se o botão de cadastro for apertado...
         if sign_up_button:
+            
+            # Se o nome, email, senha ou confirmação de senha não estiverem corretamente preenchidos...
             if not nome or not email or not senha or not confirmar:
                 feedback.info("📋 Preencha todos os campos do formulário para se cadastrar.")
+            
+            # E se a senha não for igual à confirmação de senha...
             elif senha != confirmar:
                 feedback.warning("⚠️ As senhas não coincidem!")
+            
+            # Caso contrário...
             else:
-                user = auth_sign_up(email, senha, user_metadata={"display_name": nome})
+                user = auth_sign_up(email, senha, user_metadata={"display_name": nome}) # ⬅ Cadastro via Supabase.
+                
+                # Se o cadastro for efetuado com sucesso...
                 if user:
                     feedback.success("📩 Um email de confirmação foi enviado para a sua caixa de entrada.")
+                
+                # Caso contrário...
                 else:
                     feedback.error("⛔ Não foi possível realizar o cadastro. Verifique suas informações e tente novamente.")
 
 
-    # ABA PARA RECUPERAR A SENHA ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🔓 ABA DE RECUPERAR A SENHA ─────────────────────────────────────────────────────────────────────────────────────────────────────
     
+    # Desenha a aba de recuperar senha.
     with tabs[2]:
 
+        # Desenha o formulário para recuperar senha.
         with st.form("reset_form"):
             email = st.text_input("Digite seu email de cadastro", key="reset_email")
             feedback = st.empty()
             reset_button = st.form_submit_button("Enviar link de recuperação", use_container_width=True)
 
+        # Se o botão de recuperar senha for apertado...
         if reset_button:
+
+            # Se o email não estiver corretamente preenchido...
             if not email:
                 feedback.info("📬 Informe seu e-mail para recuperar a senha.")
+            
+            # Caso contrário...
             else:
-                sucesso = auth_reset_password(email)
-                if sucesso:
+                sent = auth_reset_password(email) # ⬅ Recuperação de senha via Supabase.
+                
+                # Se a recuperação de senha for executada com sucesso...
+                if sent:
                     feedback.success("📩 Email de recuperação enviado com sucesso!")
+                
+                # Caso contrário...
                 else:
                     feedback.error("Erro: Verifique o endereço de email informado e tente novamente.")
     
-    st.markdown("<br>", unsafe_allow_html=True)

@@ -1,82 +1,82 @@
-# 📦 IMPORTAÇÕES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# 📦 IMPORTAÇÕES NECESSÁRIAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 import logging
 import streamlit as st
 
-from datetime import date, datetime
-from frameworks.sm import StateMachine
-from services.goals import load_goals_by_link_id, save_goal
-from services.professional_patient_link import load_links_for_patient, load_links_for_professional
-from services.goals_progress import load_goal_progress, save_goal_progress
-from charts.goals_charts import render_goal_progress_chart, estimate_accumulated_effort, estimate_completion_time
-from utils.role import is_professional_user
-from utils.session import FeedbackState
-from utils.design import render_goals_header
+from datetime                            import date, datetime
+from frameworks.sm                       import StateMachine
+from utils.session                       import FeedbackStates, RedirectStates
+from utils.context                          import is_professional_user
+from services.goals                      import load_goals_by_link_id, save_goal
+from services.goals_progress             import load_goal_progress, save_goal_progress
+from services.links  import load_links_for_patient, load_links_for_professional
+from components.sidebar                  import render_sidebar
+from charts.goals_charts                 import render_goal_progress_chart, estimate_completion_time
 
 
-# 👨‍💻 LOGGER ESPECÍFICO PARA A PÁGINA DE METAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+# Cria ou recupera uma instância do objeto Logger com o nome do módulo atual.
 logger = logging.getLogger(__name__)
 
 
-# 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DE METAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 🔌 FUNÇÃO PARA RENDERIZAR A INTERFACE DE METAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_goals_interface(auth_machine: StateMachine) -> tuple[None, str | None]:
+def render_goals_interface(auth_machine: StateMachine) -> None:
     """
     <docstrings> Renderiza a interface da página "Minhas Metas", com variações para profissional e paciente.
 
     Args:
-        auth_machine (StateMachine): Máquina de estado com os dados do usuário autenticado.
+        auth_machine (StateMachine): Instância da máquina de estados com os dados do usuário autenticado.
 
     Calls:
-        render_header_by_role(): Renderiza cabeçalho personalizado | definida em utils/gender.py.
-        is_professional_user(): Verifica se o usuário é profissional | definida localmente.
-        _render_professional_goals(): Interface exclusiva para profissionais | definida em 2_Minhas_Metas.py.
-        _render_patient_goals(): Interface exclusiva para pacientes | definida em 2_Minhas_Metas.py.
+        StateMachine(): Cria uma máquina de estados auxiliar para controle da navegação | definida em frameworks.sm.py.
+        goals_redirect_machine.current: Atributo da máquina de estados para verificar o estado atual | instanciado por goals_redirect_machine.
+        goals_redirect_machine.to(): Método para transicionar o estado da máquina | instanciado por goals_redirect_machine.
+        logger.info(): Função para registrar logs de informações | definida em utils.logs.py.
+        st.markdown(): Função para renderizar texto com HTML | definida em streamlit.
+        is_professional_user(): Função que verifica se o usuário autenticado é profissional | definida em modules.user_profile.py.
+        _render_professional_goals(): Renderiza a interface de metas para profissionais | definida em 2_Minhas_Metas.py.
+        _render_patient_goals(): Renderiza a interface de metas para pacientes | definida em 2_Minhas_Metas.py.
+        render_sidebar(): Renderiza a barra lateral da interface | definida em components.dashboard_interface.py.
 
     Returns:
-        Tuple[None, str | None]:
-            - None: Se execução for bem-sucedida.
-            - str | None: Mensagem de erro em caso de falha.
+        None: Não retorna nenhum valor. Executa efeitos colaterais na interface.
     """
+
+    # 🛰️ ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Cria a máquina de redirecionamento (goals).
+    redirect_machine = StateMachine("goals_redirect", RedirectStates.REDIRECT.value, enable_logging=True)
+
+    # Se a máquina de redirecionamento estiver ligada...
+    if redirect_machine.current: 
+        redirect_machine.to(RedirectStates.REDIRECTED.value, True)  # ⬅ Desativa flag e força a reincialização da interface.
+
+    # INTERFACE DE METAS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    st.markdown("""
+    <div style='text-align: justify;'>
+    As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar <strong>objetivos</strong> mais claros e acompanhar os pequenos avanços ao longo do tempo. É um recurso de apoio — estruturado, compreensivo e autorregulado.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Se o usuário for um profissional...
+    if is_professional_user(auth_machine):
+        _render_professional_goals(auth_machine)
     
-    try:
-        
-        # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-    
-        redirect = StateMachine("auth_redirect", True)
-        
-        if redirect.current: 
-            logger.info(f"Estabilização proativa da interface (dashboard_interface)")
-            redirect.to(False, True) # desativa flag.
+    # Caso contrário...
+    else:
+        _render_patient_goals(auth_machine)
 
-        # INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-        
-        logger.info("Desenhando a interface de metas.")
-
-        # Imprime o título da página independentemente do papel do usuário.
-        render_goals_header()
-
-        st.markdown("""
-        <div style='text-align: justify;'>
-        As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar <strong>objetivos</strong> mais claros e acompanhar os pequenos avanços ao longo do tempo. É um recurso de apoio — estruturado, compreensivo e autorregulado.
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        if is_professional_user(auth_machine):
-            _render_professional_goals(auth_machine)
-        else:
-            _render_patient_goals(auth_machine)
-
-        return None, None
-
-    except Exception as e:
-        return None, str(e)
+    # Desenha a sidebar.
+    render_sidebar(auth_machine)
 
 
-# 📺 TABS PARA PROFISSIONAIS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PROFISSIONAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | None]:
     """
@@ -108,7 +108,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
     # Tenta realizar a operação principal...
     try:
 
-        feedback_machine = auth_machine.get_variable("feedback", default=FeedbackState.NONE.value)
+        feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.NONE.value)
 
         # Cria as abas visuais.
         tabs = st.tabs(["Cadastrar metas", "Monitorar histórico de metas"])
@@ -154,9 +154,9 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
                 )
                 priority_level = 6 - priority_display  # ← inverte visual para valor real.
                 
-                if feedback_machine == FeedbackState.GOAL_SENT.value:
+                if feedback_machine == FeedbackStates.GOAL_SENT.value:
                     st.success("✅ Meta cadastrada com sucesso!")
-                    auth_machine.set_variable("feedback", FeedbackState.NONE.value)
+                    auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
 
                 feedback = st.empty()
 
@@ -192,7 +192,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
                     success = save_goal(payload)
 
                     if success:
-                        auth_machine.set_variable("feedback", FeedbackState.GOAL_SENT.value)
+                        auth_machine.set_variable("feedback", FeedbackStates.GOAL_SENT.value)
                         load_goals_by_link_id(payload["link_id"], auth_machine)
                         st.rerun()
                     else:
@@ -212,6 +212,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
         return None, str(e)
 
 
+# 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]:
     """

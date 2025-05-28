@@ -1,13 +1,13 @@
 
-# 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📦 IMPORTAÇÕES NECESSÁRIAS ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-import logging
 import streamlit as st
+import logging
 
 from typing import Callable
 
 
-# 🏗️ CLASSE PARA NAVEGAÇÃO REATIVA EM STREAMLIT ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 🏗️ CLASSE PARA NAVEGAÇÃO REATIVA EM STREAMLIT ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 class StateMachine:
     """
@@ -19,7 +19,7 @@ class StateMachine:
     
     """
 
-    # 🛠️ MÉTODO CONSTRUTOR DE CLASSE ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🛠️ MÉTODO CONSTRUTOR DE CLASSE ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
     def __init__(self, key: str, initial_state: str, enable_logging: bool = False):
         """
@@ -37,6 +37,7 @@ class StateMachine:
 
         Calls:
             st.session_state.setdefault(): Inicializa a chave no session | instanciado por st.
+
         """
         self.key = key
         self.initial_state = initial_state
@@ -45,7 +46,7 @@ class StateMachine:
         st.session_state.setdefault(self.key, initial_state)
 
 
-    # 📐 MÉTODO PARA RETORNO DINÂMICO DO ESTADO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 📐 PROPRIEDADE QUE RETORNA O ESTADO ATUAL DA MÁQUINA DE ESTADOS ────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
     @property
     def current(self) -> str:
@@ -54,7 +55,10 @@ class StateMachine:
 
         Returns:
             str: Estado atual associado à chave definida.
+            
         """
+        
+        # Retorna o valor associado à chave definida na sessão.
         return st.session_state[self.key]
     
 
@@ -77,13 +81,14 @@ class StateMachine:
 
         """
         
+        # Se "enable_logging" estiver habilitado (True)...
         if self.enable_logging:
-            logging.debug(f"[StateMachine:{self.key}] Transição: {self.current} → {new_state}")
+            logging.debug(f"[StateMachine/{self.key}] Transição: {self.current} → {new_state}")
 
-        # Transiciona para o novo estado.
+        # Transiciona a máquina de estados.
         st.session_state[self.key] = new_state
 
-        # Se rerun estiver habilitado (True), reinicia o app.
+        # Se "rerun" estiver habilitado (True), reinicia o app.
         if rerun:
             st.rerun()
 
@@ -104,8 +109,10 @@ class StateMachine:
         Returns:
             None.
         """
-        # Remove todas as variáveis auxiliares do session_state
+        
+        # Remove todas as variáveis auxiliares do session_state.
         prefix = f"{self.key}__"
+        
         for k in list(st.session_state.keys()):
             if k.startswith(prefix):
                 st.session_state.pop(k)
@@ -114,11 +121,11 @@ class StateMachine:
         self.to(self.initial_state, rerun=rerun)
 
 
-    # 🕥 MÉTODO PARA EXECUTAR FUNÇÕES UMA ÚNICA VEZ POR ESTADO (DEFAULT) ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🕥 FUNÇÃO PARA EXECUTAR CALLBACK UMA ÚNICA VEZ ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     def init_once(self, callback: Callable, *args, done_state: str = "done", **kwargs) -> None:
         """
-        <docstrings> Executa uma função uma única vez se a máquina ainda estiver no estado inicial.
+        <docstrings> Executa uma função (callback) apenas se a máquina de estados estiver no estado inicial (default).
 
         Args:
             callback (Callable): Função a ser chamada.
@@ -132,23 +139,37 @@ class StateMachine:
 
         Returns:
             None.
+
         """
+
+        # Se o estado atual for igual ao estado inicial (default)...
         if self.current == self.initial_state:
+            
+            # Tenta executar a ação principal...
             try:
+
+                # Se "enable_logging" estiver habilitado (True)...
                 if self.enable_logging:
-                    logging.debug(f"[StateMachine:{self.key}] Executando callback único.")
+                    logging.debug(f"[StateMachine/{self.key}] Executando callback único.")
+
+                # Executa o callback com os argumentos fornecidos.  
                 callback(*args, **kwargs)
+                
+                # Transiciona a máquina de estados para sinalizar que o callback já foi executado.
                 self.to(done_state)
+            
+            # Caso contrário...
             except Exception as e:
                 logging.exception(f"[StateMachine:{self.key}] Erro em callback do init_once: {e}")
+                raise
 
     
     # 🕥 MÉTODO PARA TRANSICIONAR ESTADOS UMA ÚNICA VEZ (DEFAULT > CUSTOM) ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     def set_once(self, value: str, rerun: bool = False) -> None:
         """
-        <docstrings> Define o estado apenas se estiver ainda no valor inicial.
-        Útil para marcar um estado como 'carregado', 'ativo', 'profissional', etc., sem sobrescrever estados já definidos anteriormente.
+        <docstrings> Define o estado apenas se a máquina ainda estiver em default mode.
+        Útil para marcar um estado como 'carregado' ou 'ativo', sem sobrescrever estados já definidos anteriormente.
 
         Args:
             value (str): Novo estado desejado.
@@ -162,7 +183,7 @@ class StateMachine:
 
         """
         
-        # Se o estado ainda não tiver sido alterado (ainda está no valor inicial)...
+        # Se o estado atual for igual ao estado inicial (default)...
         if self.current == self.initial_state:
             self.to(value, rerun=rerun) # ⬅ Transiciona para o novo estado definido.
 
@@ -188,9 +209,11 @@ class StateMachine:
 
         """
         
-        scoped_key = f"{self.key}__{var_name}"   # ⬅ Cria chave única no formato: "estado__variavel".
-        st.session_state[scoped_key] = value     # ⬅ Salva o valor no session_state.
+        # Cria uma chave única no formato: "estado__variavel".
+        scoped_key = f"{self.key}__{var_name}"
 
+        # Salva essa chave única na sessão associada a um valor passado como argumento.
+        st.session_state[scoped_key] = value
 
     # 📤 MÉTODO PARA RECUPERAR VARIÁVEIS AUXILIARES DO ESTADO ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -216,3 +239,33 @@ class StateMachine:
         
         scoped_key = f"{self.key}__{var_name}"             # ⬅ Usa o mesmo padrão de chave composta.
         return st.session_state.get(scoped_key, default)   # ⬅ Retorna o valor ou o fallback informado.
+    
+
+    # 📋 MÉTODO PARA LISTAR VARIÁVEIS DO SESSION_STATE COM PREFIXO ──────────────────────────────────────────────────────────────
+
+    def list_variables_with_prefix(self, startswith: str = "") -> dict:
+        """
+        <docstrings> Retorna todas as variáveis auxiliares da máquina que começam com determinado prefixo.
+
+        Args:
+            startswith (str): Subprefixo da variável (sem o prefixo da máquina). Ex: 'scale_progress__'.
+
+        Returns:
+            dict: Mapeamento chave → valor de todas variáveis auxiliares que combinam com o prefixo.
+
+        Example:
+            state.list_variables_with_prefix(\"scale_progress__\") →
+            {
+                \"scale_progress__abc123\": [...],
+                \"scale_progress__def456\": [...],
+            }
+        """
+        
+        prefix = f"{self.key}__{startswith}"
+        scoped_vars = {}
+
+        for key in st.session_state.keys():
+            if key.startswith(prefix):
+                raw = key[len(self.key) + 2:]  
+                scoped_vars[raw] = st.session_state[key]
+        return scoped_vars

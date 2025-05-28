@@ -13,7 +13,7 @@ st.set_page_config(
 # 📦 IMPORTAÇÕES ─────────────────────────────────────────────────────────────────────────────────────────────────
 
 from utils.logs                     import log_page_entry
-from utils.design                   import load_css
+from utils.design                   import load_css, render_scales_header
 from utils.session                  import AuthStates
 from frameworks.sm                  import StateMachine
 from services.user_profile          import load_user_profile
@@ -28,7 +28,9 @@ from components.scales_interface    import render_scales_interface
 @log_page_entry("SCALES")
 def main():
     
-    load_css() # ⬅ Injeção de CSS.
+    load_css()              # ⬅ Injeção de CSS.
+    render_scales_header()  # ⬅ Desenha o cabeçalho da página.
+    page = st.empty()       # ⬅ Contêiner para renderizar a interface.
 
 
     # 🔐 LÓGICA DE AUTENTICAÇÃO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -36,8 +38,9 @@ def main():
     auth_machine = StateMachine("auth_state", AuthStates.FORM.value)
 
     if auth_machine.current != AuthStates.AUTHENTICATED.value:
-        render_auth_interface(auth_machine)
-        st.stop()
+        with page.container():
+            render_auth_interface(auth_machine)
+            st.stop()
 
 
     # 🌐 USUÁRIO LOGADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
@@ -55,12 +58,13 @@ def main():
     # Recupera o perfil do usuário.
     profile = auth_machine.get_variable("user_profile")
 
-    render_onboarding_if_needed(user_id, profile)
+    with page.container():
+        render_onboarding_if_needed(user_id, profile)
     
 
     # ❤️ RECUPERAÇÃO DE VÍNCULOS ───────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    render_sidebar(auth_machine)
-    render_scales_interface(auth_machine)
+    with page.container():
+        render_scales_interface(auth_machine)
 
 main()

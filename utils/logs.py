@@ -62,7 +62,9 @@ def configure_logging() -> None:
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("httpcore").setLevel(logging.WARNING)
         logging.getLogger("httpcore.http2").setLevel(logging.WARNING)
+        logging.getLogger("hpack").setLevel(logging.WARNING)             
         logging.getLogger("hpack.hpack").setLevel(logging.WARNING)
+        logging.getLogger("hpack.table").setLevel(logging.WARNING)
 
     except Exception:
         # Em caso de falha, registra o erro

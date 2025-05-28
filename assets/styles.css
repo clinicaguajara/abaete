@@ -318,7 +318,7 @@ footer, .stDeployButton {
   display: none !important;
 }
 
-/* 🔧 Remove o menu de três pontos (hambúrguer de opções no canto superior direito) */
+/* 🔧 Remove o menu de três pontos (hambúrguer de opções no canto superior direito) 
 button[kind="headerMenu"] {
   display: none !important;
 }
@@ -333,7 +333,7 @@ footer {
   display: none !important;
 }
 
-/* 🔧 Remove todo o cabeçalho com controles */
+/* 🔧 Remove todo o cabeçalho com controles
 [data-testid="stHeader"] {
   display: none !important;
 }
@@ -342,3 +342,4 @@ footer {
 [data-testid="stStatusWidget"] {
   display: none !important;
 }
+

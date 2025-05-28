@@ -34,11 +34,11 @@ def load_links_for_professional(professional_id: str, auth_machine: StateMachine
     """
 
     # Loga a tentativa de busca de vínculos.
-    logger.debug(f"LINK → Buscando vínculos do profissional {professional_id}")
+    logger.debug(f"🔎 links → Buscando vínculos do profissional {professional_id}")
 
     # Realiza a busca dos vínculos existentes na tabela.
     links = fetch_records(
-        table_name="professional_patient_link",
+        table_name="links",
         filters={"professional_id": professional_id}
     )
 
@@ -46,7 +46,7 @@ def load_links_for_professional(professional_id: str, auth_machine: StateMachine
     logger.debug(f"LINK → {len(links)} vínculo(s) encontrado(s)")
 
     # Salva os vínculos na máquina de estados.
-    auth_machine.set_variable("professional_patient_links", links)
+    auth_machine.set_variable("linkss", links)
 
 
 # 🔎 FUNÇÃO PARA CARREGAR TODOS OS VÍNCULOS DE UM PACIENTE ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ def load_links_for_patient(patient_id: str, auth_machine: StateMachine) -> None:
 
     # Realiza a busca na tabela com filtro por patient_id.
     links = fetch_records(
-        table_name="professional_patient_link",
+        table_name="links",
         filters={"patient_id": patient_id}
     )
 
@@ -83,6 +83,46 @@ def load_links_for_patient(patient_id: str, auth_machine: StateMachine) -> None:
 
     # Armazena os vínculos na máquina de estados.
     auth_machine.set_variable("patient_links", links)
+
+
+
+
+# 🔎 FUNÇÃO PARA CARREGAR VÍNCULOS DE UM USUÁRIO  ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+def load_links_by_role(
+    role_id: str,
+    role_field: str,
+    auth_machine: StateMachine,
+    variable_name: str = "links"
+) -> None:
+    """
+    <docstrings> Carrega vínculos a partir do papel (role) — profissional ou paciente.
+
+    Args:
+        role_id (str): UUID do usuário (patient_id ou professional_id).
+        role_field (str): Campo a ser filtrado ('patient_id' ou 'professional_id').
+        auth_machine (StateMachine): Máquina de estado onde os dados serão armazenados.
+        variable_name (str, optional): Nome da variável na máquina. Default é 'links'.
+
+    Calls:
+        fetch_records(): Busca registros na tabela 'links' | definida em services.backend.py.
+        logger.debug(): Método para log de depuração | instanciado por logger.
+        auth_machine.set_variable(): Armazena os dados na máquina de estado | instanciado por StateMachine.
+
+    Returns:
+        None.
+    """
+
+    logger.debug(f"LINK → Buscando vínculos onde {role_field} = {role_id}")
+
+    links = fetch_records(
+        table_name="links",
+        filters={role_field: role_id}
+    )
+
+    logger.debug(f"LINK → {len(links)} vínculo(s) encontrado(s) para {role_field} {role_id}")
+
+    auth_machine.set_variable(variable_name, links)
 
 
 # 🔎 FUNÇÃO PARA BUSCAR PERFIL DE PACIENTE POR EMAIL ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -140,7 +180,7 @@ def fetch_patient_info_by_email(email: str) -> dict | None:
 
 # 💾 FUNÇÃO PARA SALVAR VÍNCULO ENTRE PROFISSIONAL E PACIENTE ──────────────────────────────────────────────────────────────────────────────────────────────
 
-def save_professional_patient_link(auth_machine: StateMachine, data: dict) -> bool:
+def save_links(auth_machine: StateMachine, data: dict) -> bool:
     """
     <docstrings> Insere ou atualiza o vínculo entre profissional e paciente, incluindo o nome do profissional com título.
 
@@ -164,20 +204,15 @@ def save_professional_patient_link(auth_machine: StateMachine, data: dict) -> bo
     try:
         # Recupera dados do profissional autenticado
         professional_id = auth_machine.get_variable("user_id")
-        display_name = auth_machine.get_variable("user_display_name", default="Profissional")
-        gender = auth_machine.get_variable("user_gender", default="M")
+        profile = auth_machine.get_variable("professional_profile") or {}
+        display_name = profile.get("display_name") or "Profissional"
+        gender = profile.get("gender") or "M"
 
-        # Recupera perfis completos da máquina de estado
-        professional_profile = {
-            "display_name": auth_machine.get_variable("user_display_name", default="Profissional")
-        }
-        user_profile = {
-            "gender": auth_machine.get_variable("user_gender", default="M")
-        }
+        professional_profile = {"display_name": display_name}
+        user_profile = {"gender": gender}
 
         # Gera título com base no gênero e nome
         professional_name = get_professional_title(professional_profile, user_profile)
-
 
         # Prepara payload com ID e nome com título
         payload = {
@@ -191,7 +226,7 @@ def save_professional_patient_link(auth_machine: StateMachine, data: dict) -> bo
 
         # Executa o upsert no Supabase
         result = upsert_record(
-            table_name="professional_patient_link",
+            table_name="links",
             payload=payload,
             on_conflict="professional_id,patient_id",
             returning=True
@@ -215,7 +250,7 @@ def accept_link(link_id: str) -> bool:
     <docstrings> Atualiza o status de um vínculo entre profissional e paciente para "accepted".
 
     Essa função é chamada quando o paciente clica em "Aceitar" um convite.  
-    Ela atualiza o registro na tabela `professional_patient_link`, garantindo persistência via `upsert`.
+    Ela atualiza o registro na tabela `links`, garantindo persistência via `upsert`.
 
     Args:
         link_id (str): UUID do vínculo entre profissional e paciente.
@@ -243,7 +278,7 @@ def accept_link(link_id: str) -> bool:
 
         # Executa o upsert no Supabase
         result = upsert_record(
-            table_name="professional_patient_link",
+            table_name="links",
             payload=payload,
             on_conflict="id",
             returning=True
@@ -295,7 +330,7 @@ def reject_link(link_id: str) -> bool:
 
         # Executa o upsert para marcar como rejeitado
         result = upsert_record(
-            table_name="professional_patient_link",
+            table_name="links",
             payload=payload,
             on_conflict="id",
             returning=True

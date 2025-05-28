@@ -37,7 +37,7 @@ def load_professional_profile(auth_machine: StateMachine) -> None:
 
     # Se o ID estiver ausente...
     if user_id is None:
-        logger.debug("PROFESSIONAL_PROFILE → user_id ausente na máquina de estados") # ⬅ Loga um aviso para depuração.
+        logger.debug("🔍 PROFESSIONAL_PROFILE → user_id ausente na máquina de estados") # ⬅ Loga um aviso para depuração.
         return                                                                       # ⬅ Retorna.
 
     # Loga a tentativa de carregamento de perfil.

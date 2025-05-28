@@ -7,15 +7,16 @@ import logging
 from services.backend import supabase
 from gotrue.errors import AuthRetryableError
 from frameworks.sm import StateMachine
+from utils.constants import REDIRECT_TO
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-# Cria ou recupera uma instância do objeto logger com o nome do módulo atual.
+# Cria ou recupera uma instância do objeto Logger com o nome do módulo atual.
 logger = logging.getLogger(__name__)
 
 
-# 🔐 FUNÇÃO PARA LOGIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 🔑 FUNÇÃO PARA LOGIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def auth_sign_in(email: str, password: str):
     """
@@ -40,7 +41,7 @@ def auth_sign_in(email: str, password: str):
     try:
 
         # Loga tentativa de login com o email informado.
-        logger.debug(f"AUTH → Tentando login de {email}")
+        logger.debug(f"🔑 AUTH → Tentando login de {email}")
 
         # Executa a autenticação via Supabase.
         response = supabase.auth.sign_in_with_password({
@@ -51,7 +52,7 @@ def auth_sign_in(email: str, password: str):
         # Retorna o objeto do usuário autenticado.
         return response.user
     
-    # Na exceção...
+    # Se ocorrer uma exceção...
     except Exception as e:
 
         # Loga o erro completo com traceback.
@@ -87,12 +88,12 @@ def auth_reset_password(email: str) -> bool:
         logger.debug(f"AUTH → Solicitando redefinição de senha para {email}")
         
         # Dispara o email de redefinição via Supabase.
-        supabase.auth.reset_password_email(email)
+        supabase.auth.reset_password_email(email, redirect_to = REDIRECT_TO)
         
         # Retorna True se o email foi enviado corretamente.
         return True
     
-    # Na exceção...
+    # Se ocorrer uma exceção...
     except Exception as e:
         
         # Loga o erro completo com traceback.
@@ -148,7 +149,7 @@ def auth_sign_up(email: str, password: str, user_metadata: dict = {}):
         logger.warning(f"AUTH → Timeout no retorno, mas provavelmente criado: {e}")
         return "pending"
 
-    # Em outras exceções...
+    # Se ocorrer uma exceção...
     except Exception as e:
         logger.exception(f"AUTH → Erro ao tentar cadastrar {email}: {e}")
         return None
@@ -185,7 +186,7 @@ def auth_sign_out(auth_machine: StateMachine) -> bool:
         # Retorna True se logout ocorreu sem erros.
         return True
     
-    # Na exceção...
+    # Se ocorrer uma exceção...
     except Exception as e:
 
         # Loga o erro completo com traceback.
