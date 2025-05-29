@@ -74,7 +74,7 @@ def save_user_profile(auth_machine: StateMachine, data: dict) -> bool:
     # Recupera variáveis persistidas da máquina de estado.
     user_id = auth_machine.get_variable("user_id")
     email = auth_machine.get_variable("user_email")
-    display_name = auth_machine.get_variable("user_display_name")
+    display_name = auth_machine.get_variable("user_profile", {}).get("display_name")
 
     # Prepara o payload com os dados obrigatórios e adicionais.
     payload = {

@@ -3,11 +3,11 @@
 import logging
 import streamlit as st
 
-from datetime               import date, timedelta
-from frameworks.sm          import StateMachine
-from utils.session          import VerifyStates
-from services.user_profile  import save_user_profile, load_user_profile
-from utils.constants        import SALARIO_MINIMO, TCLE
+
+from datetime                   import date, timedelta
+from frameworks.sm              import StateMachine
+from services.user_profile      import save_user_profile, load_user_profile
+from utils.constants            import SALARIO_MINIMO, TCLE
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -16,59 +16,23 @@ from utils.constants        import SALARIO_MINIMO, TCLE
 logger = logging.getLogger(__name__)
 
 
-
 # ⚙️ FUNÇÃO PARA DECIDIR SE O QUESTIONÁRIO SERÁ RENDERIZADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_onboarding_if_needed(auth_machine: StateMachine, user_profile: dict) -> tuple[None, str | None]:
+def render_onboarding_if_needed(auth_machine: StateMachine, user_profile: dict) -> None:
     """
-    <docstrings> Verifica se o perfil precisa de onboarding e, se necessário, exibe o formulário.
-
-    Args:
-        auth_machine (StateMachine): Máquina de estado contendo os dados do usuário.
-        user_profile (dict): Perfil atual do usuário.
-
-    Calls:
-        render_onboarding_questionnaire(): Exibe formulário de onboarding | definida em onboarding.py.
-        st.stop(): Interrompe a execução da interface | definida em streamlit.runtime.
-
-    Returns:
-        Tuple[None, str | None]:
-            - None: Se execução ocorrer normalmente (sem erro).
-            - str | None: Mensagem de erro em caso de falha.
+    Verifica se o perfil precisa de onboarding e, se necessário, exibe o formulário.
     """
-    
-    try:
-        onboarding_machine = StateMachine("onboarding_state", VerifyStates.VERIFY.value, enable_logging=True)
-
-        if not user_profile:
-            logger.debug("ONBOARDING → Formulário completo (perfil vazio).")
-            onboarding_machine.init_once(
-                render_onboarding_questionnaire,
-                auth_machine,
-                user_profile,
-                done_state=VerifyStates.VERIFIED.value
-            )
-            st.stop()
-
-        campos_faltantes = any(
+    perfil_incompleto = (
+        not user_profile or
+        any(
             user_profile.get(k) in (None, "")
             for k in ["gender", "birthdate", "race", "income_range", "disabilities", "consent"]
         )
+    )
 
-        if campos_faltantes:
-            logger.debug("ONBOARDING → Formulário com dados ausentes.")
-            onboarding_machine.init_once(
-                render_onboarding_questionnaire,
-                auth_machine,
-                user_profile,
-                done_state = VerifyStates.VERIFIED.value
-            )
-            st.stop()
-
-        return None, None
-
-    except Exception as e:
-        return None, str(e)
+    if perfil_incompleto:
+        render_onboarding_questionnaire(auth_machine, user_profile)
+        st.stop()
 
 
 # 📺 FUNÇÃO PARA RENDERIZAR ONBOARDING DO USUÁRIO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -93,71 +57,68 @@ def render_onboarding_questionnaire(auth_machine: StateMachine, user_profile: di
             - None: Se execução ocorrer normalmente.
             - str | None: Mensagem de erro em caso de falha.
     """
-    try:
-        st.markdown("<h4>Antes de continuar, gostaríamos de saber mais sobre você...</h4>", unsafe_allow_html=True)
+    
+    st.markdown("<h4>Antes de continuar, gostaríamos de saber mais sobre você...</h4>", unsafe_allow_html=True)
 
-        respostas = {}
+    respostas = {}
 
-        with st.form("form_onboarding"):
-            
-            if user_profile.get("display_name") is None:
-                nome = st.text_input("Nome completo", placeholder="Ex: Anna O.")
-                respostas["display_name"] = nome
+    with st.form("form_onboarding"):
+                
+        if user_profile.get("display_name") is None:
+            nome = st.text_input("Nome completo", placeholder="Ex: Anna O.")
+            respostas["display_name"] = nome
 
-            if user_profile.get("gender") is None:
-                genero = st.selectbox("Gênero", ["Masculino", "Feminino", "Não-binário"])
-                genero_map = {"Masculino": "M", "Feminino": "F", "Não-binário": "N"}
-                respostas["gender"] = genero_map[genero]
+        if user_profile.get("gender") is None:
+            genero = st.selectbox("Gênero", ["Masculino", "Feminino", "Não-binário"])
+            genero_map = {"Masculino": "M", "Feminino": "F", "Não-binário": "N"}
+            respostas["gender"] = genero_map[genero]
 
-            if user_profile.get("birthdate") is None:
-                hoje = date.today()
-                limite_min = hoje - timedelta(days=120 * 365)
-                nascimento = st.date_input("Data de nascimento", min_value=limite_min, max_value=hoje)
-                respostas["birthdate"] = str(nascimento)
+        if user_profile.get("birthdate") is None:
+            hoje = date.today()
+            limite_min = hoje - timedelta(days=120 * 365)
+            nascimento = st.date_input("Data de nascimento", min_value=limite_min, max_value=hoje)
+            respostas["birthdate"] = str(nascimento)
 
-            if user_profile.get("race") is None:
-                raca = st.selectbox("Etnia", ["Branca", "Preta", "Parda", "Amarela", "Indígena"])
-                respostas["race"] = raca
+        if user_profile.get("race") is None:
+            raca = st.selectbox("Etnia", ["Branca", "Preta", "Parda", "Amarela", "Indígena"])
+            respostas["race"] = raca
 
-            if user_profile.get("income_range") is None:
-                faixas = [
-                    f"Até 1 salário mínimo (até R$ {1 * SALARIO_MINIMO:,.2f})",
-                    f"Entre 1 e 2 salários mínimos (até R$ {2 * SALARIO_MINIMO:,.2f})",
-                    f"Entre 2 e 3 salários mínimos (até R$ {3 * SALARIO_MINIMO:,.2f})",
-                    f"Entre 3 e 5 salários mínimos (até R$ {5 * SALARIO_MINIMO:,.2f})",
-                    f"Mais de 5 salários mínimos (acima de R$ {5 * SALARIO_MINIMO:,.2f})"
-                ]
-                renda = st.selectbox("Renda mensal familiar", faixas)
-                respostas["income_range"] = renda
+        if user_profile.get("income_range") is None:
+            faixas = [
+                f"Até 1 salário mínimo (até R$ {1 * SALARIO_MINIMO:,.2f})",
+                f"Entre 1 e 2 salários mínimos (até R$ {2 * SALARIO_MINIMO:,.2f})",
+                f"Entre 2 e 3 salários mínimos (até R$ {3 * SALARIO_MINIMO:,.2f})",
+                f"Entre 3 e 5 salários mínimos (até R$ {5 * SALARIO_MINIMO:,.2f})",
+                f"Mais de 5 salários mínimos (acima de R$ {5 * SALARIO_MINIMO:,.2f})"
+            ]
+            renda = st.selectbox("Renda mensal familiar", faixas)
+            respostas["income_range"] = renda
 
-            if user_profile.get("disabilities") is None:
-                diagnostico = st.text_input(
-                    "Você possui algum diagnóstico, transtorno ou condição médica?",
-                    placeholder="Ex: TDAH, Transtorno de Ansiedade, Nenhum, etc."
-                )
-                respostas["disabilities"] = diagnostico
+        if user_profile.get("disabilities") is None:
+            diagnostico = st.text_input(
+                "Você possui algum diagnóstico, transtorno ou condição médica?",
+                placeholder="Ex: TDAH, Transtorno de Ansiedade, Nenhum, etc."
+            )
+            respostas["disabilities"] = diagnostico
 
-            if user_profile.get("consent") is None:
-                if TCLE:
-                    st.divider()
-                    st.markdown(TCLE, unsafe_allow_html=True)
-                st.info("🪶 Termo de Consentimento")
-                respostas["consent"] = st.checkbox(
-                    "**Autorizo a utilização dos meus dados para fins de pesquisa.**"
-                )
+        if user_profile.get("consent") is None:
+            if TCLE:
+                st.divider()
+                st.markdown(TCLE, unsafe_allow_html=True)
+            st.info("🪶 Termo de Consentimento")
+            respostas["consent"] = st.checkbox(
+                "**Autorizo a utilização dos meus dados para fins de pesquisa.**"
+            )
 
-            enviar = st.form_submit_button("Submeter formulário", use_container_width=True)
+        enviar = st.form_submit_button("Submeter formulário", use_container_width=True)
 
-        if enviar:
-            success = save_user_profile(auth_machine, respostas)
-            if success:
-                user_id = auth_machine.get_variable("user_id")
-                load_user_profile(user_id, auth_machine)
-                st.rerun()
-            else:
-                st.error("❌ Não foi possível salvar o formulário. Tente novamente.")
+    if enviar:
+        success = save_user_profile(auth_machine, respostas)
+        if success:
+            user_id = auth_machine.get_variable("user_id")
+            load_user_profile(user_id, auth_machine)
+            st.rerun()
+        else:
+            st.error("❌ Não foi possível salvar o formulário. Tente novamente.")
 
-        return None, None
-
-    except Exception as e:
-        return None, str(e)
+    return None, None

@@ -6,9 +6,9 @@ import streamlit as st
 
 from frameworks.sm                      import StateMachine
 from utils.session                      import FeedbackStates, RedirectStates, LoadStates
-from utils.context                         import is_professional_user
+from utils.context                      import load_session_context
 from utils.gender                       import render_header_by_role
-from services.links import load_links_for_professional, save_links, fetch_patient_info_by_email, load_links_for_patient, accept_link, reject_link
+from services.links                     import save_links, fetch_patient_info_by_email, accept_link, reject_link
 from components.sidebar                 import render_sidebar
 
 
@@ -52,13 +52,13 @@ def render_dashboard(auth_machine: StateMachine) -> tuple[None, str | None]:
 
     # 🚧 RENDERIZAÇÃO CONFORME PAPEL DO USUÁRIO ─────────────────────────────────────────────────────────────────────────────────────────
 
-    # Define o papel do usuário.
-    role = is_professional_user(auth_machine)
+    # Recupera o papel do usuário da máquina de autenticação.
+    role = auth_machine.get_variable("role")
 
     # Se o usuário for um profissional...
-    if role:
+    if role == "professional":
         _render_professional_homepage(auth_machine) # ⬅ Desenha a homepage do profissional.
-    
+        
     # Caso contrário...
     else:
         _render_patient_homepage(auth_machine) # ⬅ Desenha a homepage do paciente.
@@ -101,19 +101,19 @@ def _render_professional_homepage(auth_machine: StateMachine) -> tuple[None, str
     with tabs[0]:
         render_header_by_role(auth_machine)
         _render_professional_link_interface(auth_machine)
-    
+        
 
     # ABA DE COMPROMISSOS E AGENDAMENTOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     with tabs[1]:
         st.write("Acompanhamento de escalas e metas...")
-    
+        
 
     # ABA DE PLANEJAMENTO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     with tabs[2]:
         st.write("Status da assinatura e fatura...")
-    
+        
     return None, None
 
 
@@ -128,12 +128,12 @@ def _render_patient_homepage(auth_machine: StateMachine) -> None:
 
     Calls:
         auth_machine.get_variable(): Método para obter variáveis da máquina de estados | instanciado por auth_machine.
-        load_links_for_patient(): Função para carregar os vínculos do paciente | definida em services.professional_patient_link.py.
+        load_links_for_patient(): Função para carregar os vínculos do paciente | definida em services.links.py.
         st.tabs(): Componente de abas para navegação | definida em streamlit.
         render_header_by_role(): Função que desenha o cabeçalho conforme o perfil | definida em components.dashboard_interface.py.
-        st.markdown(): Função para renderizar texto com HTML | definida em streamlit.
+        st.markdown(): Função para renderizar texto com HTML | definida em st.
         render_received_invites(): Função que exibe convites recebidos | definida em components.dashboard_interface.py.
-        st.image(): Função para exibir imagem na interface | definida em streamlit.
+        st.image(): Função para exibir imagem na interface | definida em st.
 
     Returns:
         None: Não retorna nenhum valor. Executa efeitos colaterais na interface.
@@ -150,21 +150,6 @@ def _render_patient_homepage(auth_machine: StateMachine) -> None:
     
 
     # 🏠 HOMEPAGE/DASHBOARD ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    # Cria a máquina de vínculos (default: load).
-    link_machine = StateMachine("link_machine", LoadStates.LOAD.value, enable_logging=True)
-
-    # Recupera o UUID do paciente na máquina de autenticação.
-    patient_id = auth_machine.get_variable("user_id")
-
-    # Se houver UUID autenticado...
-    if patient_id:
-        link_machine.init_once(  
-            load_links_for_patient,             # ⬅ Carrega os vínculos do usuário na máquina de autenticação.
-            patient_id,                         # ⬅ UUID do usuário autenticado (*args).
-            auth_machine,                       # ⬅ Máquina de autenticação (**kwargs).
-            done_state= LoadStates.LOADED.value # ⬅ Desliga a flag da máquina de vínculos para impedir reexecução.
-        )  
 
     # Define as abas da homepage do paciente.
     tabs = st.tabs(["Início", "Planner", "Notas"])
@@ -183,6 +168,7 @@ def _render_patient_homepage(auth_machine: StateMachine) -> None:
         render_received_invites(auth_machine)
         st.image("assets/homepage.png", use_container_width=True)
 
+
     # ABA DE ORGANIZAÇÃO E PLANEJAMENTO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
@@ -199,26 +185,21 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
         auth_machine (StateMachine): Máquina de estado com o ID do profissional autenticado.
 
     Calls:
-        load_links_for_professional(): Busca vínculos do profissional | definida em services.professional_patient_link.py.
-        save_links(): Cria novo vínculo com paciente | definida em services.professional_patient_link.py.
+        load_links_for_professional(): Busca vínculos do profissional | definida em services.links.py.
+        save_links(): Cria novo vínculo com paciente | definida em services.links.py.
         fetch_patient_info_by_email(): Busca dados do paciente pelo e-mail | definida em services.patients.py.
 
     Returns:
         None.
+
     """
     
-    # Cria uma instancia da máquina de autenticação.
+    # Cria ou recupera a máquina de feedbacks.
     feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.NONE.value)
-
-    # Recupera ID do profissional autenticado.
-    professional_id = auth_machine.get_variable("user_id")
-
-    # Se patient_links não for uma variável auxiliar de auth_machine...
-    if not auth_machine.get_variable("professional_patient_links"):
-        load_links_for_professional(professional_id, auth_machine)
+    
 
     # Obtém vínculos e organiza por status
-    links = auth_machine.get_variable("professional_patient_links", default=[])
+    links = auth_machine.get_variable("links", default=[])
     ativos = sorted([l for l in links if l.get("status") == "accepted"], key=lambda x: x.get("patient_name", "").lower())
     pendentes = sorted([l for l in links if l.get("status") == "pending"], key=lambda x: x.get("patient_name", "").lower())
 
@@ -269,7 +250,7 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
                         "patient_name": patient_info["display_name"],
                         "status": "pending"
                     }
-                    vinculos = auth_machine.get_variable("professional_patient_links", default=[])
+                    vinculos = auth_machine.get_variable("links", default=[])
                     ja_existe = any(
                         v["patient_id"] == patient_info["auth_user_id"]
                         for v in vinculos
@@ -278,11 +259,11 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
                     if ja_existe:
                         feedback.warning("⚠️ Convite de vinculação pendente.")
                     else:
-                        sucesso = save_professional_patient_link(auth_machine, data)
+                        sucesso = save_links(auth_machine, data)
                     
                     if sucesso:
                         auth_machine.set_variable("feedback", FeedbackStates.LINK_SENT.value)
-                        load_links_for_professional(professional_id, auth_machine)
+                        load_session_context(auth_machine)
                         st.rerun()
                     else:
                         feedback.error("❌ Não foi possível enviar o convite. Tente novamente.")
@@ -301,9 +282,9 @@ def render_received_invites(auth_machine: StateMachine) -> None:
 
     Calls:
         auth_machine.get_variable(): Recupera variáveis persistidas | instanciado por StateMachine.
-        accept_link(): Atualiza status do vínculo para "accepted" | definida em services.professional_patient_link.py.
-        reject_link(): Atualiza status do vínculo para "rejected" | definida em services.professional_patient_link.py.
-        load_links_for_patient(): Recarrega vínculos após ação | definida em services.professional_patient_link.py.
+        accept_link(): Atualiza status do vínculo para "accepted" | definida em services.links.py.
+        reject_link(): Atualiza status do vínculo para "rejected" | definida em services.links.py.
+        load_links_for_patient(): Recarrega vínculos após ação | definida em services.links.py.
         st.button(): Renderiza botões de ação na interface | definida no módulo streamlit.
         st.markdown(): Exibe texto com formatação Markdown | definida no módulo streamlit.
         st.rerun(): Reinicia o ciclo do Streamlit para aplicar alterações | definida em streamlit.runtime.
@@ -312,22 +293,25 @@ def render_received_invites(auth_machine: StateMachine) -> None:
         None.
 
     """
-
-    feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.NONE.value)
+    
+    # Cria ou recupera a máquina de vínculos (default: load).
+    link_machine = StateMachine("link_machine", LoadStates.LOAD.value, enable_logging=True)
+    
+    feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.NONE.value)   
     feedback = st.empty()
-        
+            
     if feedback_machine == FeedbackStates.LINK_ACCEPTED.value:
         feedback.success("✅ Convite de vinculação aceito.")
         st.markdown("<br>", unsafe_allow_html=True)
         auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
-        
+            
     if feedback_machine == FeedbackStates.LINK_REJECTED.value:
         feedback.success("❌ Convite de vinculação rejeitado.")
         st.markdown("<br>", unsafe_allow_html=True)
         auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
 
     # Recupera todos os vínculos armazenados e filtra os pendentes
-    links = auth_machine.get_variable("patient_links", default=[])
+    links = auth_machine.get_variable("links", default=[])
     pendentes = [l for l in links if l.get("status") == "pending"]
 
     # Se não houver convites pendentes...
@@ -338,11 +322,11 @@ def render_received_invites(auth_machine: StateMachine) -> None:
     link = pendentes[0]
     nome_profissional = link.get("professional_name", "Profissional desconhecido")
     link_id = link.get("id")
-    patient_id = auth_machine.get_variable("user_id")
 
     # Carrega vínculos, se necessário
-    if not auth_machine.get_variable("professional_patient_links"):
-        load_links_for_professional(patient_id, auth_machine)
+    if not auth_machine.get_variable("links"):
+        link_machine.reset()
+        load_session_context(auth_machine)
 
     # Renderiza container com informações do convite e ações
     with st.container():
@@ -359,7 +343,8 @@ def render_received_invites(auth_machine: StateMachine) -> None:
                 sucesso = accept_link(link_id)
                 if sucesso:
                     auth_machine.set_variable("feedback", FeedbackStates.LINK_ACCEPTED.value)
-                    load_links_for_patient(patient_id, auth_machine)
+                    link_machine.reset()
+                    load_session_context(auth_machine)
                     st.rerun()
                 else:
                     st.error("❌ Erro ao aceitar o convite.")
@@ -370,9 +355,10 @@ def render_received_invites(auth_machine: StateMachine) -> None:
                 sucesso = reject_link(link_id)
                 if sucesso:
                     auth_machine.set_variable("feedback", FeedbackStates.LINK_REJECTED.value)
-                    load_links_for_patient(patient_id, auth_machine)
+                    link_machine.reset()
+                    load_session_context(auth_machine)
                     st.rerun()
                 else:
                     st.error("❌ Erro ao recusar o convite.")
         
-        st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)

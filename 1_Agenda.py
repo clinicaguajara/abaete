@@ -14,18 +14,17 @@ st.set_page_config(
 # 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 from frameworks.sm                  import StateMachine
-from utils.session                  import AuthStates, LoadStates
+from utils.session                  import AuthStates
 from utils.logs                     import log_page_entry
 from utils.design                   import load_css, render_abaete_header
-from services.user_profile          import load_user_profile
+from utils.context                  import load_session_context
 from components.auth_interface      import render_auth_interface
-from components.onboarding          import render_onboarding_if_needed
 from components.dashboard_interface import render_dashboard
 
 
 # 🛤️ DEFINIÇÃO DE FLUXO DA PÁGINA ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-@log_page_entry("1_Caixa_de_Areia")
+@log_page_entry("1_Agenda.py")
 def page_1():
     
     load_css()              # ⬅ Injeção de CSS.
@@ -49,35 +48,9 @@ def page_1():
 
     # 🌐 USUÁRIO LOGADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
 
-    # Cria a máquina de perfis de usuário (default: load).
-    profile_machine = StateMachine("profile_machine", LoadStates.LOAD.value, enable_logging=True)
-
-    # Recupera o UUID do usuário da máquina de autenticação.
-    user_id = auth_machine.get_variable("user_id")
-
-    # Se houver UUID autenticado...
-    if user_id:
-        profile_machine.init_once(  
-            load_user_profile,                    # ⬅ Carrega o perfil do usuário na máquina de autenticação.
-            user_id,                              # ⬅ UUID do usuário autenticado (*args).
-            auth_machine,                         # ⬅ Máquina de autenticação (*kwargs).
-            done_state = LoadStates.LOADED.value  # ⬅ Desliga a flag da máquina de perfis de usuário para impedir reexecução.
-        )                           
-
-
-    # 📋 ONBOARDING QUESTIONNAIRE ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
-    
-    # Recupera o perfil do usuário.
-    profile = auth_machine.get_variable("user_profile")
-
-    # Atia o container da página.
+    # Ativa o container da página.
     with page.container():
-        render_onboarding_if_needed(auth_machine, profile) # ⬅ Desenha o formulário de boas vindas, se necessário.
-    
-
-    # ❤️ DASHBOARD ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    with page.container():
-        render_dashboard(auth_machine)
+        load_session_context(auth_machine) # ⬅ Carrega o contexto da sessão.
+        render_dashboard(auth_machine)     # ⬅ Desenha a área de trabalho do usuário.
 
 page_1()

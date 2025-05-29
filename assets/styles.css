@@ -196,13 +196,13 @@ details[open] > *:not(summary) {
 
 /* HOVER */
 [data-testid="stExpander"] button:hover {
-      transform: scale(1.02) !important;
-      box-shadow: 0px 2px 6px #4F4A47 !important;
+      transform: scale(1.03) !important;
+      box-shadow: 0px 3px 6px #4F4A47 !important;
   }
 
 /* ATIVO */
 [data-testid="stExpander"] button:active {
-      transform: scale(0.98) !important;
+      transform: scale(0.95) !important;
   }
 
   
@@ -227,15 +227,14 @@ div[data-testid="stFormSubmitButton"] button {
 
 /* HOVER */
 div[data-testid="stFormSubmitButton"] button:hover {
-  transform: scale(1.01) !important;
-  box-shadow: 0px 2px 8px #4F4A47 !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0px 3px 6px #4F4A47 !important;
 }
 
 /* ATIVO */
 div[data-testid="stFormSubmitButton"] button:active {
-  transform: scale(0.98) !important;
+  transform: scale(0.95) !important;
 }
-
 
 
 /* ==========================================================
