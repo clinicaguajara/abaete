@@ -1,14 +1,17 @@
 
-# 📦 IMPORTAÇÕES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📦 IMPORTAÇÕES NECESSÁRIAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 import streamlit as st
 
 from frameworks.sm                  import StateMachine
-from utils.session                  import VerifyStates, LoadStates
+from utils.variables.session        import VerifyStates, LoadStates
 from services.professional_profile  import load_professional_profile
 from services.user_profile          import load_user_profile
+from services.available_scales      import load_available_scales
+from services.scales_progress       import load_scale_progress
 from services.links                 import load_links_by_role
 from components.onboarding          import render_onboarding_if_needed
+
 
 # 🚧 FUNÇÃO PARA VERIFICAR SE O USUÁRIO É UM PROFISSIONAL ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -117,3 +120,16 @@ def load_session_context(auth_machine: StateMachine) -> str:
             auth_machine,                       # ⬅ Máquina de autenticação (**kwargs).
             done_state= LoadStates.LOADED.value # ⬅ Desliga a flag da máquina de vínculos.
         )  
+
+
+# 📝 FUNÇÃO PARA CARREGAR CONTEXTO COMPLETO DE AVALIAÇÕES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+def load_assignment_context(scales_machine: StateMachine) -> str:
+    
+    # Carrega os dados psicométricos das escalas disponíveis na máquina de escalas.
+    load_available_scales(scales_machine) 
+
+    # Carrega as respostas das escalas atribuídas ao paciente (histórico).
+    load_scale_progress(link_id, scales_machine)
+    
+    return

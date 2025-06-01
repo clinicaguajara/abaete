@@ -1,10 +1,11 @@
+
 # 🏠 CONFIGURAÇÕES INICIAIS DA PÁGINA ─────────────────────────────────────────────────────────────────────────────
 
 import streamlit as st
 
 st.set_page_config(
     page_title="Avaliações",
-    page_icon="🧠",
+    page_icon="📝",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
@@ -12,20 +13,18 @@ st.set_page_config(
 
 # 📦 IMPORTAÇÕES ─────────────────────────────────────────────────────────────────────────────────────────────────
 
+from frameworks.sm                  import StateMachine
+from utils.variables.session        import AuthStates
+from utils.context                  import load_session_context
 from utils.logs                     import log_page_entry
 from utils.design                   import load_css, render_scales_header
-from utils.session                  import AuthStates
-from frameworks.sm                  import StateMachine
-from services.user_profile          import load_user_profile
-from components.auth_interface      import render_auth_interface
-from components.onboarding          import render_onboarding_if_needed
-from components.sidebar             import render_sidebar
-from components.scales_interface    import render_scales_interface
+from components.auth_interface      import auth_interface_entrypoint
+from components.scales_interface    import scales_interface_entrypoint
 
 
 # 🛤️ FUNÇÃO DE FLUXO DA PÁGINA ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-@log_page_entry("SCALES")
+@log_page_entry("3_Avaliações.py")
 def main():
     
     load_css()              # ⬅ Injeção de CSS.
@@ -35,36 +34,22 @@ def main():
 
     # 🔐 LÓGICA DE AUTENTICAÇÃO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    # Cria a máquina de autenticação (default: "form").
     auth_machine = StateMachine("auth_state", AuthStates.FORM.value)
 
+    # Se o estado da máquina de autenticação for diferente de "authenticated"...
     if auth_machine.current != AuthStates.AUTHENTICATED.value:
         with page.container():
-            render_auth_interface(auth_machine)
-            st.stop()
+            auth_interface_entrypoint(auth_machine) # ⬅ Renderiza a interface de autenticação.
+            st.stop()                           # ⬅ Interrompe a execução do programa.
 
 
     # 🌐 USUÁRIO LOGADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
 
-    # Recupera o UUID do usuário na máquina de estados.
-    user_id = auth_machine.get_variable("user_id")
-
-    # Carrega os dados do perfil do usuário via UUID (apenas uma vez).
-    if user_id and auth_machine.get_variable("user_profile") is None:
-        load_user_profile(user_id, auth_machine)
-
-
-    # 📋 ONBOARDING QUESTIONNAIRE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
     
-    # Recupera o perfil do usuário.
-    profile = auth_machine.get_variable("user_profile")
-
+    # Ativa o container da página.
     with page.container():
-        render_onboarding_if_needed(user_id, profile)
-    
-
-    # ❤️ RECUPERAÇÃO DE VÍNCULOS ───────────────────────────────────────────────────────────────────────────────────────────────────────
-
-    with page.container():
-        render_scales_interface(auth_machine)
+        load_session_context(auth_machine)    # ⬅ Carrega o contexto da sessão.
+        scales_interface_entrypoint(auth_machine) # ⬅ Renderiza a interface de avaliações.
 
 main()

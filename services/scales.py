@@ -1,10 +1,11 @@
-# 📦 IMPORTAÇÕES ────────────────────────────────────────────────────────────────────────
+
+# 📦 IMPORTAÇÕES NECESSÁRIAS ────────────────────────────────────────────────────────────────────────
 
 import logging
 
 from datetime           import date
-from services.backend   import fetch_records, upsert_record
 from frameworks.sm      import StateMachine
+from services.backend   import fetch_records, upsert_record
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # 🔎 FUNÇÃO PARA CARREGAR ESCALAS ATRIBUÍDAS ────────────────────────────────────────────────────────────────────────────────────
 
-def load_scales_by_link_id(link_id: str, auth_machine: StateMachine) -> None:
+def load_scales_by_link_id(link_id: str, auth_machine: StateMachine) -> list[dict]:
     """
     <docstrings> Carrega todas as escalas atribuídas a um vínculo profissional-paciente.
 
@@ -30,18 +31,19 @@ def load_scales_by_link_id(link_id: str, auth_machine: StateMachine) -> None:
     Returns:
         None
     """
-    logger.debug(f"SCALES → Buscando escalas atribuídas ao link {link_id}")
-
-    escalas = fetch_records(
+    
+    scales = fetch_records(
         table_name="scales",
         filters={"link_id": link_id, "status": "active"}
     )
 
-    logger.debug(f"SCALES → {len(escalas)} escala(s) carregada(s) para o link {link_id}")
+    logger.debug(f"SCALES → {len(scales)} escala(s) carregada(s) para o link {link_id}")
 
-    auth_machine.set_variable("assigned_scales", escalas)
+    # Salva as escalas atribuídas ao usuário na máquina de autenticação.
+    auth_machine.set_variable("assigned_scales", scales)
     
-    return escalas
+    return scales
+
 
 # 💾 FUNÇÃO PARA SALVAR UMA ESCALA ATRIBUÍDA ────────────────────────────────────────────────────────────────────────────────────
 
@@ -103,10 +105,8 @@ def update_scale_status(scale_id: str, status: str) -> bool:
 
 
 # 📥 FUNÇÃO PARA CARREGAR ESCALAS ATIVAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-def load_assigned_scales(
-    link_id: str,
-    auth_machine: StateMachine
-) -> list[dict]:
+
+def load_assigned_scales(link_id: str, auth_machine: StateMachine) -> list[dict]:
     """
     <docstrings> Carrega e retorna escalas ativas atribuídas a um vínculo.
 
@@ -126,10 +126,10 @@ def load_assigned_scales(
     logger.debug(f"SCALES → Carregando escalas ativas para link {link_id}")
     
     try:
-        escalas = load_scales_by_link_id(link_id, auth_machine) or []
+        scales = load_scales_by_link_id(link_id, auth_machine) or []
         # opcional: reafirma no state, mas já foi feito no load_scales_by_link_id
-        auth_machine.set_variable("assigned_scales", escalas)
-        return escalas  # retorna lista
+        auth_machine.set_variable("assigned_scales", scales)
+        return scales  # retorna lista
     
     except Exception as e:
         

@@ -4,25 +4,25 @@ class AuthStates(Enum):
     FORM = "form"
     AUTHENTICATED = "authenticated"
     LOGGED_OUT = "logout"
-    LOADING = "loading"
 
 class LoadStates(Enum):
-    LOAD = "load"
-    LOADED = "loaded"
+    LOAD = True
+    LOADING = "loading"
+    LOADED = False
 
 
 class VerifyStates(Enum):
-    VERIFY = "check"
-    VERIFIED = "checked"
+    VERIFY = True
+    VERIFYING = "verifying"
+    VERIFIED = False
 
 
 class FeedbackStates(Enum):
-    NONE = "none"
-    LINK_SENT = "vinculo_enviado"
-    LINK_ERROR = "erro_envio"
-    LINK_ACCEPTED = "link_accepted"
-    LINK_REJECTED = "link_rejected"
-    GOAL_SENT = "goal_sent"
+    CLEAR = None
+    SHOW = True
+    DONE = False
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
 
 
 class RedirectStates(Enum):
@@ -33,4 +33,5 @@ class RedirectStates(Enum):
 class EvaluationStates(Enum):
     START = "start"
     FORM = "form"
+    DONE = False
     LOADING = "loading"

@@ -9,11 +9,11 @@ import pandas    as pd
 from typing                             import List, Dict
 from datetime                           import date
 from frameworks.sm                      import StateMachine
-from utils.session                      import EvaluationStates
-from utils.context                         import is_professional_user
-from services.links import load_links_for_professional, load_links_for_patient
+from utils.variables.session                      import EvaluationStates, RedirectStates
+from utils.context                      import is_professional_user
+from services.links                     import load_links_for_professional
 from services.scales                    import update_scale_status, load_assigned_scales, save_scale_assignment
-from services.scales_progress           import load_scale_progress
+from services.scales_progress           import load_scale_progress, save_scale_progress
 from services.available_scales          import load_available_scales
 from components.sidebar                 import render_sidebar
 
@@ -23,9 +23,9 @@ from components.sidebar                 import render_sidebar
 logger = logging.getLogger(__name__)
 
 
-# 🔌 FUNÇÃO PARA RENDERIZAR A INTERFACE DE AVALIAÇÕES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 🔌 FUNÇÃO PARA RENDERIZAR A INTERFACE DE AVALIAÇÕES (ENTRY POINT) ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_scales_interface(auth_machine: StateMachine) -> tuple[None, str | None]:
+def scales_interface_entrypoint(auth_machine: StateMachine) -> tuple[None, str | None]:
     """
     <docstrings> Renderiza a interface da page "3_Avaliações" com abas distintas para profissionais e pacientes.
     
@@ -46,47 +46,37 @@ def render_scales_interface(auth_machine: StateMachine) -> tuple[None, str | Non
 
     """
     
-    # ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🛰️ ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    redirect = StateMachine("scales_redirect", True)
-        
-    if redirect.current:
-        redirect.to(False, True) # desativa flag.
+    # Cria uma instância da máquina de redirecionamento (default: True).
+    redirect_machine = StateMachine("scales_redirect_state", RedirectStates.REDIRECT.value, enable_logging = True)
+    
+    # Se a máquina de redirecionamento estiver ligada...
+    if redirect_machine.current:
+        redirect_machine.to(RedirectStates.REDIRECTED.value, True) # ⬅ Desativa a flag e força rerun().
+    
+    # ⚙️ MÁQUINA DE ESCALAS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    
+    # Define ou recupera a máquina de escalas (default: "start").
+    scales_machine = StateMachine("scales_state", EvaluationStates.START.value)
 
+    # 📶 ROTEAMENTO CONFORME PAPEL DO USUÁRIO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # INTERFACE PRINCIPAL ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # Se o usuário possuir um perfil profissional registrado na máquina de autenticação...
+    if is_professional_user(auth_machine):
+        _render_professional_scales(auth_machine, scales_machine) # ⬅ Desenha a interface do profissional.
     
-    logger.info("Desenhando a interface de avaliações.")
-    
-    # Desenha o cabeçalho da página.
-    st.markdown("""
-        <div style='text-align: justify;'>
-        As avaliações psicométricas não são apenas instrumentos de medida — são pontos de encontro entre a escuta e a precisão. Compreendemos que cada resposta carrega um ritmo, uma raiz, uma história. Por isso, torna-se fundamental reconhecer a complexidade da situação que requer um <strong>diagnóstico</strong>.
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Caso contrário...
+    else:
+        _render_patient_scales(auth_machine, scales_machine) # ⬅ Desenha a interface do paciente.
     
     # Desenha a sidebar do aplicativo.
     render_sidebar(auth_machine)
 
-    # ROTEAMENTE POR PERFIL DO USUÁRIO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # Define a máquina de escalas.
-    scales_machine = StateMachine("scales_state", EvaluationStates.START.value)
+# 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DO PROFISSIONAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # Se o usuário possuir um perfil profissional registrado na máquina de autenticação...
-    if is_professional_user(auth_machine):
-        return render_professional_scales(auth_machine, scales_machine) # ⬅ Desenha a interface do profissional.
-    
-    # Caso contrário...
-    else:
-        return render_patient_scales(auth_machine, scales_machine) # ⬅ Desenha a interface do paciente.
-
-
-# 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PROFISSIONAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-def render_professional_scales(auth_machine: StateMachine, scales_machine: StateMachine) -> tuple[None, str | None]:
+def _render_professional_scales(auth_machine: StateMachine, scales_machine: StateMachine) -> None:
     """
     <docstrings> Renderiza a interface de escalas para profissionais.
 
@@ -126,7 +116,7 @@ def render_professional_scales(auth_machine: StateMachine, scales_machine: State
 
         # Se não houver escalas disponíveis na máquina de escalas...
         if not scales_machine.get_variable("available_scales"):
-            load_available_scales(scales_machine)                # ⬅ Corrigido: carregar na máquina correta
+            load_available_scales(scales_machine) # ⬅ Corrigido: carregar na máquina correta
 
         # Recupera dados de links e escalas.
         links = auth_machine.get_variable("professional_patient_links", default=[])
@@ -181,9 +171,9 @@ def render_professional_scales(auth_machine: StateMachine, scales_machine: State
     return None, None
 
 
-# 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_patient_scales(auth_machine: StateMachine, scales_machine: StateMachine) -> tuple[None, str | None]:
+def _render_patient_scales(auth_machine: StateMachine, scales_machine: StateMachine) -> None:
     """
     <docstrings> Renderiza a interface de escalas para pacientes com abas para responder, histórico e resumo.
 
@@ -203,65 +193,68 @@ def render_patient_scales(auth_machine: StateMachine, scales_machine: StateMachi
         st.write(): Exibe informações brutas no frontend | definida em streamlit.
 
     Returns:
-        tuple[None, str | None]:
-            - None: Se execução for bem-sucedida.
-            - str | None: Mensagem de erro em caso de falha.
+        None.
 
     """
 
-    # Recupera o ID do paciente a partir da máquina de autenticação.
-    patient_id = auth_machine.get_variable("user_id")
+    # Recupera a lista de vínculos do paciente.
+    links = auth_machine.get_variable("links", default=[])
 
-    # Carrega os vínculos do paciente se ainda não estiverem em cache.
-    if not auth_machine.get_variable("patient_links"):
-        load_links_for_patient(patient_id, auth_machine)
-
-    # Recupera a lista atual de vínculos.
-    links = auth_machine.get_variable("patient_links", default=[])
-
-    # Se não houver vínculos, exibe aviso em todas as abas.
+    # Se não houver vínculos, exibe mensagem informativa em todas as abas.
     if len(links) == 0:
         for tab in st.tabs(["Responder avaliações", "Histórico", "Resumo"]):
             with tab:
                 st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
-        return None, None
+        return
 
-    # Se houver múltiplos vínculos, exibe mensagem informativa.
+    # Se houver múltiplos vínculos, exibe mensagem informativa em todas as abas.
     if len(links) > 1:
         for tab in st.tabs(["Responder avaliações", "Histórico", "Resumo"]):
             with tab:
                 st.info("ℹ️ Essa funcionalidade será implementada no futuro (vários vínculos detectados).")
-        return None, None
+        return
 
-    # Cria as abas principais da interface do paciente.
+    # Recupera o primeiro item da lista de vínculos.
+    link_id = links[0]["id"]
+
+    # Desenha as abas da sessão de avaliações do paciente.
     tabs = st.tabs(["Responder avaliações", "Histórico", "Resumo"])
 
-    # Primeira aba: exibe as escalas atribuídas e pendentes de resposta.
-    with tabs[0]:
-        render_scales_forms(auth_machine, scales_machine)
 
-    # Segunda aba: exibe o histórico de progresso nas escalas respondidas.
+    # ✒️ ABA DE AVALIAÇÕES ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Ativa a aba de avaliações.
+    with tabs[0]:
+        _scales_loader(scales_machine, link_id)
+
+
+    # 🧮 ABA DE RESULTADOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Ativa a aba de resultados.
     with tabs[1]:
         st.info("O histório de respostas será implementado em breve.")
 
-    # Terceira aba: exibe informações de debug e mensagem de placeholder para o resumo futuro.
+
+    # 🧩 ABA DE RELATÓRIOS E SÍNTESES ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    # Ativa a aba de relatórios e sínteses.
     with tabs[2]:
         st.info("Um resumo dos resultados será implementado em breve.")
 
-    return None, None
 
 
-# 📠 FUNÇÃO PARA RENDERIZAR FORMULÁRIOS DE ESCALAS ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_scales_forms(
-    auth_machine: StateMachine,
-    scales_machine: StateMachine
-) -> tuple[None, str | None]:
+
+# ✒️ FUNÇÃO PARA CARREGAR E SELECIONAR ESCALAS ATRIBUÍDAS AO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+def _scales_loader(scales_machine: StateMachine, link_id: str) -> None:
     """
     <docstrings> Orquestra o fluxo de carregamento, renderização e finalização de escalas.
 
     Args:
         auth_machine (StateMachine): Máquina de estado com dados de usuário.
+        scales_machine (StateMachine): Mátquina de estado com dados de escalas psicométricas.
+        links (list[dict]): Lista de vínculos ativos do paciente. 
 
     Calls:
         load_links_for_patient(): Garantir vínculo paciente | definida em services.professional_patient_link.
@@ -276,189 +269,190 @@ def render_scales_forms(
 
     """
 
-    # Recupera a data atual em formato ISO
-    hoje = str(date.today())  
-    user_id = auth_machine.get_variable("user_id")
-
-    # Se não houver vínculos registrados na máquina de autenticação...
-    if not auth_machine.get_variable("patient_links"):
-        user_id = auth_machine.get_variable("user_id") # ⬅ Recupera o UUID do usuário.
-        load_links_for_patient(user_id, auth_machine)  # ⬅ Carrega os vínculos via UUID do usuário.
-    
-    # Recupera os vínculos do paciente da máquina de autenticação (lista vazia como fallback).
-    links = auth_machine.get_variable("patient_links", default=[])
-
-    # Se não houver vínculos registrados...
-    if not links:
-        st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
-        return None, None # ⬅ Interrompe o fluxo atual.
-
-    # Recupera o primeiro item da lista de vínculos.
-    link_id = links[0]["id"]
-
-    # Carrega as escalas disponíveis na máquina de escalas.
+    # Carrega os dados psicométricos das escalas disponíveis na máquina de escalas.
     load_available_scales(scales_machine) 
 
-    # Carrega as respostas de escalas anteriores na máquina de escalas.
+    # Carrega as respostas das escalas atribuídas ao paciente (histórico).
     load_scale_progress(link_id, scales_machine)
 
     # Recupera as escalas atribuídas via UUID do vínculo.
     assigned = load_assigned_scales(link_id, scales_machine) 
 
-    # Recupera as escalas disponíveis no sistema.
-    definitions = scales_machine.get_variable("available_scales", default=[])
+    # Recupera os dados psicométricos das escalas disponíveis no sistema.
+    psych_data = scales_machine.get_variable("available_scales", default=[])
 
     # Se nenhuma escala foi atribuída...
     if not assigned:
-        st.info("Entre em contato com o seu profissional responsável para programar a sua primeira avaliação.")
-        return None, None # ⬅ Retorna para o fluxo principal.
+        st.info("Você ainda não tem avaliações atribuídas.")
+        return # ⬅ Retorna para o fluxo principal.
 
     # Recupera as escalas pendentes...
-    pending = render_pending_scales(assigned, definitions, link_id, auth_machine, scales_machine) # → renderiza
+    pending_scales = _render_pending_scales(assigned, psych_data, link_id, scales_machine) 
     
     # Se não houver escalas pendentes...
-    if not pending:
+    if not pending_scales:
         st.success("✅ Você já respondeu todas as avaliações que lhe foram atribuídas.")
 
     # Retorna para o fluxo principal.
-    return None, None
+    return
 
+# ✒️ FUNÇÃO PARA RENDERIZAR APENAS ESCALAS PENDENTES ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-# 📠 FUNÇÃO PARA RENDERIZAR APENAS ESCALAS PENDENTES  ────────────────────────────────────────────────────────────
-
-def render_pending_scales(
+def _render_pending_scales(
     assigned: list[dict],
-    definitions: list[dict],
+    psych_data: list[dict],
     link_id: str,
-    auth_machine: StateMachine,
     scales_machine: StateMachine
 ) -> bool:
     """
     <docstrings> Renderiza escalas pendentes em sequência com controle de progresso.
 
     Args:
-        assigned (list[dict]): Escalas ativas atribuídas.
-        definitions (list[dict]): Estruturas das escalas disponíveis.
-        hoje (str): Data atual em formato ISO.
-        link_id (str): UUID do vínculo.
-        auth_machine (StateMachine): Máquina de estados para controle reativo.
+        assigned (list[dict]): Escalas ativas atribuídas ao paciente (tabela `scales`).
+        psych_data (list[dict]): Estruturas completas das escalas disponíveis (tabela `available_scales`).
+        link_id (str): UUID do vínculo profissional-paciente.
+        scales_machine (StateMachine): Máquina de estado responsável por armazenar progresso, respostas e estados da interface.
 
     Calls:
         parse_scale_items(): Converte definição bruta em itens | definida neste módulo.
-        StateMachine(): Instancia máquina para cada escala | definida em frameworks.sm.
-        render_scale_item_full_with_checkboxes(): Renderiza formulário interativo | definida em scales_interface.py.
-        auth_machine.get_variable(): Verifica flags de progresso | instanciado por StateMachine.
-        finalize_scale_response(): Persiste respostas e atualiza status | definida em scales_interface.py.
-        st.subheader(), st.markdown(), st.success(): Componentes visuais | definidos em streamlit.
+        check_if_scale_completed_today(): Verifica se escala já foi respondida hoje | definida neste módulo.
+        _render_scale_item_full_with_checkboxes(): Renderiza formulário de resposta | definida neste módulo.
+        finalize_scale_response(): Persiste respostas e atualiza progresso no backend | definida neste módulo.
+        scales_machine.set_variable(): Armazena estados e respostas da interface | instanciado por StateMachine.
+        st.subheader(): Exibe subtítulo com o nome da escala | instanciado por streamlit.
+        st.markdown(): Renderiza instruções da escala no frontend | instanciado por streamlit.
+        st.warning(): Exibe alertas de estrutura inválida | instanciado por streamlit.
 
     Returns:
-        bool: True se houver pelo menos uma escala pendente; False caso contrário.
+        bool: 
+            - True se pelo menos uma escala pendente foi identificada e renderizada.
+            - False se todas as escalas já foram respondidas no dia atual.
     """
     
+    # Flag de controle usada para indicar se ao menos uma escala pendente foi processada.
     pending = False
-    mapa = {d["id"]: d for d in definitions}                                   # → mapeia definições por ID
 
-    for escala in assigned:
-        scale_id = escala["id"]                                                   # → ID na tabela `scales`
+    # Mapeia os metadados das escalas disponíveis por seu UUID (available_scale_id).
+    mapa = {d["id"]: d for d in psych_data}
 
-        sent_today = check_if_scale_completed_today(scale_id, link_id, scales_machine)  # → já respondida?
-        if sent_today:
-            continue                                                              # → pula escalas do dia
+    # Para cada escala atribuída ao paciente...
+    for scale in assigned:
+        scale_id = scale["id"] # ⬅ UUID da escala atribuída (scales datafrane).
 
-        estrutura = mapa.get(escala["available_scale_id"])                                 # → busca estrutura base
-        if not estrutura:
-            st.warning(f"⚠️ Estrutura não encontrada para {escala.get('scale_name')}")
-            continue                                                              # → pula itens inválidos
+        # Verifica se a escala já foi respondida hoje; se sim, ignora.
+        if check_if_scale_completed_today(scale_id, link_id, scales_machine):
+            continue # ⬅ Pula para a próxima escala.
 
-        itens = parse_scale_items(estrutura.get("items"))                        # → converte em lista
+        # Recupera a estrutura psicométrica da escala a partir do UUID das escalas disponívies.
+        structure = mapa.get(scale["available_scale_id"])
+        
+        # Se não houver uma estrutura psicométrica confiramda...
+        if not structure:
+            st.warning(f"⚠️ Estrutura não encontrada para {scale.get('scale_name')}") # ⬅ Falha de integridade: escala atribuída sem definição.
+            continue # ⬅ Pula para a próxima escala.
+
+        # Converte a estrutura bruta de itens (JSON ou dict) em lista uma lista de itens.
+        itens = parse_scale_items(structure.get("items"))
+        
+        # Se não houver itens definidos...
         if not itens:
-            st.warning(f"⚠️ Sem itens válidos para {escala.get('scale_name')}")
-            continue                                                              # → pula sem perguntas
+            st.warning(f"⚠️ Sem itens válidos para {scale.get('scale_name')}")  # ⬅ Falha crítica: escala sem conteúdo aplicável.
+            continue # ⬅ Pula para a próxima escala.
 
+        # Se chegou até aqui, a escala está pronta para ser exibida.
         pending = True
-        with st.container():                                                       # → container estável
-            st.subheader(escala.get("scale_name", "Escala"))                   # → título da escala
-            st.markdown(f"**Instruções:** {estrutura.get('description', '')}", unsafe_allow_html=True)
 
-            scales_machine.set_variable(f"{scale_id}__state", EvaluationStates.FORM.value) # → novo state
-            render_scale_item_full_with_checkboxes(
+        # Ativa um container persistente para adicionar elementos.
+        with st.container():
+            
+            # Renderiza o nome da escala como subtítulo.
+            st.subheader(scale.get("scale_name", "Escala"))
+
+            # Renderiza instruções da escala, se disponíveis.
+            st.markdown(f"**Instruções:** {structure.get('description', '')}", unsafe_allow_html=True)
+
+            # Define o estado da escala atual como FORM → usado para controle reativo da interface.
+            scales_machine.set_variable(f"{scale_id}__state", EvaluationStates.FORM.value)
+
+            # Chama o renderer do formulário da escala, que controla UI, submissão e validação.
+            _render_scale_item_full_with_checkboxes(
                 scale_id=scale_id,
-                scale_name=escala.get("scale_name", "Escala"),
                 itens=itens,
                 link_id=link_id,
-                auth_machine=auth_machine,
                 scales_machine=scales_machine
             )
 
-            if check_if_scale_completed_today(scale_id, link_id, scales_machine): # → verificação final
-                continue # → grava e atualiza status
+            # Verificação extra: garante que escalas finalizadas durante a submissão não sejam duplicadas.
+            if check_if_scale_completed_today(scale_id, link_id, scales_machine):
+                continue # ⬅ Pula para a próxima escala.
 
-    return pending                                                              
+    # Retorna True se alguma escala pendente foi encontrada e exibida; caso contrário, False.
+    return pending
+                                
+# ✒️ FUNÇÃO PARA RENDERIZAR CHECKBOXES DINAMICAMENTE ────────────────────────────────────────────────────────────
 
-
-# 📇 FUNÇÃO PARA RENDERIZAR CHECKBOXES DINAMICAMENTE ────────────────────────────────────────────────────────────
-
-def render_scale_item_full_with_checkboxes(
+def _render_scale_item_full_with_checkboxes(
     scale_id: str,
-    scale_name: str,
     itens: list[dict],
     link_id: str,
-    auth_machine: StateMachine,
     scales_machine: StateMachine
 ) -> None:
     """
-    <docstrings> Renderiza itens da escala com validação completa.
-    Exibe mensagens por item, resumo geral e checagem de consistência.
+    <docstrings> Renderiza um formulário completo da escala com opções do tipo checkbox.
+
+    Esta função é responsável por exibir os itens da escala em um formulário interativo. Após o envio,
+    realiza a validação das respostas, exibe feedback visual ao usuário e persiste temporariamente os dados
+    na máquina de estados. Se todas as respostas forem válidas, também aciona o encerramento e salvamento da escala.
 
     Args:
-        scale_id (str): ID da escala atribuída (tabela `scales`).
-        itens (list[dict]): Lista de perguntas com opções.
-        auth_machine (StateMachine): Máquina principal do usuário autenticado.
-        link_id (str): ID do vínculo profissional-paciente.
+        scale_id (str): ID da escala atribuída (registro da tabela `scales`).
+        itens (list[dict]): Lista de perguntas com alternativas (tipo Likert, múltipla escolha etc.).
+        link_id (str): UUID do vínculo profissional-paciente.
+        scales_machine (StateMachine): Máquina responsável por armazenar respostas, estado da UI e progresso local.
 
     Calls:
-        render_scale_item_ui(): Cria o dicionário bruto de respostas | definida neste módulo.
-        validate_scale_responses(): Valida respostas únicas por item | definida neste módulo.
-        handle_scale_submission(): Controla feedback e persistência local | definida neste módulo.
-        scales_machine.to(): Atualiza estado reativo | instanciado por scales_machine.
-        st.form_submit_button(): Gatilho do formulário | instanciado por streamlit.
-        st.subheader(), st.markdown(), st.success(): Componentes visuais | definidos em streamlit.
+        render_scale_item_ui(): Cria os checkboxes e retorna um dicionário com as alternativas marcadas | definida neste módulo.
+        validate_scale_responses(): Valida a estrutura das respostas para garantir que cada item tenha apenas uma alternativa marcada | definida neste módulo.
+        handle_scale_submission(): Armazena as respostas válidas e exibe feedback visual condicional (erro ou sucesso) | definida neste módulo.
+        finalize_scale_response(): Persiste as respostas no backend e atualiza o status da escala como concluída | definida neste módulo.
+        scales_machine.set_variable(): Atualiza o estado interno da escala na máquina de estados | instanciado por StateMachine.
+        st.form_submit_button(): Cria botão de envio associado ao formulário | instanciado por streamlit.
 
+    Returns:
+        None: A função não retorna valor; sua função é puramente reativa e visual.
     """
 
-    logger.debug(f"[SCALE] Iniciando renderização da escala {scale_id}.")
-
-    # Container da escala
+    # Cria um formulário isolado para a escala atual.
     with st.form(key=f"form_{scale_id}"):
 
-        # Desenha instruções
-        st.subheader(f"{scale_name}")
-        st.markdown("Responda cada item com uma única alternativa.")
-
-        # Chama o renderer de UI → retorna respostas brutas
+        # Renderiza os itens da escala como checkboxes, agrupados por questão.
+        # Retorna um dicionário bruto com as respostas selecionadas por item.
         raw_answers = render_scale_item_ui(scale_id, itens)
 
-        # Botão de envio do formulário
+        # Cria o botão de envio do formulário.
         sent = st.form_submit_button("Salvar", use_container_width=True)
 
-        # Se clicado, valida e salva
+        # Se o formulário for enviado...
         if sent:
+            # Loga que a submissão do formulário foi iniciada.
             logger.debug(f"[SCALE] Formulário {scale_id} enviado. Iniciando validação.")
 
-            # Valida respostas → separa válidas e erros
+            # Valida o conjunto de respostas: separa respostas válidas e itens com erro (ex: não respondidos).
             valid_answers, error_ids = validate_scale_responses(raw_answers)
 
-            # Armazena e exibe feedback
+            # Exibe feedback e persiste as respostas válidas localmente (em memória).
             success = handle_scale_submission(scale_id, valid_answers, error_ids, scales_machine)
 
-            # Se sucesso, salva no escopo global e aciona LOADING
+            # Se a submissão for considerada válida...
             if success:
-                auth_machine.set_variable(f"scale_progress__{scale_id}__resp", valid_answers)
-                auth_machine.set_variable(f"scale_progress__{scale_id}__done", True)
+                # Armazena respostas e status local de conclusão na máquina de escalas.
+                scales_machine.set_variable(f"scale_progress__{scale_id}__resp", valid_answers)
+                scales_machine.set_variable(f"scale_progress__{scale_id}__done", True)
+
+                # Persiste no backend e atualiza o estado geral da escala como finalizada.
                 finalize_scale_response(scale_id, link_id, scales_machine)
 
-
-# 📦 FUNÇÃO AUXILIAR PARA RENDERIZAR A UI DE CHECKBOXES ────────────────────────────────────────────────────────────
+# ✒️ FUNÇÃO AUXILIAR PARA RENDERIZAR A UI DE CHECKBOXES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def render_scale_item_ui(scale_id: str, itens: List[Dict]) -> Dict[str, List[str]]:
     """
@@ -491,8 +485,7 @@ def render_scale_item_ui(scale_id: str, itens: List[Dict]) -> Dict[str, List[str
 
     return respostas
 
-
-# 📦 FUNÇÃO AUXILIAR PARA VALIDAR AS RESPOSTAS ────────────────────────────────────────────────────────────
+# ✒️ FUNÇÃO AUXILIAR PARA VALIDAR AS RESPOSTAS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def validate_scale_responses(raw_answers: dict) -> tuple[dict, list[str]]:
     """
@@ -516,8 +509,7 @@ def validate_scale_responses(raw_answers: dict) -> tuple[dict, list[str]]:
 
     return valid, erros
 
-
-# 📦 FUNÇÃO AUXILIAR PARA FEEDBACK E CONTROLE ────────────────────────────────────────────────────────────
+# ✒️ FUNÇÃO AUXILIAR PARA FEEDBACK E CONTROLE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def handle_scale_submission(
     scale_id: str,
@@ -552,8 +544,7 @@ def handle_scale_submission(
 
     return True
 
-
-# 🗃️ FUNÇÃO AUXILIAR PARA CONVERTER ESTRUTURAS DE ITENS ────────────────────────────────────────────────────────────
+# 🗃️ FUNÇÃO AUXILIAR PARA CONVERTER ESTRUTURAS DE ITENS ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def parse_scale_items(raw_items: dict | str) -> list[dict]:
     """
@@ -606,7 +597,7 @@ def parse_scale_items(raw_items: dict | str) -> list[dict]:
         return []  # ⬅ Retorna uma lista vazia como fallback de execução.
 
 
-# 📞 FUNÇÃO AUXILIAR PARA REGISTAR RESPOSTAS DE ESCALAS  ────────────────────────────────────────────────────────────
+# 📞 FUNÇÃO AUXILIAR PARA REGISTAR RESPOSTAS DE ESCALAS  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def finalize_scale_response(scale_id: str, link_id: str, scales_machine: StateMachine) -> None:
     """
@@ -622,8 +613,6 @@ def finalize_scale_response(scale_id: str, link_id: str, scales_machine: StateMa
         st.success(), st.error(): Feedback visual | instanciados por streamlit.
 
     """
-    
-    from services.scales_progress import save_scale_progress
 
     resp_key = f"scale_progress__{scale_id}__resp"
     done_key = f"scale_progress__{scale_id}__done"
@@ -633,7 +622,7 @@ def finalize_scale_response(scale_id: str, link_id: str, scales_machine: StateMa
         return
 
     payload = {
-        "scale_id": scale_id,  # ← esse agora é o ID real da tabela 'scales'
+        "scale_id": scale_id,
         "link_id": link_id,
         "date": str(date.today()),
         "completed": True,
@@ -652,14 +641,36 @@ def finalize_scale_response(scale_id: str, link_id: str, scales_machine: StateMa
         scales_machine.to(EvaluationStates.START.value, rerun=True)
 
 
+# 📞 FUNÇÃO AUXILIAR PARA VERIFICAR SE UMA ESCALA JÁ FOI RESPONDIDA HOJE  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
 def check_if_scale_completed_today(scale_id: str, link_id: str, machine: StateMachine) -> bool:
+    """
+    <docstrings> Verifica se uma escala foi respondida hoje, com ou sem referência ao vínculo.
+
+    Args:
+        scale_id (str): ID da escala atribuída.
+        link_id (str): ID do vínculo paciente-profissional.
+        machine (StateMachine): Máquina contendo o progresso local da escala.
+
+    Returns:
+        bool: True se a escala foi respondida hoje; False caso contrário.
+    """
     progresso = machine.get_variable(f"scale_progress__{scale_id}", default=[])
     hoje = str(date.today())
-    return any(p["date"] == hoje and p.get("completed") for p in progresso)
+
+    for p in progresso:
+        # Suporte futuro: se link_id estiver registrado no progresso, usa filtro estrito
+        if "link_id" in p:
+            if p["link_id"] == link_id and p.get("date") == hoje and p.get("completed"):
+                return True
+        # Suporte atual: assume estrutura simples sem link_id
+        elif p.get("date") == hoje and p.get("completed"):
+            return True
+
+    return False
 
 
-
-# FUNÇÃO PARA RENDERIZAR PROGRESSOS EM ESCALAS  ────────────────────────────────────────────────────────────
+# 📞 FUNÇÃO PARA RENDERIZAR PROGRESSOS EM ESCALAS  ────────────────────────────────────────────────────────────
 
 def render_scale_progress_table(link_id: str, auth_machine: StateMachine) -> None:
     """

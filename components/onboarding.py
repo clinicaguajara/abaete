@@ -7,7 +7,7 @@ import streamlit as st
 from datetime                   import date, timedelta
 from frameworks.sm              import StateMachine
 from services.user_profile      import save_user_profile, load_user_profile
-from utils.constants            import SALARIO_MINIMO, TCLE
+from utils.variables.constants            import SALARIO_MINIMO, TCLE
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────

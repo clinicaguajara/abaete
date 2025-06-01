@@ -7,12 +7,55 @@ import streamlit as st
 from frameworks.sm import StateMachine
 
 
-# 👨‍💻 LOGGER LOCAL ───────────────────────────────────────────────────────────
+# 👨‍💻 LOGGER LOCAL ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 logger = logging.getLogger(__name__)
 
+# 🧑‍💼 FUNÇÃO PARA RENDERIZAR CABEÇALHO ADAPTADO ────────────────────────────────────────────────────────────────────────────────────────────
 
-# 🩺 FUNÇÃO QUE GERA TÍTULO FORMAL COM BASE NO GÊNERO ────────────────────────
+def render_helloworld(auth_machine: StateMachine) -> None:
+    """
+    <docstrings> Exibe uma saudação personalizada no cabeçalho da interface com base
+    no perfil do usuário e, se aplicável, no título profissional adaptado ao gênero.
+
+    Args:
+        sm (StateMachine): Instância da máquina de estado `auth_state`.
+
+    Calls:
+        sm.get_variable(): Recupera 'professional_profile' e 'user_profile' do estado | definida em frameworks.sm.py.
+        get_professional_title(): Gera o título com base em nome e gênero | definida neste módulo.
+        adjust_gender_ending(): Ajusta a saudação textual ao gênero | definida neste módulo.
+        st.markdown(): Renderiza o cabeçalho no front-end | definida em streamlit.
+
+    Returns:
+        None:
+            Exibe o cabeçalho na interface Streamlit.
+    """
+    
+    prof = auth_machine.get_variable("professional_profile")
+    user = auth_machine.get_variable("user_profile")
+
+    # Usuário com perfil profissional ativo →
+    if prof and prof.get("professional_status") is True:
+        genero = user.get("gender", "M")
+        helloworld = adjust_gender_ending("Bem-vindo", genero)
+        header = get_professional_title(prof, user)
+        st.markdown(f"#### {helloworld}, {header}!")
+
+    # Usuário comum (paciente) →
+    elif user:
+        nome_completo = user.get("display_name", "Usuário")
+        primeiro_nome = nome_completo.split(" ")[0] if nome_completo else "Usuário"
+        genero = user.get("gender", "M")
+        helloworld = adjust_gender_ending("Bem-vindo", genero)
+        st.markdown(f"#### {helloworld}, {primeiro_nome}!")
+
+    # Caso nenhum dado esteja disponível →
+    else:
+        st.markdown("## Olá!")
+
+
+# 🩺 FUNÇÃO QUE GERA TÍTULO FORMAL COM BASE NO GÊNERO ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def get_professional_title(professional_profile: dict, user_profile: dict) -> str:
     """
@@ -48,7 +91,7 @@ def get_professional_title(professional_profile: dict, user_profile: dict) -> st
     return f"{title} {name}"
 
 
-# ♀️ FUNÇÃO PARA AJUSTAR TERMINAÇÃO GRAMATICAL ──────────────────────────────
+# ♀️ FUNÇÃO PARA AJUSTAR TERMINAÇÃO GRAMATICAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def adjust_gender_ending(text: str, gender: str) -> str:
     """
@@ -92,46 +135,3 @@ def adjust_gender_ending(text: str, gender: str) -> str:
         return re.sub(r"o\b", SUB[gender]["o"], text)
 
     return text
-
-
-# 🧑‍💼 FUNÇÃO PARA RENDERIZAR CABEÇALHO ADAPTADO ─────────────────────────────
-
-def render_header_by_role(auth_machine: StateMachine) -> None:
-    """
-    <docstrings> Exibe uma saudação personalizada no cabeçalho da interface com base
-    no perfil do usuário e, se aplicável, no título profissional adaptado ao gênero.
-
-    Args:
-        sm (StateMachine): Instância da máquina de estado `auth_state`.
-
-    Calls:
-        sm.get_variable(): Recupera 'professional_profile' e 'user_profile' do estado | definida em frameworks.sm.py.
-        get_professional_title(): Gera o título com base em nome e gênero | definida neste módulo.
-        adjust_gender_ending(): Ajusta a saudação textual ao gênero | definida neste módulo.
-        st.markdown(): Renderiza o cabeçalho no front-end | definida em streamlit.
-
-    Returns:
-        None:
-            Exibe o cabeçalho na interface Streamlit.
-    """
-    prof = auth_machine.get_variable("professional_profile")
-    user = auth_machine.get_variable("user_profile")
-
-    # Usuário com perfil profissional ativo →
-    if prof and prof.get("professional_status") is True:
-        genero = user.get("gender", "M")
-        helloworld = adjust_gender_ending("Bem-vindo", genero)
-        header = get_professional_title(prof, user)
-        st.markdown(f"#### {helloworld}, {header}!")
-
-    # Usuário comum (paciente) →
-    elif user:
-        nome_completo = user.get("display_name", "Usuário")
-        primeiro_nome = nome_completo.split(" ")[0] if nome_completo else "Usuário"
-        genero = user.get("gender", "M")
-        helloworld = adjust_gender_ending("Bem-vindo", genero)
-        st.markdown(f"#### {helloworld}, {primeiro_nome}!")
-
-    # Caso nenhum dado esteja disponível →
-    else:
-        st.markdown("## Olá!")

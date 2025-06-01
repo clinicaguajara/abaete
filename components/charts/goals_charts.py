@@ -117,7 +117,6 @@ def estimate_completion_time(goal_id: str, auth_machine: StateMachine) -> None:
     """, unsafe_allow_html=True)
 
 
-
 # ⏱️ PROGRESSO ACUMULADO EM MINUTOS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def estimate_accumulated_effort(goal_id: str, effort_target: int, auth_machine: StateMachine) -> None:

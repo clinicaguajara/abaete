@@ -4,15 +4,14 @@
 import logging
 import streamlit as st
 
-from datetime                            import date, datetime
-from frameworks.sm                       import StateMachine
-from utils.session                       import FeedbackStates, RedirectStates
-from utils.context                          import is_professional_user
-from services.goals                      import load_goals_by_link_id, save_goal
-from services.goals_progress             import load_goal_progress, save_goal_progress
-from services.links  import load_links_for_patient, load_links_for_professional
-from components.sidebar                  import render_sidebar
-from charts.goals_charts                 import render_goal_progress_chart, estimate_completion_time
+from datetime                        import date, datetime
+from frameworks.sm                   import StateMachine
+from utils.variables.session         import FeedbackStates, RedirectStates
+from services.goals                  import load_goals_by_link_id, save_goal
+from services.goals_progress         import load_goal_progress, save_goal_progress
+from services.links                  import load_links_for_professional
+from components.sidebar              import render_sidebar
+from charts.goals_charts             import render_goal_progress_chart, estimate_completion_time
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -47,30 +46,26 @@ def render_goals_interface(auth_machine: StateMachine) -> None:
 
     # 🛰️ ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # Cria a máquina de redirecionamento (goals).
+    # Cria a máquina de redirecionamento (default: True).
     redirect_machine = StateMachine("goals_redirect", RedirectStates.REDIRECT.value, enable_logging=True)
 
     # Se a máquina de redirecionamento estiver ligada...
     if redirect_machine.current: 
-        redirect_machine.to(RedirectStates.REDIRECTED.value, True)  # ⬅ Desativa flag e força a reincialização da interface.
+        redirect_machine.to(RedirectStates.REDIRECTED.value, True) # ⬅ Desliga a máquina de redirecionamento e força rerun().
 
-    # INTERFACE DE METAS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    st.markdown("""
-    <div style='text-align: justify;'>
-    As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar <strong>objetivos</strong> mais claros e acompanhar os pequenos avanços ao longo do tempo. É um recurso de apoio — estruturado, compreensivo e autorregulado.
-    </div>
-    """, unsafe_allow_html=True)
+    # 📶 ROTEIA CONFORME PAPEL DO USUÁRIO ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Recupera o papel do usuário da máquina de autenticação.
+    role = auth_machine.get_variable("role")
 
     # Se o usuário for um profissional...
-    if is_professional_user(auth_machine):
-        _render_professional_goals(auth_machine)
+    if role == "professional":
+        _render_professional_goals(auth_machine) # ⬅ Desenha a interface de metas do profissional.
     
     # Caso contrário...
     else:
-        _render_patient_goals(auth_machine)
+        _render_patient_goals(auth_machine) # ⬅ Desenha a interface de metas do paciente.
 
     # Desenha a sidebar.
     render_sidebar(auth_machine)
@@ -78,7 +73,7 @@ def render_goals_interface(auth_machine: StateMachine) -> None:
 
 # 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PROFISSIONAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | None]:
+def _render_professional_goals(auth_machine: StateMachine) -> None:
     """
     Exibe dois painéis principais:
     - Um formulário funcional para cadastro de metas.
@@ -104,117 +99,110 @@ def _render_professional_goals(auth_machine: StateMachine) -> tuple[None, str | 
             - str | None: Mensagem de erro em caso de falha.
 
     """
+
+    # Cria ou recupera a máquina de feedbacks (default: None).
+    feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.CLEAR.value)
+
+    # Desenha as abas da sessão de metas do profissional.
+    tabs = st.tabs(["Cadastrar metas", "Monitorar histórico de metas"])
+
     
-    # Tenta realizar a operação principal...
-    try:
+    # ABA DE ATIBUIÇÃO DE METAS PARA PACIENTES ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-        feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.NONE.value)
+    with tabs[0]:
+        st.subheader("Cadastrar metas")
 
-        # Cria as abas visuais.
-        tabs = st.tabs(["Cadastrar metas", "Monitorar histórico de metas"])
+        # Carrega vínculos se ainda não estiverem armazenados.
+        if not auth_machine.get_variable("professional_patient_links"):
+            professional_id = auth_machine.get_variable("user_id")
+            load_links_for_professional(professional_id, auth_machine)
 
-        # ────────────────────────────────────────────────────────────────
-        # ABA 1: Cadastro de metas.
-        # ────────────────────────────────────────────────────────────────
-        with tabs[0]:
-            st.subheader("Cadastrar metas")
+        # Recupera vínculos aceitos.
+        links = auth_machine.get_variable("professional_patient_links", default=[])
+        accepted_links = [l for l in links if l.get("status") == "accepted"]
 
-            # Carrega vínculos se ainda não estiverem armazenados.
-            if not auth_machine.get_variable("professional_patient_links"):
-                professional_id = auth_machine.get_variable("user_id")
-                load_links_for_professional(professional_id, auth_machine)
+        # Caso não haja pacientes vinculados.
+        if not accepted_links:
+            st.info("⚠️ Nenhum paciente vinculado.")
+            return None, None
 
-            # Recupera vínculos aceitos.
-            links = auth_machine.get_variable("professional_patient_links", default=[])
-            accepted_links = [l for l in links if l.get("status") == "accepted"]
+        # Mapeia nomes → link_id.
+        patient_names = [l["patient_name"] for l in accepted_links]
+        link_map = {l["patient_name"]: l["id"] for l in accepted_links}
 
-            # Caso não haja pacientes vinculados.
-            if not accepted_links:
-                st.info("⚠️ Nenhum paciente vinculado.")
-                return None, None
+        # Formulário para cadastrar nova meta.
+        with st.form("form_create_goal"):
+            patient_name = st.selectbox("Paciente", patient_names)
+            description = st.text_area("Descrição", placeholder="E.g., Praticar mindfulness diariamente.")
+            timeframe = st.selectbox("Qual é o prazo de conclusão da meta?", ["Curto", "Médio", "Longo"])
+            effort_type = st.selectbox("Tipo de meta", ["Acadêmica", "Profissional", "Saúde & Bem-estar", "Intrapessoal", "Relacional"])
 
-            # Mapeia nomes → link_id.
-            patient_names = [l["patient_name"] for l in accepted_links]
-            link_map = {l["patient_name"]: l["id"] for l in accepted_links}
-
-            # Formulário para cadastrar nova meta.
-            with st.form("form_create_goal"):
-                patient_name = st.selectbox("Paciente", patient_names)
-                description = st.text_area("Descrição", placeholder="E.g., Praticar mindfulness diariamente.")
-                timeframe = st.selectbox("Qual é o prazo de conclusão da meta?", ["Curto", "Médio", "Longo"])
-                effort_type = st.selectbox("Tipo de meta", ["Acadêmica", "Profissional", "Saúde & Bem-estar", "Intrapessoal", "Relacional"])
-
-                # Slider visual invertido: 1 (high priority) à direita.
-                display_priorities = [5, 4, 3, 2, 1]
-                priority_display = st.select_slider(
-                    "Nível de prioridade",
-                    options=display_priorities,
-                    value=3,
-                    format_func=lambda x: f"{x}"
-                )
-                priority_level = 6 - priority_display  # ← inverte visual para valor real.
+            # Slider visual invertido: 1 (high priority) à direita.
+            display_priorities = [5, 4, 3, 2, 1]
+            priority_display = st.select_slider(
+                "Nível de prioridade",
+                options=display_priorities,
+                value=3,
+                format_func=lambda x: f"{x}"
+            )
+            priority_level = 6 - priority_display  # ← inverte visual para valor real.
                 
-                if feedback_machine == FeedbackStates.GOAL_SENT.value:
-                    st.success("✅ Meta cadastrada com sucesso!")
-                    auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
+            if feedback_machine == FeedbackStates.GOAL_SENT.value:
+                st.success("✅ Meta cadastrada com sucesso!")
+                auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
 
-                feedback = st.empty()
+            feedback = st.empty()
 
-                submit = st.form_submit_button("Cadastrar", use_container_width=True)
+            submit = st.form_submit_button("Cadastrar", use_container_width=True)
 
-            # Validação dos campos obrigatórios.
-            if submit:
-                missing = []
-                if not patient_name: missing.append("Patient")
-                if not description.strip(): missing.append("Description")
-                if not timeframe: missing.append("Timeframe")
-                if not effort_type: missing.append("Effort type")
+        # Validação dos campos obrigatórios.
+        if submit:
+            missing = []
+            if not patient_name: missing.append("Patient")
+            if not description.strip(): missing.append("Description")
+            if not timeframe: missing.append("Timeframe")
+            if not effort_type: missing.append("Effort type")
                 
-                if missing:
-                    feedback.warning(f"⚠️ Preencha todos os campos corretamente.")
+            if missing:
+                feedback.warning(f"⚠️ Preencha todos os campos corretamente.")
 
-                else:
+            else:
                     
-                    # Interface → valor interno
-                    prazo_map = {
-                        "Curto": "curto",
-                        "Médio": "medio",
-                        "Longo": "longo"
-                    }
+                # Interface → valor interno
+                prazo_map = {
+                    "Curto": "curto",
+                    "Médio": "medio",
+                    "Longo": "longo"
+                }
 
-                    payload = {
-                        "goal": description.strip(),
-                        "timeframe": prazo_map[timeframe],
-                        "effort_type": effort_type.lower(),
-                        "priority_level": priority_level,
-                        "link_id": link_map[patient_name]
-                    }
-                    success = save_goal(payload)
+                payload = {
+                    "goal": description.strip(),
+                    "timeframe": prazo_map[timeframe],
+                    "effort_type": effort_type.lower(),
+                    "priority_level": priority_level,
+                    "link_id": link_map[patient_name]
+                }
+                success = save_goal(payload)
 
-                    if success:
-                        auth_machine.set_variable("feedback", FeedbackStates.GOAL_SENT.value)
-                        load_goals_by_link_id(payload["link_id"], auth_machine)
-                        st.rerun()
-                    else:
-                        feedback.error("❌ Falha ao salvar meta, tente novamente.")
+                if success:
+                    auth_machine.set_variable("feedback", FeedbackStates.GOAL_SENT.value)
+                    load_goals_by_link_id(payload["link_id"], auth_machine)
+                    st.rerun()
+                else:
+                    feedback.error("❌ Falha ao salvar meta, tente novamente.")
 
-        # ────────────────────────────────────────────────────────────────
-        # ABA 2: Histórico (ainda não implementado)
-        # ────────────────────────────────────────────────────────────────
-        with tabs[1]:
-            st.write("Monitoring of patients’ goals will be available here soon.")
+
+    # ABA DE MONITORAMENTO DE METAS DOS PACIENTES ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    with tabs[1]:
+        st.write("Monitoring of patients’ goals will be available here soon.")
 
         st.markdown("<div style='height: 200px;'></div>", unsafe_allow_html=True)
-
-        return None, None
-
-    except Exception as e:
-        return None, str(e)
 
 
 # 📺 FUNÇÃO PARA RENDERIZAR AS TABS DO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]:
+def _render_patient_goals(auth_machine: StateMachine) -> None:
     """
     <docstrings> Renderiza a seção de metas voltada a pacientes com formulário de progresso e histórico diário.
 
@@ -224,131 +212,136 @@ def _render_patient_goals(auth_machine: StateMachine) -> tuple[None, str | None]
     Returns:
         Tuple[None, str | None]: Resultado da operação.
     """
-    try:
-        # Recupera ID do paciente.
-        patient_id = auth_machine.get_variable("user_id")
+    
+    # Recupera os vínculos do paciente com profissionais responsáveis.
+    links = auth_machine.get_variable("links", default=[])
 
-        # Carrega vínculos apenas se necessário.
-        if not auth_machine.get_variable("patient_links"):
-            load_links_for_patient(patient_id, auth_machine)
-        links = auth_machine.get_variable("patient_links", default=[])
+    # Desenha as abas da interface de metas do paciente.
+    abas = st.tabs(["Curto", "Médio", "Longo prazo"])
 
-        # Abas de prazo
-        abas = st.tabs(["Curto", "Médio", "Longo prazo"])
-        prazos = ["curto", "medio", "longo"]
+    # Se não houver vínculos, exibir aviso dentro de todas as abas.
+    if len(links) == 0:
+        for aba in abas:
+            with aba:
+                st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
+        return
 
-        # Se não houver vínculos, exibir aviso dentro de todas as abas.
-        if len(links) == 0:
-            for aba in abas:
-                with aba:
-                    st.warning("⚠️ Nenhum profissional vinculado ao seu perfil.")
-            return None, None
+    # Caso múltiplos vínculos (não implementado ainda)
+    if len(links) > 1:
+        for aba in abas:
+            with aba:
+                st.info("ℹ️ Essa funcionalidade será implementada no futuro (vários vínculos detectados).")
+        return
 
-        # Caso múltiplos vínculos (não implementado ainda)
-        if len(links) > 1:
-            for aba in abas:
-                with aba:
-                    st.info("ℹ️ Essa funcionalidade será implementada no futuro (vários vínculos detectados).")
-            return None, None
+    # Vínculo único
+    link_id = links[0].get("id")
 
-        # Vínculo único
-        link_id = links[0].get("id")
 
-        # Carrega metas apenas se necessário
-        if not auth_machine.get_variable("goals"):
-            load_goals_by_link_id(link_id, auth_machine)
-        metas = auth_machine.get_variable("goals", default=[])
+    # CARREGAMENTO DE METAS E PROGRESSO ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-        # Carrega todo o progresso de uma vez
-        load_goal_progress(link_id=link_id, auth_machine=auth_machine)
+    # Carrega metas apenas se necessário
+    if not auth_machine.get_variable("goals"):
+        load_goals_by_link_id(link_id, auth_machine)
+    
+    metas = auth_machine.get_variable("goals", default=[])
 
-        # Organiza metas por timeframe
-        timeframe_map = {"curto": [], "medio": [], "longo": []}
-        for meta in metas:
-            tf = meta.get("timeframe", "").lower()
-            if tf in timeframe_map:
-                timeframe_map[tf].append(meta)
+    # Carrega todo o progresso de uma vez, a cada rerun().
+    load_goal_progress(link_id=link_id, auth_machine=auth_machine)
 
-        for i, prazo in enumerate(prazos):
-            with abas[i]:
-                metas_do_prazo = timeframe_map.get(prazo, [])
-                if not metas_do_prazo:
-                    st.info("Nenhuma meta definida para esse prazo.")
-                    continue
+    # Organiza metas por timeframe.
+    timeframe_map = {"curto": [], "medio": [], "longo": []}
+    
+    # Para cada meta em metas...
+    for meta in metas:
+        tf = meta.get("timeframe", "").lower() # ⬅ Obtém o prazo da meta em minúsculas.
+        
+        # Se o prazo obtido estiver no mapeamento de prazos...
+        if tf in timeframe_map:
+            timeframe_map[tf].append(meta) # ⬅ Adiciona a meta à lista correspondente.
 
-                for meta in metas_do_prazo:
-                    goal_id = meta["id"]
-                    descricao = meta.get("goal", "Meta sem descrição")
-                    created_at = meta.get("created_at")
+    
+    # RENDERIZAÇÃO DAS ABAS DINAMICAMENTE ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-                    progresso = auth_machine.get_variable(f"goal_progress__{goal_id}", default=[])
-                    hoje = str(date.today())
-                    registrado_hoje = any(p["date"] == hoje for p in progresso)
+    # Define uma lista ordenada de prazos para renderizar metas dinamicamente nas abas corretas.
+    prazos = ["curto", "medio", "longo"]
 
-                    with st.expander(descricao):
-                        st.markdown("<br>", unsafe_allow_html=True)
+    # Para cada prazo na ordem definida, e seu índice correspondente i...
+    for i, prazo in enumerate(prazos):
+        
+        # Ativa a aba de índice i.
+        with abas[i]:
+            metas_do_prazo = timeframe_map.get(prazo, [])
+            if not metas_do_prazo:
+                st.info("Nenhuma meta definida para esse prazo.")
+                continue
 
-                        if created_at:
-                            try:
-                                dt = datetime.fromisoformat(created_at)
-                                st.write(f"Criada em: 🗓️ **{dt.strftime('%d/%m/%Y')}**")
-                            except:
-                                st.write("Data de criação indisponível")
-                        else:
-                            st.write("Data de criação não informada")
+            for meta in metas_do_prazo:
+                goal_id = meta["id"]
+                descricao = meta.get("goal", "Meta sem descrição")
+                created_at = meta.get("created_at")
 
-                        effort_type = (meta.get("effort_type") or "—").lower()
-                        priority = meta.get("priority_level", "—")
-                        st.write(f"**Meta do tipo {effort_type} e nível de prioridade #{priority}**")
+                progresso = auth_machine.get_variable(f"goal_progress__{goal_id}", default=[])
+                hoje = str(date.today())
+                registrado_hoje = any(p["date"] == hoje for p in progresso)
 
-                        if registrado_hoje:
-                            st.info("Parabéns, você concluiu essa meta hoje!")
-                        else:
-                            with st.form(f"form_{goal_id}"):
-                                mood_labels = {
-                                    1: "Muito ruim", 2: "Ruim", 3: "Regular", 4: "Bom", 5: "Ótimo"
+                with st.expander(descricao):
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    if created_at:
+                        try:
+                            dt = datetime.fromisoformat(created_at)
+                            st.write(f"Criada em: 🗓️ **{dt.strftime('%d/%m/%Y')}**")
+                        except:
+                            st.write("Data de criação indisponível")
+                    else:
+                        st.write("Data de criação não informada")
+
+                    effort_type = (meta.get("effort_type") or "—").lower()
+                    priority = meta.get("priority_level", "—")
+                    st.write(f"**Meta do tipo {effort_type} e nível de prioridade #{priority}**")
+
+                    if registrado_hoje:
+                        st.info("Parabéns, você concluiu essa meta hoje!")
+                    else:
+                        with st.form(f"form_{goal_id}"):
+                            mood_labels = {
+                                1: "Muito ruim", 2: "Ruim", 3: "Regular", 4: "Bom", 5: "Ótimo"
+                            }
+                            mood_label = st.selectbox(
+                                "Como você se sentiu hoje?",
+                                options=list(mood_labels.values()),
+                                index=2,
+                                key=f"mood_{goal_id}"
+                            )
+                            mood = next(score for score, label in mood_labels.items() if label == mood_label)
+
+                            duration = st.number_input(
+                                "Tempo de dedicação, em minutos",
+                                min_value=0, max_value=1440, value=60, step=5,
+                                key=f"dur_{goal_id}"
+                            )
+
+                            feedback = st.empty()
+                            if st.form_submit_button("Concluir", use_container_width=True):
+                                payload = {
+                                    "goal_id": goal_id,
+                                    "link_id": link_id,
+                                    "date": hoje,
+                                    "completed": True,
+                                    "duration_minutes": duration,
+                                    "mood_rating": mood
                                 }
-                                mood_label = st.selectbox(
-                                    "Como você se sentiu hoje?",
-                                    options=list(mood_labels.values()),
-                                    index=2,
-                                    key=f"mood_{goal_id}"
-                                )
-                                mood = next(score for score, label in mood_labels.items() if label == mood_label)
-
-                                duration = st.number_input(
-                                    "Tempo de dedicação, em minutos",
-                                    min_value=0, max_value=1440, value=60, step=5,
-                                    key=f"dur_{goal_id}"
-                                )
-
-                                feedback = st.empty()
-                                if st.form_submit_button("Concluir", use_container_width=True):
-                                    payload = {
-                                        "goal_id": goal_id,
-                                        "link_id": link_id,
-                                        "date": hoje,
-                                        "completed": True,
-                                        "duration_minutes": duration,
-                                        "mood_rating": mood
-                                    }
-                                    result = save_goal_progress(payload)
-                                    if result:
-                                        st.rerun()
-                                    else:
-                                        feedback.error("Erro ao registrar progresso. Tente novamente.")
+                                result = save_goal_progress(payload)
+                                if result:
+                                    st.rerun()
+                                else:
+                                    feedback.error("Erro ao registrar progresso. Tente novamente.")
                         
-                        col1, col2 = st.columns([200, 1])
-                        with col1:
-                            render_goal_progress_chart(goal_id, auth_machine)
-                        estimate_completion_time(goal_id, auth_machine)
-                        st.markdown("<br>", unsafe_allow_html=True)
+                    col1, col2 = st.columns([200, 1])
+                    with col1:
+                        render_goal_progress_chart(goal_id, auth_machine)
+                    estimate_completion_time(goal_id, auth_machine)
+                    st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown("<div style='height: 200px;'></div>", unsafe_allow_html=True)
-
-        return None, None
-
-    except Exception as e:
-        logger.exception(f"GOALS → Erro ao renderizar metas do paciente: {e}")
-        return None, str(e)
+    st.markdown("<div style='height: 200px;'></div>", unsafe_allow_html=True)
 

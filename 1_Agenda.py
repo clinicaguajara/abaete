@@ -14,12 +14,12 @@ st.set_page_config(
 # 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 from frameworks.sm                  import StateMachine
-from utils.session                  import AuthStates
+from utils.variables.session                  import AuthStates
 from utils.logs                     import log_page_entry
 from utils.design                   import load_css, render_abaete_header
 from utils.context                  import load_session_context
-from components.auth_interface      import render_auth_interface
-from components.dashboard_interface import render_dashboard
+from components.auth_interface      import auth_interface_entrypoint
+from components.dashboard_interface import dashboard_interface_entrypoint
 
 
 # 🛤️ DEFINIÇÃO DE FLUXO DA PÁGINA ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -29,28 +29,28 @@ def page_1():
     
     load_css()              # ⬅ Injeção de CSS.
     render_abaete_header()  # ⬅ Desenha o cabeçalho da página.
-    page = st.empty()       # ⬅ Contêiner para renderizar as componentes da interface.
+    page = st.empty()       # ⬅ Placeholder para renderizar as componentes da interface dinamicamente.
 
 
     # 🔐 LÓGICA DE AUTENTICAÇÃO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # Cria a máquina de autenticação (default: form).
+    # Cria a máquina de autenticação (default: "form").
     auth_machine = StateMachine("auth_state", AuthStates.FORM.value, enable_logging=True)
 
-    # Se o estado da máquina de autenticação for diferente de 'authenticated'...
+    # Se o estado da máquina de autenticação for diferente de "authenticated"...
     if auth_machine.current != AuthStates.AUTHENTICATED.value:
         
-        # Ativa o container da página.
+        # Ativa o container da página, transformando o placeholder em um escopo de múltiplos widgets.
         with page.container():
-            render_auth_interface(auth_machine) # ⬅ Desenha a interface de autenticação.
+            auth_interface_entrypoint(auth_machine) # ⬅ Desenha a interface de autenticação.
             st.stop()                           # ⬅ Interrompe a execução do programa.
     
 
     # 🌐 USUÁRIO LOGADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
 
-    # Ativa o container da página.
+    # Ativa o container da página, transformando o placeholder em um escopo de múltiplos widgets.
     with page.container():
         load_session_context(auth_machine) # ⬅ Carrega o contexto da sessão.
-        render_dashboard(auth_machine)     # ⬅ Desenha a área de trabalho do usuário.
+        dashboard_interface_entrypoint(auth_machine)     # ⬅ Desenha a área de trabalho do usuário.
 
 page_1()

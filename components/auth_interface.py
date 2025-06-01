@@ -5,7 +5,7 @@ import streamlit as st
 import logging
 
 from frameworks.sm   import StateMachine
-from utils.session   import AuthStates, RedirectStates
+from utils.variables.session   import AuthStates, RedirectStates, LoadStates
 from services.auth   import auth_sign_in, auth_sign_up, auth_reset_password
 
 
@@ -15,21 +15,17 @@ from services.auth   import auth_sign_in, auth_sign_up, auth_reset_password
 logger = logging.getLogger(__name__)
 
 
-# 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────
+# 🔌 ENTYPOINT DA INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-def render_auth_interface(auth_machine: StateMachine) -> None:
+def auth_interface_entrypoint(auth_machine: StateMachine) -> None:
     """
-    <docstrings> Componente reativo de autenticação com abas de login, cadastro e reset.
+    <docstrings> Renderiza a interface de autenticação que protege todas as páginas.
 
     Args:
-        None (a máquina de estado auth_state será usada diretamente).
+        auth_machine (StateMachine): Instância da máquina de autenticação.
 
     Calls:
         StateMachine(): Instancia ou recupera máquina de estado | definida em framework.sm.py
-        auth_sign_in(): Realiza login com email e senha | definida em services.auth.py
-        auth_sign_up(): Cadastra novo usuário | definida em services.auth.py
-        auth_reset_password(): Dispara email de redefinição | definida em services.auth.py
-        st.rerun(): Reinicializa a aplicação | definida em streamlit.runtime
 
     Returns:
         None.
@@ -38,27 +34,52 @@ def render_auth_interface(auth_machine: StateMachine) -> None:
     
     # 🛰️ ESTABILIZAÇÃO PROATIVA DA INTERFACE ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    # Cria a máquina de redirecionamento (dafult: redirect).
-    auth_redirect_machine = StateMachine("auth_redirect", RedirectStates.REDIRECT.value, enable_logging=True)
+    # Cria a máquina de redirecionamento (dafult: True).
+    redirect_machine = StateMachine("auth_redirect_state", RedirectStates.REDIRECT.value, enable_logging=True)
     
     # Se a máquina de redirecionamento estiver ligada...
-    if auth_redirect_machine.current:
-        auth_redirect_machine.to(RedirectStates.REDIRECTED.value, True) # ⬅ Desativa flag e força a reincialização da interface.
+    if redirect_machine.current:
+        redirect_machine.to(RedirectStates.REDIRECTED.value, True) # ⬅ Desativa flag e força rerun().
     
 
-    # 🔐 INTERFACE DE AUTENTICAÇÃO ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🔐 INTERFACE DE AUTENTICAÇÃO ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-    # Define as abas da interface de autenticação.
+    _render_auth_interface(auth_machine)
+
+
+# 📺 FUNÇÃO PARA RENDERIZAR A INTERFACE DE AUTENTICAÇÃO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+def _render_auth_interface(auth_machine: StateMachine) -> None:
+    """
+    <docstrings> Componente reativo de autenticação com abas de login, cadastro e reset.
+
+    Args:
+        auth_machine (StateMachine): Instância da máquina de autenticação.
+
+    Calls:
+        auth_sign_in(): Realiza login com email e senha | definida em services.auth.py
+        auth_sign_up(): Cadastra novo usuário | definida em services.auth.py
+        auth_reset_password(): Dispara email de redefinição | definida em services.auth.py
+        st.rerun(): Reinicializa a aplicação | definida em streamlit.runtime
+
+    Returns:
+        None;
+
+    """
+
+    # Desenha as abas da interface de autenticação.
     tabs = st.tabs(["Entrar", "Cadastrar", "Esqueci minha senha"])
 
 
     # 🔑 ABA DE LOGIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    # Desenha a aba de login.
+    # Ativa a aba de login.
     with tabs[0]:
 
         # Desenha o formulário de login.
         with st.form("login_form"):
+            
+            # Campos para preenchimento do formulário.
             email = st.text_input("Email", key="login_email")
             password = st.text_input("Senha", type="password", key="login_password")
             feedback = st.empty()
@@ -73,7 +94,7 @@ def render_auth_interface(auth_machine: StateMachine) -> None:
             
             # Caso contrário...
             else:
-                auth_machine.to(AuthStates.LOADING.value, rerun=False) # ⬅ Transiciona a máquina de autenticação.
+                auth_machine.to(LoadStates.LOADING.value, rerun=False) # ⬅ Transiciona a máquina de autenticação.
                 user = auth_sign_in(email, password)                   # ⬅ Autenticação via Supabase.
                 
                 # Se houver usuário autenticado...
@@ -90,7 +111,7 @@ def render_auth_interface(auth_machine: StateMachine) -> None:
 
     # 📋 ABA DE CADASTRO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    # Desenha a aba de cadastro.
+    # Ativa a aba de cadastro.
     with tabs[1]:
 
         # Desenha o formulário de cadastro.
@@ -126,9 +147,9 @@ def render_auth_interface(auth_machine: StateMachine) -> None:
                     feedback.error("⛔ Não foi possível realizar o cadastro. Verifique suas informações e tente novamente.")
 
 
-    # 🔓 ABA DE RECUPERAR A SENHA ─────────────────────────────────────────────────────────────────────────────────────────────────────
+    # 🔓 ABA DE RECUPERAR SENHA ─────────────────────────────────────────────────────────────────────────────────────────────────────
     
-    # Desenha a aba de recuperar senha.
+    # Ativa a aba de recuperar senha.
     with tabs[2]:
 
         # Desenha o formulário para recuperar senha.

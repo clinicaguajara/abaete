@@ -150,6 +150,16 @@ def render_goals_header(title="Metas", logo_path="assets/logo2.png"):
         </div>
     """, unsafe_allow_html=True)
 
+    # Desenha texto conceitual da sessão.
+    st.markdown("""
+    <div style='text-align: justify;'>
+    As metas no Abaeté são ferramentas de direção, não de cobrança. Elas ajudam a organizar o percurso, tornar <strong>objetivos</strong> mais claros e acompanhar os pequenos avanços ao longo do tempo. É um recurso de apoio — estruturado, compreensivo e autorregulado.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Pula uma linha.
+    st.markdown("<br>", unsafe_allow_html=True)
+
 
 def render_scales_header(title="Testes", logo_path="assets/logo3.png"):
     encoded_logo = get_base64_logo(logo_path)
@@ -170,6 +180,16 @@ def render_scales_header(title="Testes", logo_path="assets/logo3.png"):
             '>{title}</h1>
         </div>
     """, unsafe_allow_html=True)
+
+    # Desenha texto conceitual da sessão.
+    st.markdown("""
+        <div style='text-align: justify;'>
+        As avaliações psicométricas não são apenas instrumentos de medida — são pontos de encontro entre a escuta e a precisão. Compreendemos que cada resposta carrega um ritmo, uma raiz, uma história. Por isso, torna-se fundamental reconhecer a complexidade da situação que requer um <strong>diagnóstico</strong>.
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Pula uma linha.
+    st.markdown("<br>", unsafe_allow_html=True)
 
 
 

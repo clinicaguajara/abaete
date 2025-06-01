@@ -7,7 +7,7 @@ import logging
 from services.backend import supabase
 from gotrue.errors import AuthRetryableError
 from frameworks.sm import StateMachine
-from utils.constants import REDIRECT_TO
+from utils.variables.constants import REDIRECT_TO
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
