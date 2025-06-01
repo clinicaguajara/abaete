@@ -11,7 +11,7 @@ from services.goals                  import load_goals_by_link_id, save_goal
 from services.goals_progress         import load_goal_progress, save_goal_progress
 from services.links                  import load_links_for_professional
 from components.sidebar              import render_sidebar
-from charts.goals_charts             import render_goal_progress_chart, estimate_completion_time
+from components.charts.goals_charts  import render_goal_progress_chart, estimate_completion_time
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ────────────────────────────────────────────────────────────────────────────────────────────────────────────────

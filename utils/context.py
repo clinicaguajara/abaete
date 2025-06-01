@@ -126,10 +126,5 @@ def load_session_context(auth_machine: StateMachine) -> str:
 
 def load_assignment_context(scales_machine: StateMachine) -> str:
     
-    # Carrega os dados psicométricos das escalas disponíveis na máquina de escalas.
-    load_available_scales(scales_machine) 
 
-    # Carrega as respostas das escalas atribuídas ao paciente (histórico).
-    load_scale_progress(link_id, scales_machine)
-    
     return
