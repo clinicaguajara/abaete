@@ -14,7 +14,7 @@ st.set_page_config(
 # 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 from frameworks.sm                  import StateMachine
-from utils.variables.session                  import AuthStates
+from utils.variables.session        import AuthStates
 from utils.logs                     import log_page_entry
 from utils.design                   import load_css, render_abaete_header
 from utils.context                  import load_session_context

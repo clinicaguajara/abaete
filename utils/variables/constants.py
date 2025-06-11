@@ -14,4 +14,5 @@ Sua participação é totalmente voluntária. Você poderá recusar este consent
 </div>
 """
 
-REDIRECT_TO = "https://resetpassword-3fou6u.flutterflow.app/resetPasswordPage"
+REDIRECT_TO_RESET = "https://resetpassword-3fou6u.flutterflow.app/resetPasswordPage"
+REDIRECT_TO_LOGIN = "https://abaete.streamlit.app/"

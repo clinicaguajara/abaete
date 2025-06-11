@@ -25,7 +25,7 @@ def render_onboarding_if_needed(auth_machine: StateMachine, user_profile: dict) 
     perfil_incompleto = (
         not user_profile or
         any(
-            user_profile.get(k) in (None, "")
+            user_profile.get(k) is None
             for k in ["gender", "birthdate", "race", "income_range", "disabilities", "consent"]
         )
     )
@@ -57,6 +57,15 @@ def render_onboarding_questionnaire(auth_machine: StateMachine, user_profile: di
             - None: Se execução ocorrer normalmente.
             - str | None: Mensagem de erro em caso de falha.
     """
+    
+    CAMPOS_OBRIGATORIOS = ["display_name", "birthdate", "gender", "race", "income_range", "disabilities", "consent"]
+
+    # Filtra campos ainda não preenchidos (apenas None).
+    campos_pendentes = [k for k in CAMPOS_OBRIGATORIOS if user_profile.get(k) is None]
+
+    # 🔒 Se não há campos pendentes, não há formulário a renderizar.
+    if not campos_pendentes:
+        return
     
     st.markdown("<h4>Antes de continuar, gostaríamos de saber mais sobre você...</h4>", unsafe_allow_html=True)
 

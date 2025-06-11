@@ -4,9 +4,10 @@
 import streamlit as st
 import logging
 
-from frameworks.sm   import StateMachine
+from frameworks.sm             import StateMachine
 from utils.variables.session   import AuthStates, RedirectStates, LoadStates
-from services.auth   import auth_sign_in, auth_sign_up, auth_reset_password
+from services.auth             import auth_sign_in, auth_sign_up, auth_reset_password
+from services.user_profile     import save_user_profile
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -141,6 +142,12 @@ def _render_auth_interface(auth_machine: StateMachine) -> None:
                 # Se o cadastro for efetuado com sucesso...
                 if user:
                     feedback.success("📩 Um email de confirmação foi enviado para a sua caixa de entrada.")
+                    auth_machine.set_variable("user_id", user.id)
+                    auth_machine.set_variable("user_email", user.email)
+                    auth_machine.set_variable("user_profile", {"display_name": nome})
+
+                    # Salva um perfil mínimo na tabela user_profile
+                    save_user_profile(auth_machine, {})
                 
                 # Caso contrário...
                 else:

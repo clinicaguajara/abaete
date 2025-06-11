@@ -1,13 +1,11 @@
 
 # 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-import httpx
 import logging
 
 from services.backend import supabase
-from gotrue.errors import AuthRetryableError
 from frameworks.sm import StateMachine
-from utils.variables.constants import REDIRECT_TO
+from utils.variables.constants import REDIRECT_TO_RESET, REDIRECT_TO_LOGIN
 
 
 # 👨‍💻 LOGGER ESPECÍFICO PARA O MÓDULO ATUAL ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -88,7 +86,7 @@ def auth_reset_password(email: str) -> bool:
         logger.debug(f"AUTH → Solicitando redefinição de senha para {email}")
         
         # Dispara o email de redefinição via Supabase.
-        supabase.auth.reset_password_email(email, redirect_to = REDIRECT_TO)
+        supabase.auth.reset_password_email(email, redirect_to = REDIRECT_TO_RESET)
         
         # Retorna True se o email foi enviado corretamente.
         return True
@@ -103,7 +101,7 @@ def auth_reset_password(email: str) -> bool:
         return False                                                         
 
 
-# 📋 FUNÇÃO PARA CADASTRO ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 📋 FUNÇÃO PARA CADASTRO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def auth_sign_up(email: str, password: str, user_metadata: dict = {}):
     """
@@ -120,34 +118,26 @@ def auth_sign_up(email: str, password: str, user_metadata: dict = {}):
         logger.exception(): Método do objeto Logger para registrar erros e stacktrace automático | instanciado por logger.
 
     Returns:
-        user (obj) | "pending" | None:
+        user (obj) | None:
             - Objeto do usuário criado.
-            - "pending" se o Supabase respondeu com erro de timeout mas o email de verificação foi enviado.
-            - None como fallback.
-
+            - None em caso de falha.
     """
-    
+
     # Tenta executar a operação principal...
     try:
-
         logger.debug(f"AUTH → Tentando cadastro de {email}")
 
-        # Força timeout maior apenas para esta requisição
-        with httpx.Client(timeout=20.0) as client:
-            supabase.auth._http_client = client # Monkey patch temporário
-
-            response = supabase.auth.sign_up({
-                "email": email,
-                "password": password,
-                "options": {"data": user_metadata}
-            })
+        # Chamada direta sem customização de cliente HTTP
+        response = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {
+                "data": user_metadata,
+                "email_redirect_to": REDIRECT_TO_LOGIN
+            }
+        })
 
         return response.user
-
-    # Na exceção do tipo timeout...
-    except AuthRetryableError as e:
-        logger.warning(f"AUTH → Timeout no retorno, mas provavelmente criado: {e}")
-        return "pending"
 
     # Se ocorrer uma exceção...
     except Exception as e:
