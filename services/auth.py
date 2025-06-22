@@ -2,6 +2,7 @@
 # 📦 IMPORTAÇÕES NECESSÁRIAS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 import logging
+import streamlit as st
 
 from services.backend import supabase
 from frameworks.sm import StateMachine
@@ -147,7 +148,7 @@ def auth_sign_up(email: str, password: str, user_metadata: dict = {}):
 
 # 🚪 FUNÇÃO PARA LOGOUT ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def auth_sign_out(auth_machine: StateMachine) -> bool:
+def auth_sign_out() -> bool:
     """
     <docstrings> Finaliza a sessão do usuário logado.
 
@@ -171,7 +172,10 @@ def auth_sign_out(auth_machine: StateMachine) -> bool:
         supabase.auth.sign_out()
         
         # Reinicia a máquina de estados.
-        auth_machine.reset()
+        for key in list(st.session_state.keys()):
+            valor = st.session_state.get(key)
+            if isinstance(valor, StateMachine):
+                valor.reset()
 
         # Retorna True se logout ocorreu sem erros.
         return True

@@ -15,9 +15,10 @@ st.set_page_config(
 
 from frameworks.sm                  import StateMachine
 from utils.variables.session        import AuthStates
-from utils.context                  import load_session_context
+from utils.load.context             import load_session_context
 from utils.logs                     import log_page_entry
-from utils.design                   import load_css, render_scales_header
+from utils.load.design              import load_css
+from components.headers             import render_scales_header
 from components.auth_interface      import auth_interface_entrypoint
 from components.scales_interface    import scales_interface_entrypoint
 

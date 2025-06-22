@@ -103,6 +103,9 @@ def _render_professional_goals(auth_machine: StateMachine) -> None:
     # Cria ou recupera a máquina de feedbacks (default: None).
     feedback_machine = auth_machine.get_variable("feedback", default=FeedbackStates.CLEAR.value)
 
+    # Recupera os vínculos do profissional com pacientes cadastrados.
+    links = auth_machine.get_variable("links", default=[])
+
     # Desenha as abas da sessão de metas do profissional.
     tabs = st.tabs(["Cadastrar metas", "Monitorar histórico de metas"])
 
@@ -112,13 +115,6 @@ def _render_professional_goals(auth_machine: StateMachine) -> None:
     with tabs[0]:
         st.subheader("Cadastrar metas")
 
-        # Carrega vínculos se ainda não estiverem armazenados.
-        if not auth_machine.get_variable("professional_patient_links"):
-            professional_id = auth_machine.get_variable("user_id")
-            load_links_for_professional(professional_id, auth_machine)
-
-        # Recupera vínculos aceitos.
-        links = auth_machine.get_variable("professional_patient_links", default=[])
         accepted_links = [l for l in links if l.get("status") == "accepted"]
 
         # Caso não haja pacientes vinculados.
@@ -147,7 +143,7 @@ def _render_professional_goals(auth_machine: StateMachine) -> None:
             )
             priority_level = 6 - priority_display  # ← inverte visual para valor real.
                 
-            if feedback_machine == FeedbackStates.GOAL_SENT.value:
+            if feedback_machine == FeedbackStates.ACCEPTED.value:
                 st.success("✅ Meta cadastrada com sucesso!")
                 auth_machine.set_variable("feedback", FeedbackStates.NONE.value)
 
@@ -185,14 +181,14 @@ def _render_professional_goals(auth_machine: StateMachine) -> None:
                 success = save_goal(payload)
 
                 if success:
-                    auth_machine.set_variable("feedback", FeedbackStates.GOAL_SENT.value)
+                    auth_machine.set_variable("feedback", FeedbackStates.ACCEPTED.value)
                     load_goals_by_link_id(payload["link_id"], auth_machine)
                     st.rerun()
                 else:
                     feedback.error("❌ Falha ao salvar meta, tente novamente.")
 
 
-    # ABA DE MONITORAMENTO DE METAS DOS PACIENTES ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    # ABA DE MONITORAMENTO DE METAS DOS PROFISSIONAIS ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
     with tabs[1]:
         st.write("Monitoring of patients’ goals will be available here soon.")

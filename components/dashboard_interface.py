@@ -5,8 +5,8 @@ import logging
 import streamlit as st
 
 from frameworks.sm                      import StateMachine
-from utils.variables.session                      import FeedbackStates, RedirectStates, LoadStates
-from utils.context                      import load_session_context
+from utils.variables.session            import FeedbackStates, RedirectStates, LoadStates
+from utils.load.context                 import load_session_context
 from utils.gender                       import render_helloworld
 from services.links                     import save_links, fetch_patient_info_by_email, accept_link, reject_link
 from components.sidebar                 import render_sidebar
@@ -174,7 +174,7 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
     """
     
     # Cria ou recupera a máquina de feedbacks (deafult: True).
-    feedbacks_machine = StateMachine("feedback_state", LoadStates.LOAD.value, enable_logging = True)
+    feedbacks_machine = StateMachine("feedback_state", FeedbackStates.CLEAR.value, enable_logging = True)
     
     # Obtém vínculos do profissional e organiza por status do convite.
     links = auth_machine.get_variable("links", default=[])
@@ -223,7 +223,7 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
         # Se a máquina de feedbacks estiver ligada...
         if feedbacks_machine.current:
             st.success("✅ Convite de vinculação enviado com sucesso!")
-            auth_machine.set_variable("feedback", FeedbackStates.CLEAR.value)
+            auth_machine.set_variable("feedback", FeedbackStates.DONE.value)
 
         # Desenha o botão do formulário de vinculação.
         enviar = st.form_submit_button("Enviar", use_container_width=True)
@@ -267,7 +267,7 @@ def _render_professional_link_interface(auth_machine: StateMachine) -> None:
                     # Se o convite for enviado com sucesso...
                     if sucesso:
                         load_session_context(auth_machine)              # ⬅ Carrega o contexto da sessão.                      
-                        feedbacks_machine.to(FeedbackStates.DONE.value) # ⬅ Transiciona o estado da máquina de feedbacks e força rerun().
+                        feedbacks_machine.to(FeedbackStates.SHOW.value) # ⬅ Transiciona o estado da máquina de feedbacks e força rerun().
 
                     # Caso contrário...
                     else:

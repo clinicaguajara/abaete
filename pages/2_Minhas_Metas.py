@@ -14,10 +14,11 @@ st.set_page_config(
 # 📦 IMPORTAÇÕES ─────────────────────────────────────────────────────────────────────────────────────────────────
 
 from frameworks.sm                  import StateMachine
-from utils.variables.session                  import AuthStates
+from utils.variables.session        import AuthStates
 from utils.logs                     import log_page_entry
-from utils.design                   import load_css, render_goals_header
-from utils.context                  import load_session_context
+from utils.load.design              import load_css
+from utils.load.context             import load_session_context
+from components.headers             import render_goals_header
 from components.auth_interface      import auth_interface_entrypoint
 from components.goals_interface     import render_goals_interface
 

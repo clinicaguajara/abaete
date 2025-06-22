@@ -16,8 +16,9 @@ st.set_page_config(
 from frameworks.sm                  import StateMachine
 from utils.variables.session        import AuthStates
 from utils.logs                     import log_page_entry
-from utils.design                   import load_css, render_abaete_header
-from utils.context                  import load_session_context
+from utils.load.design              import load_css
+from utils.load.context             import load_session_context
+from components.headers             import render_abaete_header
 from components.auth_interface      import auth_interface_entrypoint
 from components.dashboard_interface import dashboard_interface_entrypoint
 
@@ -43,14 +44,14 @@ def page_1():
         # Ativa o container da página, transformando o placeholder em um escopo de múltiplos widgets.
         with page.container():
             auth_interface_entrypoint(auth_machine) # ⬅ Desenha a interface de autenticação.
-            st.stop()                           # ⬅ Interrompe a execução do programa.
+            st.stop()                               # ⬅ Interrompe a execução do programa.
     
 
     # 🌐 USUÁRIO LOGADO ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── 
 
     # Ativa o container da página, transformando o placeholder em um escopo de múltiplos widgets.
     with page.container():
-        load_session_context(auth_machine) # ⬅ Carrega o contexto da sessão.
-        dashboard_interface_entrypoint(auth_machine)     # ⬅ Desenha a área de trabalho do usuário.
+        load_session_context(auth_machine)           # ⬅ Carrega o contexto da sessão.
+        dashboard_interface_entrypoint(auth_machine) # ⬅ Desenha a área de trabalho do usuário.
 
 page_1()

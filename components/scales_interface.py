@@ -9,8 +9,8 @@ import pandas    as pd
 from typing                             import List, Dict
 from datetime                           import date
 from frameworks.sm                      import StateMachine
-from utils.variables.session                      import EvaluationStates, RedirectStates
-from utils.context                      import is_professional_user
+from utils.variables.session            import EvaluationStates, RedirectStates
+from utils.load.context                 import is_professional_user
 from services.links                     import load_links_for_professional
 from services.scales                    import update_scale_status, load_assigned_scales, save_scale_assignment
 from services.scales_progress           import load_scale_progress, save_scale_progress
@@ -242,9 +242,6 @@ def _render_patient_scales(auth_machine: StateMachine, scales_machine: StateMach
         st.info("Um resumo dos resultados será implementado em breve.")
 
 
-
-
-
 # ✒️ FUNÇÃO PARA CARREGAR E SELECIONAR ESCALAS ATRIBUÍDAS AO PACIENTE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def _scales_loader(scales_machine: StateMachine, link_id: str) -> None:
@@ -295,6 +292,7 @@ def _scales_loader(scales_machine: StateMachine, link_id: str) -> None:
 
     # Retorna para o fluxo principal.
     return
+
 
 # ✒️ FUNÇÃO PARA RENDERIZAR APENAS ESCALAS PENDENTES ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -388,7 +386,8 @@ def _render_pending_scales(
 
     # Retorna True se alguma escala pendente foi encontrada e exibida; caso contrário, False.
     return pending
-                                
+
+
 # ✒️ FUNÇÃO PARA RENDERIZAR CHECKBOXES DINAMICAMENTE ────────────────────────────────────────────────────────────
 
 def _render_scale_item_full_with_checkboxes(
@@ -452,6 +451,7 @@ def _render_scale_item_full_with_checkboxes(
                 # Persiste no backend e atualiza o estado geral da escala como finalizada.
                 finalize_scale_response(scale_id, link_id, scales_machine)
 
+
 # ✒️ FUNÇÃO AUXILIAR PARA RENDERIZAR A UI DE CHECKBOXES ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def render_scale_item_ui(scale_id: str, itens: List[Dict]) -> Dict[str, List[str]]:
@@ -485,6 +485,7 @@ def render_scale_item_ui(scale_id: str, itens: List[Dict]) -> Dict[str, List[str
 
     return respostas
 
+
 # ✒️ FUNÇÃO AUXILIAR PARA VALIDAR AS RESPOSTAS ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def validate_scale_responses(raw_answers: dict) -> tuple[dict, list[str]]:
@@ -508,6 +509,7 @@ def validate_scale_responses(raw_answers: dict) -> tuple[dict, list[str]]:
             erros.append(qid)
 
     return valid, erros
+
 
 # ✒️ FUNÇÃO AUXILIAR PARA FEEDBACK E CONTROLE ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -543,6 +545,7 @@ def handle_scale_submission(
         return False
 
     return True
+
 
 # 🗃️ FUNÇÃO AUXILIAR PARA CONVERTER ESTRUTURAS DE ITENS ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
