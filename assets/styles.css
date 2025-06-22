@@ -308,37 +308,5 @@ section.main > div {
     min-height: 100vh;
 }
 
-[data-testid="stHeaderActionElements"] {
-    display: none !important;
-}
 
-/* 🔧 Remove a logo do Streamlit */
-footer, .stDeployButton {
-  display: none !important;
-}
-
-/* 🔧 Remove o menu de três pontos (hambúrguer de opções no canto superior direito) 
-button[kind="headerMenu"] {
-  display: none !important;
-}
-
-/* 🔧 Remove a mensagem "Made with Streamlit" no rodapé */
-footer {
-  visibility: hidden !important;
-}
-
-/* 🔧 Remove o ícone de link para o GitHub (quando ativo) */
-[data-testid="stHeader"] > div:nth-child(3) {
-  display: none !important;
-}
-
-/* 🔧 Remove todo o cabeçalho com controles
-[data-testid="stHeader"] {
-  display: none !important;
-}
-
-/* 🔧 Remove aviso de atualização automática do Streamlit */
-[data-testid="stStatusWidget"] {
-  display: none !important;
-}
 

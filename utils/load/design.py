@@ -90,7 +90,7 @@ def load_css():
     # Fontes externas (mantidas aqui por dependerem de carregamento da web)
     st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
     st.markdown("""<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@500&display=swap" rel="stylesheet">""", unsafe_allow_html=True)
-
+    
     st.markdown("""
     <style>
     div[data-testid="stVerticalBlockBorderWrapper"],
